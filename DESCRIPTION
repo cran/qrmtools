@@ -1,0 +1,23 @@
+Package: qrmtools
+Version: 0.0-1
+Encoding: UTF-8
+Title: Tools for Quantitative Risk Management
+Description: Functions and data sets for reproducing selected results from
+  the book "Quantitative Risk Management: Concepts, Techniques and Tools".
+  Furthermore, new developments and auxiliary functions for Quantitative
+  Risk Management practice.
+Authors@R: c(person(given = "Marius", family = "Hofert", role = c("aut", "cre"),
+                    email = "marius.hofert@uwaterloo.ca"),
+             person(given = "Kurt", family = "Hornik", role = "aut",
+                    email = "Kurt.Hornik@R-project.org"))
+Author: Marius Hofert [aut, cre], Kurt Hornik [aut]
+Maintainer: Marius Hofert <marius.hofert@uwaterloo.ca>
+Depends: R (>= 3.0.0)
+Imports: xts
+Suggests:
+Enhances:
+License: GPL-2 | GPL-3
+NeedsCompilation: yes
+Repository: CRAN
+Date/Publication: 2015-05-19 06:39:55
+Packaged: 2015-05-19 04:23:08 UTC; mhofert

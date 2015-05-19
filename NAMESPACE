@@ -1,0 +1,19 @@
+useDynLib(qrmtools, .registration = TRUE)
+
+
+### Imports ####################################################################
+
+import("xts")
+
+
+### Exports ####################################################################
+
+export(## distributions
+    "dGEV", "pGEV", "qGEV", "rGEV",
+    "dGPD", "pGPD", "qGPD", "rGPD",
+    "dPar", "pPar", "qPar", "rPar",
+    ## device
+    "dev.off.pdf",
+    ## worst VaR
+    "worst_VaR_hom", "dual_bound", "crude_VaR_bounds", "RA", "ARA")
+
