@@ -1,19 +1,27 @@
-useDynLib(qrmtools, .registration = TRUE)
+useDynLib(qrmtools, .registration=TRUE, .fixes="C_")
 
 
 ### Imports ####################################################################
 
-import("xts")
+import("xts") # for xts namespace to be loaded (e.g., for working with data sets)
+
+importFrom("methods", "hasArg")
+importFrom("stats", "dnorm", "dt", "integrate", "pnorm", "qnorm", "qt",
+           "runif", "uniroot")
+importFrom("grDevices", "dev.off")
 
 
 ### Exports ####################################################################
 
-export(## distributions
+export(
+    ## distributions
     "dGEV", "pGEV", "qGEV", "rGEV",
     "dGPD", "pGPD", "qGPD", "rGPD",
     "dPar", "pPar", "qPar", "rPar",
-    ## device
-    "dev.off.pdf",
+    ## risk measures
+    "VaR_t", "ES_t", "VaR_Par", "ES_Par",
     ## worst VaR
-    "worst_VaR_hom", "dual_bound", "crude_VaR_bounds", "RA", "ARA")
+    "crude_VaR_bounds", "dual_bound", "VaR_bounds_hom",
+    "rearrange", "RA", "ARA"
+)
 

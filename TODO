@@ -1,3 +1,2 @@
-- Deal with Note "Namespace with empty importFrom: ‘xts’"
-  => currently solved it using import("xts"); better solution?
-- get C code for worst VaR to run
+- Maybe write do.call(cbind()) and .rowSums(do.call(cbind())) as C functions
+  to further speed-up rearrange()

@@ -95,7 +95,10 @@ rGPD <- function(n, xi, beta)
 ##' @return density of the Par(theta) distribution
 ##' @author Marius Hofert
 dPar <- function(x, theta, log=FALSE)
+{
+    stopifnot(theta > 0)
     if(log) log(theta)-(theta+1)*log1p(x) else theta*(1+x)^(-theta-1)
+}
 
 ##' @title Distribution function of the Par(theta) distribution
 ##' @param q quantile
@@ -105,9 +108,12 @@ dPar <- function(x, theta, log=FALSE)
 ##' @return distribution function of the Par(theta) distribution
 ##' @author Marius Hofert
 pPar <- function(q, theta, lower.tail=TRUE, log.p=FALSE)
+{
+    stopifnot(theta > 0)
     if(lower.tail) {
         if(log.p) log(1-(1+q)^(-theta)) else 1-(1+q)^(-theta)
     } else if(log.p) -theta*log1p(q) else (1+q)^(-theta)
+}
 
 ##' @title Quantile function of the Par(theta) distribution
 ##' @param p probability
@@ -117,16 +123,23 @@ pPar <- function(q, theta, lower.tail=TRUE, log.p=FALSE)
 ##' @return quantile function of the Par(theta) distribution
 ##' @author Marius Hofert
 qPar <- function(p, theta, lower.tail=TRUE, log.p=FALSE)
+{
+    stopifnot(0 <= p, p <= 1, theta > 0)
     if(lower.tail) {
         if(log.p) (-expm1(p))^(-1/theta)-1 else (1-p)^(-1/theta)-1
     } else if(log.p) expm1(-p/theta) else p^(-1/theta)-1
+}
 
 ##' @title Generating random variates from a Pareto(theta) distribution
 ##' @param n sample size n
 ##' @param theta parameter theta
 ##' @return n-vector containing Pareto(theta) random variates
 ##' @author Marius Hofert
-rPar <- function(n, theta) qPar(runif(n), theta=theta)
+rPar <- function(n, theta)
+{
+    stopifnot(theta > 0)
+    qPar(runif(n), theta=theta)
+}
 
 ##' @title Primitive of the Par(theta) survival function
 ##' @param q quantile
@@ -134,5 +147,8 @@ rPar <- function(n, theta) qPar(runif(n), theta=theta)
 ##' @return \int\bar{F}(x) dx
 ##' @author Marius Hofert
 bar_pPar_primitive <- function(q, theta)
+{
+    stopifnot(theta > 0)
     if(theta==1) log1p(q) else (1+q)^(1-theta) / (1-theta)
+}
 

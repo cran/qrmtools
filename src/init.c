@@ -1,18 +1,19 @@
-/* Register routines with R *****************************************************/
+/* Register routines with R ***************************************************/
 
 #include <R.h>
 #include <Rinternals.h>
 #include <R_ext/Rdynload.h>
 
-#include "worst_VaR.h"
+#include "VaR_bounds.h"
 
 
 static const R_CallMethodDef callMethods[] = {
-	{"RA_aux_", (DL_FUNC) &RA_aux_, 5},
+	/* {"indices_opp_ordered_to", (DL_FUNC) &indices_opp_ordered_to, 1}, */
+	{"col_split", (DL_FUNC) &col_split, 1},
 	{NULL, NULL, 0}
 };
 
-void R_init_qrng(DllInfo *dll)
+void R_init_qrmtools(DllInfo *dll)
 {
     R_useDynamicSymbols(dll, FALSE);
     R_registerRoutines(dll, NULL, callMethods, NULL, NULL); /* s. WRE (2015, Section 5.4) */
