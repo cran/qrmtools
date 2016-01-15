@@ -137,10 +137,12 @@ VaR <- simplify2array(sapply(alpha, function(a)
 ## ------------------------------------------------------------------------
 if(doPDF)
     pdf(file=(file <- paste0("fig_worst_VaR_hom_Wang_Par_d=",d,".pdf")),
-        width=6, height=6)
+        width=7, height=7)
+par(mar=c(5, 4+1, 4, 2) + 0.1) # increase space (for y axis label)
 plot(NA, xlim=range(alpha), ylim=range(VaR), log="xy", yaxt="n",
      xlab=expression(1-alpha),
-     ylab=as.expression(substitute(VaR[alpha]~"for d ="~d.~"and Par("*theta*") margins",
+     ylab=as.expression(substitute(underline(VaR)[alpha](L^{"+"})~"(dashed) and"~bar(VaR)[alpha](L^{"+"})~
+                                   "(solid) for d ="~d.~"and Par("*theta*") margins",
                                    list(d.=d))))
 eaxis(2)
 for(k in 1:length(theta)) {
@@ -150,8 +152,6 @@ for(k in 1:length(theta)) {
 legend("topright", bty="n", lty=rep(1,length(theta)), col=cols,
        legend=as.expression(lapply(1:length(theta),
        function(k) substitute(theta==k, list(k=theta[k])))))
-mtext("Solid line: worst; dashed line: best VaR",
-      side=4, line=1, adj=0)
 if(doPDF) dev.off()
 
 ## ------------------------------------------------------------------------
@@ -161,15 +161,17 @@ theta <- c(0.1, 0.5, 1, 5, 10, 50) # theta values
 VaR <- simplify2array(sapply(d, function(d.)
     sapply(theta, function(th) VaR_bounds_hom(alpha, d=d., method="Wang.Par",
                                               theta=th)), simplify=FALSE))
-## => (best/worst VaR, theta, alpha)-matrix
+## => (best/worst VaR, theta, d)-matrix
 
 ## ------------------------------------------------------------------------
 if(doPDF)
-    pdf(file=(file <- paste0("fig_worst_VaR_hom_Wang_Par_alpha=",alpha,".pdf")),
-        width=6, height=6)
+    pdf(file=(file <- paste0("fig_worst_VaR_hom_Wang_Par_alpha=",alpha,"_in_d.pdf")),
+        width=7, height=7)
+par(mar=c(5, 4+1, 4, 2) + 0.1) # increase space (for y axis label)
 plot(NA, xlim=range(d), ylim=range(VaR), log="xy", yaxt="n",
      xlab=expression(d),
-     ylab=as.expression(substitute(VaR[a]~"for Par("*theta*") margins",
+     ylab=as.expression(substitute(underline(VaR)[a](L^{"+"})~"(dashed) and"~bar(VaR)[a](L^{"+"})~
+                                   "(solid) for Par("*theta*") margins",
                                    list(a=alpha))))
 eaxis(2)
 for(k in 1:length(theta)) {
@@ -179,8 +181,37 @@ for(k in 1:length(theta)) {
 legend("topleft", bty="n", lty=rep(1,length(theta)), col=cols,
        legend=as.expression(lapply(1:length(theta),
        function(k) substitute(theta==k, list(k=theta[k])))))
-mtext("Solid line: worst; dashed line: best VaR",
-      side=4, line=1, adj=0)
+if(doPDF) dev.off()
+
+## ------------------------------------------------------------------------
+d <- c(2, 10, 20, 100, 200, 1000) # dimensions
+theta <- 10^seq(-1, log(50, base=10), length.out=50) # theta values
+alpha <- 0.99 # confidence level
+VaR <- simplify2array(sapply(d, function(d.)
+    sapply(theta, function(th) VaR_bounds_hom(alpha, d=d., method="Wang.Par",
+                                              theta=th)), simplify=FALSE))
+## => (best/worst VaR, theta, d)-matrix
+
+## ------------------------------------------------------------------------
+if(doPDF)
+    pdf(file=(file <- paste0("fig_worst_VaR_hom_Wang_Par_alpha=",alpha,"_in_theta.pdf")),
+        width=6, height=6)
+par(mar=c(5, 4+1, 4, 2) + 0.1) # increase space (for y axis label)
+plot(NA, xlim=range(theta), ylim=range(VaR), log="xy", yaxt="n",
+     xlab=expression(theta),
+     ylab=as.expression(substitute(underline(VaR)[a](L^{"+"})~"(dashed) and"~
+                        bar(VaR)[a](L^{"+"})~"(solid) for Par("*theta*") margins",
+                        list(a=alpha))))
+eaxis(2)
+bestVaR <- VaR[1,,1]
+for(k in 1:length(d)) {
+    lines(theta, VaR[2,,k], col=cols[k]) # worst VaR
+    if(k >= 2) stopifnot(all.equal(bestVaR, VaR[1,,k]))
+}
+lines(theta, bestVaR, col="darkgreen", lty=2) # best VaR
+legend("topright", bty="n", lty=rep(1,length(d)), col=cols,
+       legend=as.expression(lapply(1:length(d),
+       function(k) substitute(d==k, list(k=d[k])))))
 if(doPDF) dev.off()
 
 ## ------------------------------------------------------------------------
@@ -311,8 +342,7 @@ for(i in seq_len(n.th)) {
     res[i,"straightforward"] <- VaR_hom_Par(alpha, d=d, theta=th[i])
     ## Our straightforward implementation based on the transformed auxiliary function
     res[i,"transformed"] <- VaR_hom_Par(alpha, d=d, theta=th[i], trafo=TRUE)
-    ## "Wang.Par" (internally using a transformed objective function and
-    ## avoids cancellation)
+    ## "Wang.Par" (using a smaller uniroot() tolerance and adjusted initial interval)
     res[i,"Wang.Par"] <- VaR_bounds_hom(alpha, d=d, method="Wang.Par", theta=th[i])[2]
     ## "dual" (with uniroot()'s default tolerance)
     res[i,"dual"] <- VaR_bounds_hom(alpha, d=d, method="dual",
@@ -328,20 +358,21 @@ for(i in seq_len(n.th)) {
 }
 
 ## ---- fig.width=10, fig.height=7-----------------------------------------
-res. <- res/res[,"dual"] # standardize
+res. <- res/res[,"dual"] # standardize (by dual method)
 ylim <- range(res., na.rm=TRUE)
 if(doPDF)
     pdf(file=(file <- paste0("fig_worst_VaR_",alpha,"_hom_comparison_d=",
-                             d,"_N=",N,".pdf")), width=6, height=6)
+                             d,"_N=",N,".pdf")), width=7, height=7)
+par(mar=c(5, 4+1, 4, 2) + 0.1) # increase space (for y axis label)
 plot(th, res.[,"Wang"], type="l", ylim=ylim,
-     xlab=expression(theta), ylab=substitute("Standardized (by dual method) worst"~
-     VaR[0.99]~"for d ="~d.~"Par("*theta*") margins", list(d.=d)),
+     xlab=expression(theta), ylab=substitute("Standardized (by dual method)"~
+     bar(VaR)[0.99]~"for d ="~d.~"Par("*theta*") margins", list(d.=d)),
      col="gray60", lty=2, lwd=5.5) # Wang (with numerical integration)
 lines(th, res.[,"straightforward"], col="maroon3", lty=1, lwd=1) # still bad (although we have an initial interval)
 lines(th, res.[,"transformed"], col="black", lty=1, lwd=1) # okay
 lines(th, res.[,"Wang.Par"], col="royalblue3", lty=2, lwd=2.5) # Wang Pareto (wo num. integration)
-lines(th, res.[,"RA.low"], col="black", lty=3, lwd=1)
-lines(th, res.[,"RA.up"],  col="black", lty=2, lwd=1)
+lines(th, res.[,"RA.low"], col="black", lty=3, lwd=1) # lower RA bound
+lines(th, res.[,"RA.up"],  col="black", lty=2, lwd=1) # upper RA bound
 legend("topright", bty="n",
        col=c("gray60", "maroon3", "black", "royalblue3", "black", "black"),
        lty=c(2,1,1,2,3,2), lwd=c(5.5,1,1,2.5,1,1),
@@ -406,10 +437,12 @@ VaR. <- simplify2array(sapply(d, function(d.)
 ylim <- range(VaR, VaR.)
 if(doPDF)
     pdf(file=(file <- paste0("fig_worst_VaR_",alpha,"_hom_comparison_num_problems.pdf")),
-        width=6, height=6)
-plot(d, VaR[1,], type="l", ylim=ylim, log="y", yaxt="n",
-     xlab="d", ylab=substitute("Worst"~VaR[a]~"for Par("*theta*") margins",
-                               list(a=alpha)), col=cols[1])
+        width=7, height=7)
+par(mar=c(5, 4+1, 4, 2) + 0.1) # increase space (for y axis label)
+plot(d, VaR[1,], type="l", ylim=ylim, log="y", yaxt="n", xlab="d",
+     ylab=as.expression(substitute(bar(VaR)[a](L^{"+"})~
+          "directly (solid) or with transformed h (dashed) for Par("*theta*") margins",
+          list(a=alpha))), col=cols[1])
 eaxis(2)
 for(k in 2:length(theta)) lines(d, VaR [k,], col=cols[k])
 for(k in 1:length(theta)) lines(d, VaR.[k,], col=cols[k], lty=2, lwd=2)
@@ -417,8 +450,6 @@ legend("right", bty="n",
        col=cols, lty=rep(1, length(theta)),
        legend=as.expression( lapply(1:length(theta), function(k)
            substitute(theta==th, list(th=theta[k]))) ))
-mtext("Solid line: direct; dashed line: transformed h",
-      side=4, line=1, adj=0)
 if(doPDF) dev.off()
 
 ## ------------------------------------------------------------------------
@@ -471,7 +502,7 @@ if(doPDF)
     pdf(file=(file <- paste0("fig_ARA_speed-up.pdf")),
         width=6, height=6)
 plot(d, (1-res[,2]/res[,1])*100, type="b", log="x", ylim=c(0,100),
-     xlab="d", ylab="Relative speed-up (in %) of implemented ARA() over a basic version")
+     xlab="d", ylab="Relative speed-up (in %) of implemented ARA()")
 if(doPDF) dev.off()
 
 ## ------------------------------------------------------------------------
@@ -612,9 +643,10 @@ res.up. <- rearrange(X.up, tol=NULL, sample=FALSE, is.sorted=TRUE)$bound # for t
 if(doPDF)
     pdf(file=(file <- paste0("fig_worst_VaR_bounds_application.pdf")),
         width=6, height=6)
+par(mar=c(5, 4+1, 4, 2) + 0.1) # increase space (for y axis label)
 plot(tol, res.low, type="b", log="y", ylim=range(res.low, res.low., res.up, res.up.),
      col="royalblue3", xlab="Relative tolerance tol of rearrange()",
-     ylab=substitute("Bounds on worst"~VaR[a], list(a=alpha)))
+     ylab=substitute("Bounds on"~bar(VaR)[a](L^{"+"}), list(a=alpha)))
 points(0, res.low., pch=3, col="royalblue3") # draw tol=NULL result at 0, too (as '+')
 lines(tol, res.up, type="b")
 points(0, res.up., pch=3) # draw tol=NULL result at 0, too (as '+')

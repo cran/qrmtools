@@ -91,8 +91,8 @@ dual_bound <- function(s, d, pF, tol=.Machine$double.eps^0.25, ...)
 
 ### Wang's methods #############################################################
 
-##' @title Right-hand side term in the objective function for computing the worst VaR
-##'        as in Embrechts, Puccetti, Rueschendorf, Wang, Beleraj (2014, Prop. 3.1)
+##' @title Scaled right-hand side term in the objective function for computing
+##'        worst VaR as in McNeil, Frey, Embrechts (2015, Prop. 8.32)
 ##' @param c evaluation point
 ##' @param alpha confidence level alpha
 ##' @param d dimension d
@@ -126,7 +126,7 @@ Wang_h_aux <- function(c, alpha, d, method=c("generic", "Wang.Par"), ...)
 }
 
 ##' @title Objective function for computing the worst VaR as in
-##'        Embrechts, Puccetti, Rueschendorf, Wang, Beleraj (2014, Prop. 3.1)
+##'        McNeil, Frey, Embrechts (2015, Prop. 8.32)
 ##' @param c evaluation point
 ##' @param alpha confidence level alpha
 ##' @param d dimension d
@@ -186,7 +186,7 @@ Wang_h <- function(c, alpha, d, method=c("generic", "Wang.Par"), ...)
 ##' @title Compute the best/worst VaR_\alpha in the homogeneous case with:
 ##'        1) d=2: Embrechts, Puccetti, Rueschendorf (2013, Proposition 2)
 ##'        2) d>=3:
-##'           "Wang": Embrechts, Puccetti, Rueschendorf, Wang, Beleraj (2014, Prop. 3.1)
+##'           "Wang": McNeil, Frey, Embrechts (2015, Prop. 8.32)
 ##'                   Integral evaluated numerically; needs smaller default
 ##'                   tolerance for uniroot()!
 ##'           "Wang.Par": The same, just with explicit formula for the integral
@@ -203,6 +203,13 @@ Wang_h <- function(c, alpha, d, method=c("generic", "Wang.Par"), ...)
 ##' @param ... ellipsis arguments passed to Wang_h()
 ##' @return (best VaR, worst VaR) in the homogeneous case
 ##' @author Marius Hofert
+##' @note (*) Typos:
+##'       - Wang, Peng, Yang (2013): best VaR wrong
+##'       - Published version of Embrechts, Puccetti, Rueschendorf, Wang, Beleraj (2014, Prop. 3.1):
+##'         Best VaR and worst VaR formulas wrong
+##'       - Updated version of Embrechts, Puccetti, Rueschendorf, Wang, Beleraj (2014)
+##'         on Ruodu's website: Correct worst VaR but still wrong best VaR (Eq. (3.4)).
+##'       - Both best and worst VaR are correct in McNeil, Frey, Embrechts (2015, Prop. 8.32)
 VaR_bounds_hom <- function(alpha, d, method=c("Wang", "Wang.Par", "dual"),
                            interval=NULL, tol=NULL, ...)
 {
@@ -242,7 +249,7 @@ VaR_bounds_hom <- function(alpha, d, method=c("Wang", "Wang.Par", "dual"),
                    ddd$qF <- NULL # remove from '...'
                    int <- function(...)
                        integrate(qF, lower=0, upper=alpha, ...)$value / alpha
-                   max((d-1)*qF(0)+qF(alpha), # Note: Typo in Wang, Peng, Yang (2013)
+                   max((d-1)*qF(0)+qF(alpha), # See (*) above
                        d * do.call(int, ddd))
                },
                "Wang.Par" = {
@@ -251,9 +258,12 @@ VaR_bounds_hom <- function(alpha, d, method=c("Wang", "Wang.Par", "dual"),
                        stop("Method 'Wang.Par' requires the parameter theta")
                    th <- list(...)$theta
                    stopifnot(length(th) == 1, th > 0) # check theta here
-                   Ibar <- if(th == 1) -log1p(-alpha) - alpha
-                   else ((1-alpha)^(1-1/th)-1)/(1-1/th) - alpha
-                   max((d-1)*0 + (1-alpha)^(-1/th)-1, # Note: Typo in Wang, Peng, Yang (2013)
+                   Ibar <- if(th == 1) {
+                       -log1p(-alpha) - alpha
+                   } else {
+                       ((1-alpha)^(1-1/th)-1)/(1-1/th) - alpha
+                   }
+                   max((d-1)*0 + (1-alpha)^(-1/th)-1, # See (*) above
                        d * Ibar)
                },
                "dual" = { # "dual" only provides worst VaR
@@ -368,16 +378,15 @@ VaR_bounds_hom <- function(alpha, d, method=c("Wang", "Wang.Par", "dual"),
 ##'       be as well, but internally uses order() and thus is not faster.
 ##'       However, we can make order() faster by using R_orderVector1() instead
 ##'       of R_orderVector() (available from 3.2.3 onwards)
-##'       => For d=1000 and N=16384, this only brought an improvement of 1.3%
-indices_opp_ordered_to <- function(x)
-{
-    ## Note: The following test is expensive... and the call to C even
-    ##       only very slightly faster...
-    ## if(getRversion() >= "3.2.3")
-    ## .Call(C_indices_opp_ordered_to, x)
-    ## else
-    order(order(x, decreasing=TRUE))
-}
+##'       => For d=1000 and N=16384, this only brought an improvement of 1.3%, though
+##'       If that turns out to be faster (in the future), use:
+##'       indices_opp_ordered_to <- if(getRversion() >= "3.2.3")
+##'       {
+##'          function(x) .Call(C_indices_opp_ordered_to, x)
+##'       } else {
+##'          function(x) order(order(x, decreasing=TRUE))
+##'       }
+indices_opp_ordered_to <- function(x) order(order(x, decreasing=TRUE))
 
 ##' @title Compute the number of columns oppositely ordered to the sum of all others
 ##' @param x (N, d)-matrix
@@ -426,14 +435,15 @@ num_of_opp_ordered_cols <- function(x) {
 ##' @note - We use "<= tol" to determine convergence instead of "< tol" as
 ##'         this then also nicely works with "= 0" (if tol=0) which stops in
 ##'         case the matrices are identical (no change at all).
-##'       - We conduct checks of convergence after rearranging each column
-##'         (not only after rearranging all d columns)
-##'       - The columns of X have to be given in increasing order if !is.sorted!
-##'       - No checking here due to speed!
+##'       - We conduct checks of convergence after rearranging each column after the
+##'         dth (not only after rearranging all d columns)
+##'       - The columns of X have to be given in increasing order if is.sorted=TRUE
+##'       - No checking here due to speed! Note that max.ra must be > ncol(X)
 rearrange <- function(X, tol=0, tol.type=c("relative", "absolute"),
                       max.ra=Inf, method=c("worst", "best"),
                       sample=TRUE, is.sorted=FALSE, trace=FALSE)
 {
+    ## Setup
     N <- nrow(X)
     d <- ncol(X)
     tol.type <- match.arg(tol.type)
@@ -475,7 +485,7 @@ rearrange <- function(X, tol=0, tol.type=c("relative", "absolute"),
     iter <- 0 # current iteration number
     j <- 0 # current column number
     num.cols.no.change <- 0 # number of consecutively rearranged columns with no change
-    m.row.sums <- optim.fun(X.rs) # vector of minimal/maximal row sums after each considered column (starting from the original matrix)
+    m.row.sums <- c() # vector of minimal/maximal row sums after each rearranged column
     is.null.tol <- is.null(tol)
     while (TRUE) {
 
@@ -517,11 +527,11 @@ rearrange <- function(X, tol=0, tol.type=c("relative", "absolute"),
         ## Idea: After a column has been rearranged, compute the tol (and thus
         ##       determine convergence) between the minimal/maximal row sum
         ##       after that rearrangement and from d steps before when that
-        ##       column was considered (either rearranged (if iter > d) or
-        ##       simply contained in the original matrix X (if iter <= d)) the last time.
+        ##       column was rearranged the last time. The earliest we check for
+        ##       convergence is when iter > d.
         ## Note: - This is a bit more elegant than the original RA which checked only
         ##         on j=d, not after rearranging *each* column.
-        ##       - Checking only two consecutive columns led to bad behavior for ARA()
+        ##       - Checking only *two* consecutive columns led to a bad behavior for ARA()
         ##         in some cases (e.g., real OpRisk data): Both the individual and the joint
         ##         relative tolerances were satisfied but far off (with reltol[1]=0.001).
         ##         Of course one could check d consecutive columns for *all* of them to
@@ -536,18 +546,21 @@ rearrange <- function(X, tol=0, tol.type=c("relative", "absolute"),
                 tol.reached <- TRUE # as we reached 'no change' in d consecutive steps (we don't care whether max.ra has been reached)
                 break
             } else { # check whether we have to stop due to max.ra
-                if(iter == max.ra) {
-                    m.rs.d.col.ago <- m.row.sums[max(iter-d, 0) + 1] # if iter <= d, use initial minimal/maximal row sum
+                if(iter == max.ra) { # need max.ra > d (as otherwise (*) is wrong)
+                    ## Note: iter = number of columns we have already rearranged
+                    m.rs.d.col.ago <- m.row.sums[iter-d] # (*)
                     tol. <- tol.fun(m.rs.cur.col, m.rs.d.col.ago) # compute the attained tolerance (in comparison to the last time the jth column was rearranged)
                     tol.reached <- FALSE # as num.cols.no.change < d
                     break
                 }
             }
         } else { # tol >= 0
-            m.rs.d.col.ago <- m.row.sums[max(iter-d, 0) + 1] # if iter <= d, use initial minimal/maximal row sum
-            tol. <- tol.fun(m.rs.cur.col, m.rs.d.col.ago) # compute the attained tolerance (in comparison to the last time the jth column was rearranged)
-            tol.reached <- tol. <= tol
-            if(iter == max.ra || tol.reached) break
+            if(iter > d) {
+                m.rs.d.col.ago <- m.row.sums[iter-d]
+                tol. <- tol.fun(m.rs.cur.col, m.rs.d.col.ago) # compute the attained tolerance (in comparison to the last time the jth column was rearranged)
+                tol.reached <- tol. <= tol
+                if(iter == max.ra || tol.reached) break # also here we need max.ra > d; see (*)
+            }
         }
 
         ## Updates for the next column rearrangement
@@ -593,9 +606,9 @@ RA <- function(alpha, qF, N, abstol=0, max.ra=Inf,
 {
     ## Checks and Step 1 (get N, abstol)
     stopifnot(0 < alpha, alpha < 1, is.null(abstol) || abstol >= 0,
-              length(N) >= 1, N >= 2, max.ra >= 1, is.logical(sample))
+              length(N) >= 1, N >= 2, is.logical(sample),
+              is.list(qF), sapply(qF, is.function), (d <- length(qF)) >= 2, max.ra > d)
     method <- match.arg(method)
-    stopifnot(is.list(qF), sapply(qF, is.function), (d <- length(qF)) >= 2)
 
     ## Compute lower bound
 
@@ -677,15 +690,15 @@ RA <- function(alpha, qF, N, abstol=0, max.ra=Inf,
 ##'          8) List of (N, d) input matrices X (for each bound)
 ##'          9) List of rearranged Xs (for each bound)
 ##' @author Marius Hofert
-ARA <- function(alpha, qF, N.exp=seq(8, 20, by=1), reltol=c(0, 0.01),
+ARA <- function(alpha, qF, N.exp=seq(8, 19, by=1), reltol=c(0, 0.01),
                 max.ra=10*length(qF), method=c("worst", "best"), sample=TRUE)
 {
     ## Checks and Step 1 (get N, reltol)
     lreltol <- length(reltol)
     stopifnot(0 < alpha, alpha < 1, lreltol==1 || lreltol==2, reltol >= 0,
-              length(N.exp) >= 1, N.exp >= 1, max.ra >= 1, is.logical(sample))
+              length(N.exp) >= 1, N.exp >= 1, is.logical(sample),
+              is.list(qF), sapply(qF, is.function), (d <- length(qF)) >= 2, max.ra > d)
     method <- match.arg(method)
-    stopifnot(is.list(qF), sapply(qF, is.function), (d <- length(qF)) >= 2)
 
     ## Determine tolerances
     itol <- if(lreltol == 2) reltol[1] else NULL # individual tolerance

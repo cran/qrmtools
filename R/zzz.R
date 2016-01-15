@@ -1,4 +1,5 @@
-.onLoad <- function(libname, pkgname)
-{
-    loadNamespace("xts") # for data sets (xts objects)
-}
+## Not required anymore:
+## .onLoad <- function(libname, pkgname)
+## {
+##     loadNamespace("xts") # for data sets (xts objects)
+## }

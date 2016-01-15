@@ -4,41 +4,43 @@
 
 /* The following is working but a) not faster and b) creates problems under
  * Windows if R < 3.3.0 */
-/* /\** */
-/*  * @title Fast order(order(x, decreasing=TRUE)) */
-/*  * @param x N-vector (one column in the (A)RA()/rearrange() input matrix X) */
-/*  * @return order(order(x, decreasing=TRUE)) */
-/*  * @author Marius Hofert, Kurt Hornik */
-/*  *\/ */
-/* SEXP indices_opp_ordered_to(SEXP x) */
-/* { */
-/*     /\* Setup *\/ */
-/*     int N = LENGTH(x); */
-/*     int i; */
-/*     SEXP ind = PROTECT(allocVector(INTSXP, N)); /\* vector of indices *\/ */
-/*     int *ind_; /\* define pointer to ind *\/ */
-/*     ind_ = INTEGER(ind); /\* set pointer to ind *\/ */
-/*     SEXP res = PROTECT(allocVector(INTSXP, N)); /\* result vector *\/ */
-/*     int *res_; /\* define pointer to res *\/ */
-/*     res_ = INTEGER(res); /\* set pointer to res *\/ */
+#ifdef NOT_NOW_
+/**
+ * @title Fast order(order(x, decreasing=TRUE))
+ * @param x N-vector (one column in the (A)RA()/rearrange() input matrix X)
+ * @return order(order(x, decreasing=TRUE))
+ * @author Marius Hofert, Kurt Hornik
+ */
+SEXP indices_opp_ordered_to(SEXP x)
+{
+    /* Setup */
+    int N = LENGTH(x);
+    int i;
+    SEXP ind = PROTECT(allocVector(INTSXP, N)); /* vector of indices */
+    int *ind_; /* define pointer to ind */
+    ind_ = INTEGER(ind); /* set pointer to ind */
+    SEXP res = PROTECT(allocVector(INTSXP, N)); /* result vector */
+    int *res_; /* define pointer to res */
+    res_ = INTEGER(res); /* set pointer to res */
 
-/*     /\* Compute order(order(x, decreasing=TRUE)) *\/ */
-/*     R_orderVector1(ind_, /\* result *\/ */
-/*                    N, /\* length *\/ */
-/*     	           x, /\* argument *\/ */
-/*     	           TRUE, /\* nalast as in order() *\/ */
-/*     	           TRUE); /\* decreasing TRUE *\/ */
-/*     R_orderVector1(res_, /\* result *\/ */
-/*     	           N, /\* length *\/ */
-/*     	           ind, /\* argument *\/ */
-/*     	           TRUE, /\* nalast as in order() *\/ */
-/*     	           FALSE); /\* decreasing FALSE *\/ */
-/*     for(i=0; i<N; i++) res_[i] += 1; /\* increase all by 1 *\/ */
+    /* Compute order(order(x, decreasing=TRUE)) */
+    R_orderVector1(ind_, /* result */
+                   N, /* length */
+    	           x, /* argument */
+    	           TRUE, /* nalast as in order() */
+    	           TRUE); /* decreasing TRUE */
+    R_orderVector1(res_, /* result */
+    	           N, /* length */
+    	           ind, /* argument */
+    	           TRUE, /* nalast as in order() */
+    	           FALSE); /* decreasing FALSE */
+    for(i=0; i<N; i++) res_[i] += 1; /* increase all by 1 */
 
-/*     /\* Return *\/ */
-/*     UNPROTECT(2); */
-/*     return(res); */
-/* } */
+    /* Return */
+    UNPROTECT(2);
+    return(res);
+}
+#endif
 
 /**
  * @title Fast split(x, col(x))
@@ -74,6 +76,7 @@ SEXP col_split(SEXP x)
     		}
     	}
     	break;
+    default: error("Wrong type of 'x': %s", CHAR(type2str_nowarn(TYPEOF(x))));
     }
 
     /* Return */

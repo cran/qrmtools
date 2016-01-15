@@ -20,8 +20,8 @@ Black_Scholes_Greeks(t, S, r, sigma, K, T)
     of a call (the default) or of put option is to be computed.}
 }
 \value{
-  \code{Black_Scholes()} returns the value of a European call or put
-  option (depending on the chosen \code{type}).
+  \code{Black_Scholes()} returns the value of a European-style call or put
+  option (depending on the chosen \code{type}) on a non-dividend paying stock.
 
   \code{Black_Scholes_Greeks()} returns the first-order derivatives
   delta, theta, rho, vega and the second-order derivatives gamma, vanna

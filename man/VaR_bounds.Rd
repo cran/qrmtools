@@ -19,7 +19,7 @@ rearrange(X, tol=0, tol.type=c("relative", "absolute"), max.ra=Inf,
           method=c("worst", "best"), sample=TRUE, is.sorted=FALSE, trace=FALSE)
 RA(alpha, qF, N, abstol=0, max.ra=Inf, method=c("worst", "best"),
    sample=TRUE)
-ARA(alpha, qF, N.exp=seq(8, 20, by=1), reltol=c(0, 0.01),
+ARA(alpha, qF, N.exp=seq(8, 19, by=1), reltol=c(0, 0.01),
     max.ra=10*length(qF), method=c("worst", "best"), sample=TRUE)
 }
 \arguments{
@@ -32,14 +32,11 @@ ARA(alpha, qF, N.exp=seq(8, 20, by=1), reltol=c(0, 0.01),
     \describe{
       \item{\code{VaR_bounds_hom()}:}{\code{method="Wang"} and
 	\code{method="Wang.Par"}
-         apply the approaches of Embrechts et al. (2014,
-	 Proposition 3.1) for computing best (i.e., smallest) and
+         apply the approach of McNeil et al. (2015,
+	 Proposition 8.32) for computing best (i.e., smallest) and
 	 worst (i.e., largest) Value-at-Risk. The
          latter method assumes Pareto margins and thus does
-	 not require numerical integration; note that
-         \code{method="Wang.Par"} first transforms the
-         root finding problem for computing worst Value-at-Risk to
-	 a different scale which is numerically more stable.
+	 not require numerical integration.
 	\code{method="dual"} applies the dual bound approach as
 	 in Embrechts et al. (2013, Proposition 4)
          for computing worst Value-at-Risk (no value for the best
@@ -63,9 +60,7 @@ ARA(alpha, qF, N.exp=seq(8, 20, by=1), reltol=c(0, 0.01),
 	interval is \eqn{[0,(1-\alpha)/d]}{[0,(1-alpha)/d]}.}
       \item{\code{method="Wang.Par"}:}{The initial
 	interval is \eqn{[c_l,c_u]}, where \eqn{c_l} and \eqn{c_u}
-	are chosen as in Hofert et al. (2015). Note that, internally,
-	these values are transformed as described in Hofert et al. (2015)
-	to improve numerical stability.}
+	are chosen as in Hofert et al. (2015).}
       \item{\code{method="dual"}:}{In this case, no good defaults are known.
 	Note that the lower endpoint of the initial interval has to be
 	sufficiently large in order for the the inner root-finding algorithm
@@ -251,8 +246,10 @@ ARA(alpha, qF, N.exp=seq(8, 20, by=1), reltol=c(0, 0.01),
   For \code{d=2}, \code{VaR_bounds_hom()} uses the method of
   Embrechts et al. (2013,
   Proposition 2). For \code{method="Wang"} and \code{method="Wang.Par"}
-  the method presented in Embrechts et al. (2014, Proposition 3.1) is
-  implemented. This requires
+  the method presented in McNeil et al. (2015, Prop. 8.32) is
+  implemented; this goes back to Embrechts et al. (2014, Prop. 3.1; note that
+  the published version of this paper contains typos for both bounds).
+  This requires
   one \code{\link{uniroot}()} and, for the generic \code{method="Wang"},
   one \code{\link{integrate}()}. The critical part for the
   generic \code{method="Wang"} is the lower endpoint of the initial
@@ -356,6 +353,10 @@ ARA(alpha, qF, N.exp=seq(8, 20, by=1), reltol=c(0, 0.01),
   Embrechts, P., Puccetti, G., \enc{Rüschendorf}{Rueschendorf}, L. (2013).
   Model uncertainty and VaR aggregation. \emph{Journal of Banking \&
     Finance} \bold{37}, 2750--2764.
+
+  McNeil, A. J., Frey, R., and Embrechts, P. (2015).
+  \emph{Quantitative Risk Management: Concepts, Techniques, Tools}.
+  Princeton University Press.
 
   Hofert, M., Memartoluie, A., Saunders, D., Wirjanto, T. (2015).
   Improved Algorithms for Computing Worst Value-at-Risk:
