@@ -2,6 +2,9 @@
 title: Worst Value-at-Risk under Known Margins
 author: Marius Hofert
 date: '`r Sys.Date()`'
+output:
+  html_vignette:
+    css: style.css
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteIndexEntry{Worst Value-at-Risk under Known Margins}

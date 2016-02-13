@@ -2,6 +2,9 @@
 title: Fitting and Predicting VaR based on an ARMA-GARCH Process
 author: Marius Hofert
 date: '`r Sys.Date()`'
+output:
+  html_vignette:
+    css: style.css
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteIndexEntry{Fitting and Predicting VaR based on an ARMA-GARCH Process}
@@ -42,7 +45,7 @@ eps <- x@path$residSim # residuals
 
 As a sanity check, let's plot the simulated path, conditional
 standard deviations and residuals.
-```{r}
+```{r, fig.align="center", fig.width=7.5, fig.height=6}
 plot(X, type="l", xlab="t", ylab=expression("Simulated process"~X[t]))
 plot(sig, type="l", xlab="t", ylab=expression("Conditional standard deviation"~sigma[t]))
 plot(eps, type="l", xlab="t", ylab=expression("Residuals"~epsilon[t]))
@@ -62,7 +65,7 @@ mu <- fit@fit$fitted.values # \mu_t = \hat{X}_t (as E[Z]=0)
 ```
 
 Again let's consider some sanity checks.
-```{r}
+```{r, fig.align="center", fig.width=7.5, fig.height=6}
 plot(X, type="l", xlab="t",
      ylab=expression("Data"~X[t]~"and fitted values"~hat(mu)[t])) # data
 lines(mu, col=adjustcolor("blue", alpha.f=0.4)) # fitted values
@@ -150,7 +153,7 @@ VaR.CI <- apply(VaR.boot, 1, function(x) quantile(x, probs=c(0.025, 0.975)))
 
 ## 7 Plot
 
-```{r, fig.width=10, fig.height=7}
+```{r, fig.align="center", fig.width=7.5, fig.height=6}
 yran <- range(X, mu, VaR, mu.predict, VaR.predict, VaR.CI)
 myran <- max(abs(yran))
 yran <- c(-myran, myran)

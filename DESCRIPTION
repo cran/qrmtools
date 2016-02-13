@@ -1,5 +1,5 @@
 Package: qrmtools
-Version: 0.0-4
+Version: 0.0-5
 Encoding: UTF-8
 Title: Tools for Quantitative Risk Management
 Description: Functions and data sets for reproducing selected results from
@@ -12,13 +12,12 @@ Authors@R: c(person(given = "Marius", family = "Hofert", role = c("aut", "cre"),
                     email = "Kurt.Hornik@R-project.org"))
 Author: Marius Hofert [aut, cre], Kurt Hornik [aut]
 Maintainer: Marius Hofert <marius.hofert@uwaterloo.ca>
-Depends: R (>= 3.0.0)
+Depends: R (>= 3.2.0)
 Imports: quantmod, Quandl, zoo, methods, grDevices, stats
 Suggests: combinat, copula, knitr, mvtnorm, QRM, rugarch, sfsmisc
 Enhances:
 License: GPL-2 | GPL-3
-VignetteBuilder: knitr
 NeedsCompilation: yes
 Repository: CRAN
-Date/Publication: 2016-01-15 10:28:28
-Packaged: 2016-01-15 06:36:31 UTC; mhofert
+Date/Publication: 2016-02-13 19:01:20
+Packaged: 2016-02-13 11:00:35 UTC; mhofert
