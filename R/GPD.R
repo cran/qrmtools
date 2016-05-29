@@ -10,13 +10,13 @@
 dGPD <- function(x, xi, beta, log=FALSE)
 {
     stopifnot(beta > 0)
-    res <- rep(0, length(x)) # correctly extend
+    res <- if(log) rep(-Inf, length(x)) else rep(0, length(x)) # correctly extend
     if(xi == 0) { # xi == 0
         ind <- x>=0
         if(any(ind))
             res[ind] <- if(log) -x[ind]/beta-log(beta) else exp(-x[ind]/beta)/beta
     } else { # xi != 0
-        ind <- if(xi > 0) x>=0 else 0<=x & x<=-beta/xi
+        ind <- if(xi > 0) x >= 0 else 0 <= x & x <= -beta/xi
         if(any(ind))
             res[ind] <- if(log) -(1/xi+1)*log1p(xi*x[ind]/beta)-log(beta)
             else (1+xi*x[ind]/beta)^(-(1/xi+1))/beta

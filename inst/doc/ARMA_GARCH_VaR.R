@@ -1,26 +1,7 @@
----
-title: Fitting and Predicting VaR based on an ARMA-GARCH Process
-author: Marius Hofert
-date: '`r Sys.Date()`'
-output:
-  html_vignette:
-    css: style.css
-vignette: >
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteIndexEntry{Fitting and Predicting VaR based on an ARMA-GARCH Process}
----
-This vignette does not use *qrmtools*, but shows how Value-at-Risk (VaR) can be
-fitted and predicted based on an underlying ARMA-GARCH process (which of course
-also concerns QRM in the wider sense).
-
-```{r, message = FALSE}
+## ---- message = FALSE----------------------------------------------------
 require(rugarch)
-```
 
-## 1 Simulate (log-return) data $(X_t)$ from an ARMA-GARCH process
-
-We consider an ARMA(1,1)-GARCH(1,1) process with $t$ distributed innovations.
-```{r}
+## ------------------------------------------------------------------------
 ## Setup to simulate from
 nu <- 3 # d.o.f. of the standardized distribution of Z_t
 fixed.p <- list(mu = 0, ar1 = 0.5, ma1 = 0.3, omega = 4, alpha1 = 0.4, beta1 = 0.2,
@@ -30,10 +11,8 @@ garchOrder <- c(1,1)
 varModel <- list(model = "sGARCH", garchOrder = garchOrder)
 spec <- ugarchspec(varModel, mean.model = list(armaOrder = armaOrder),
                    fixed.pars = fixed.p, distribution.model = "std")
-```
 
-Simulate one path (for illustration purposes).
-```{r}
+## ------------------------------------------------------------------------
 ## Simulate X_t
 n <- 1000 # sample size
 ## Note: ugarchpath(): simulate from a spec; ugarchsim(): simulate from a fitted object
@@ -48,22 +27,14 @@ eps <- x@path$residSim # epsilon_t = sigma_t * Z_t
 stopifnot(all.equal(X, x@path$seriesSim, check.attributes = FALSE),
           all.equal(sig, x@path$sigmaSim, check.attributes = FALSE),
           all.equal(eps, x@path$residSim, check.attributes = FALSE))
-```
 
-As a sanity check, let's plot the simulated path, conditional
-standard deviations and residuals.
-```{r, fig.align = "center", fig.width = 7.5, fig.height = 6}
+## ---- fig.align = "center", fig.width = 7.5, fig.height = 6--------------
 ## Plots
 plot(X,   type = "l", xlab = "t", ylab = expression("Simulated process"~X[t]))
 plot(sig, type = "l", xlab = "t", ylab = expression("Conditional standard deviation"~sigma[t]))
 plot(eps, type = "l", xlab = "t", ylab = expression("Residuals"~epsilon[t]))
-```
 
-
-## 2 Fit an ARMA-GARCH model to the (simulated) data
-
-Fit an ARMA-GARCH process to `X` (with the correct, known orders here).
-```{r}
+## ------------------------------------------------------------------------
 ## Fit an ARMA(1,1)-GARCH(1,1) model
 varModel <- list(model = "sGARCH", garchOrder = garchOrder)
 spec <- ugarchspec(varModel, mean.model = list(armaOrder = armaOrder),
@@ -77,10 +48,8 @@ sig <- sigma(fit) # fitted hat{sigma}_t
 ## Sanity checks
 stopifnot(all.equal(as.numeric(mu), fit@fit$fitted.values),
           all.equal(as.numeric(sig), fit@fit$sigma))
-```
 
-Again let's consider some sanity checks.
-```{r, fig.align = "center", fig.width = 7.5, fig.height = 6}
+## ---- fig.align = "center", fig.width = 7.5, fig.height = 6--------------
 ## Data X_t vs fitted hat{X}_t
 plot(X, type = "l", xlab = "t",
      ylab = expression("Data"~X[t]~"and fitted values"~hat(mu)[t]))
@@ -101,13 +70,8 @@ qqplot(sqrt((nu-2)/nu) * qt(ppoints(length(Z)), df = nu), Z,
        xlab = substitute("Standardized"~t[nu.]~"quantiles", list(nu. = nu)),
        ylab = "Z quantiles") # check distribution of Z
 qqline(Z, distribution = function(p) sqrt((nu-2)/nu) * qt(p, df = nu))
-```
 
-
-## 3 Calculate the VaR time series
-
-Compute VaR estimates.
-```{r}
+## ------------------------------------------------------------------------
 ## VaR estimates and check
 alpha <- 0.99
 VaR <- as.numeric(quantile(fit, probs = alpha)) # a vector (since fit is a rugarch object)
@@ -115,25 +79,15 @@ nu. <- fit@fit$coef["shape"] # extract (fitted) d.o.f. nu
 VaR. <- as.numeric(mu + sig * sqrt((nu.-2)/nu.) * qt(alpha, df = nu.)) # VaR_alpha computed manually
 stopifnot(all.equal(VaR., VaR))
 ## => quantile(<rugarch object>, probs = alpha) provides VaR_alpha = hat{mu}_t + hat{sigma}_t * q_Z(alpha)
-```
 
-
-## 4 Backtesting via randomness check
-
-Let's backtest the VaR estimates.
-```{r}
+## ------------------------------------------------------------------------
 ## Backtest VaR_0.95
 btest <- VaRTest(alpha, actual = X, VaR = VaR, conf.level = 0.95)
 btest$expected.exceed
 btest$actual.exceed
 btest$uc.Decision # unconditional test decision (note: cc.Decision is NA here)
-```
 
-
-## 5 Predict VaR based on fitted model
-
-Now predict VaR.
-```{r}
+## ------------------------------------------------------------------------
 ## Predict
 m <- ceiling(n / 10) # number of steps to forecast; => roll m-1 times with frequency 1
 fspec <- getspec(fit) # specification of the fitted process
@@ -154,15 +108,8 @@ nu. <- pred@model$fixed.pars$shape # extract (fitted) d.o.f. nu
 VaR. <- as.numeric(mu.predict + sig.predict * sqrt((nu.-2)/nu.) *
                    qt(alpha, df = nu.)) # VaR_alpha computed manually
 stopifnot(all.equal(VaR., VaR.predict))
-```
 
-
-## 6 Simulate future trajectories of $(X_t)$ and compute corresponding VaRs
-
-Simulate paths, estimate VaR for each simulated path (note that `quantile()` can't be used here so
-we have to construct VaR manually) and compute bootstrapped confidence intervals for
-$\mathrm{VaR}_\alpha$.
-```{r}
+## ------------------------------------------------------------------------
 ## Simulate B paths
 B <- 1000
 X.boot <- ugarchpath(fspec, n.sim = m, m.sim = B, rseed = 271) # simulate future paths; components path, model, seed
@@ -177,13 +124,8 @@ VaR.boot <- (X.t.boot - eps.t.boot) + sig.t.boot * sqrt((nu.-2)/nu.) * qt(alpha,
 
 ## Compute bootstrapped two-sided 95%-confidence intervals for VaR
 VaR.CI <- apply(VaR.boot, 1, function(x) quantile(x, probs = c(0.025, 0.975)))
-```
 
-
-## 7 Plot
-
-Finally, let's display all results.
-```{r, fig.align = "center", fig.width = 7.5, fig.height = 6}
+## ---- fig.align = "center", fig.width = 7.5, fig.height = 6--------------
 ## Setup
 yran <- range(X, mu, VaR, mu.predict, VaR.predict, VaR.CI)
 myran <- max(abs(yran))
@@ -212,4 +154,4 @@ legend("bottomright", bty = "n", lty = rep(1, 6), lwd = 1.6,
                   substitute(widehat(VaR)[a], list(a = alpha)),
                   substitute("Predicted"~VaR[a], list(a = alpha)),
                   substitute("95%-CI for"~VaR[a], list(a = alpha))))
-```
+

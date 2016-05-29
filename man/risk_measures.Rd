@@ -61,4 +61,4 @@ legend("bottomright", bty="n", lty=rep(1,4), col=c("black",
                 expression(ES[alpha]~~"for normal model"),
                 expression(ES[alpha]~~"for "*t[4]*" model")))
 }
-\keyword{distribution}
+\keyword{models}

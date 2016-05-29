@@ -37,4 +37,4 @@ Black_Scholes_Greeks(t, S, r, sigma, K, T)
 }
 %% \examples{
 %% }
-\keyword{distribution}
+\keyword{models}

@@ -370,8 +370,6 @@ ARA(alpha, qF, N.exp=seq(8, 19, by=1), reltol=c(0, 0.01),
   the worst (i.e., largest) Value-at-Risk.
 }
 \examples{
-require(qrmtools)
-
 ## Pareto setup
 alpha <- 0.99 # VaR confidence level
 th <- 2 # Pareto parameter theta
@@ -477,4 +475,4 @@ print(format(res.best$bounds, scientific=TRUE), quote=FALSE) # close to first va
 res.worst <- RA(0.99, qF=qF.lst, N=N, abstol=eps)
 print(format(res.worst$bounds, scientific=TRUE), quote=FALSE) # close to last value of 1st row
 }
-\keyword{distribution}
+\keyword{programming}

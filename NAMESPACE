@@ -3,9 +3,6 @@ useDynLib(qrmtools, .registration=TRUE, .fixes="C_")
 
 ### Imports ####################################################################
 
-## Not required anymore:
-## import("xts") # for xts namespace to be loaded (e.g., for working with data sets)
-
 importFrom("quantmod", "getSymbols",
            "Op", "Hi", "Lo", "Cl", "Vo", "Ad",
            "OpCl", "ClCl", "HiCl", "LoCl", "LoHi", "OpHi", "OpLo", "OpOp")
@@ -14,22 +11,38 @@ importFrom("zoo", "index")
 importFrom("methods", "hasArg")
 importFrom("stats", "dnorm", "dt", "integrate", "pnorm", "qnorm", "qt",
            "runif", "uniroot")
+importFrom("grDevices", "colorRampPalette")
 importFrom("grDevices", "dev.off")
+importFrom("graphics", "image", "mtext", "plot", "rug")
+importFrom("lattice", "levelplot")
+importFrom("rugarch", "ugarchspec", "ugarchfit")
+importFrom("stats", "HoltWinters", "density")
+importFrom("methods", "is", "existsFunction")
+importFrom("utils", "setTxtProgressBar", "txtProgressBar")
 
 
 ### Exports ####################################################################
 
 export(
-    ## distributions
+    ## Distributions
     "dGEV", "pGEV", "qGEV", "rGEV",
     "dGPD", "pGPD", "qGPD", "rGPD",
     "dPar", "pPar", "qPar", "rPar",
-    ## risk measures
+    ## Risk measures
     "VaR_t", "ES_t", "VaR_Par", "ES_Par",
-    ## worst VaR
+    ## Worst VaR
     "crude_VaR_bounds", "dual_bound", "VaR_bounds_hom",
     "rearrange", "RA", "ARA",
     ## Black--Scholes formula
-    "Black_Scholes", "Black_Scholes_Greeks"
+    "Black_Scholes", "Black_Scholes_Greeks",
+    ## Graphics
+    "plot_NA", "plot_matrix", "density_plot_matrix",
+    ## Time Series
+    "fit_ARMA_GARCH",
+    ## Result/warning/error catching
+    "catch",
+    ## Returns
+    log_returns,
+    ## Data related functions
+    get_data
 )
-
