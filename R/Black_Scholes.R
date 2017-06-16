@@ -2,7 +2,7 @@
 
 ##' @title Compute the Black--Scholes formula
 ##' @param t initial/current time (in years)
-##' @param S Stock price at time t
+##' @param S stock price at time t
 ##' @param r risk-free annual interest rate
 ##' @param sigma annual volatility (standard deviation)
 ##' @param K strike
@@ -11,7 +11,7 @@
 ##'        of a call or put option is to be computed
 ##' @return option price
 ##' @author Marius Hofert
-Black_Scholes <- function(t, S, r, sigma, K, T, type=c("call", "put"))
+Black_Scholes <- function(t, S, r, sigma, K, T, type = c("call", "put"))
 {
     d1 <- (log(S/K) + (r+sigma^2/2)*(T-t))/(sigma*sqrt(T-t))
     d2 <- d1-sigma*sqrt(T-t)
@@ -28,7 +28,7 @@ Black_Scholes <- function(t, S, r, sigma, K, T, type=c("call", "put"))
 
 ##' @title Compute the Greeks
 ##' @param t initial/current time (in years)
-##' @param S Stock price at time t
+##' @param S stock price at time t
 ##' @param r risk-free annual interest rate
 ##' @param sigma annual volatility (standard deviation)
 ##' @param K strike

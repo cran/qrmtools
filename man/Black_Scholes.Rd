@@ -6,7 +6,7 @@
   Compute the Black--Scholes formula and the Greeks.
 }
 \usage{
-Black_Scholes(t, S, r, sigma, K, T, type=c("call", "put"))
+Black_Scholes(t, S, r, sigma, K, T, type = c("call", "put"))
 Black_Scholes_Greeks(t, S, r, sigma, K, T)
 }
 \arguments{

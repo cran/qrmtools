@@ -7,12 +7,12 @@
 ##' @param log logical indicating whether the log density is computed
 ##' @return density of the GPD(xi, beta) distribution
 ##' @author Marius Hofert
-dGPD <- function(x, xi, beta, log=FALSE)
+dGPD <- function(x, xi, beta, log = FALSE)
 {
     stopifnot(beta > 0)
     res <- if(log) rep(-Inf, length(x)) else rep(0, length(x)) # correctly extend
     if(xi == 0) { # xi == 0
-        ind <- x>=0
+        ind <- x >= 0
         if(any(ind))
             res[ind] <- if(log) -x[ind]/beta-log(beta) else exp(-x[ind]/beta)/beta
     } else { # xi != 0
@@ -32,7 +32,7 @@ dGPD <- function(x, xi, beta, log=FALSE)
 ##' @param log.p logical indicating whether probabilities are given as log()
 ##' @return distribution function of the GPD(xi, beta) distribution
 ##' @author Marius Hofert
-pGPD <- function(q, xi, beta, lower.tail=TRUE, log.p=FALSE)
+pGPD <- function(q, xi, beta, lower.tail = TRUE, log.p = FALSE)
 {
     stopifnot(beta > 0)
     if(xi == 0) { # xi == 0
@@ -56,7 +56,7 @@ pGPD <- function(q, xi, beta, lower.tail=TRUE, log.p=FALSE)
 ##' @param log.p logical indicating whether probabilities are given as log()
 ##' @return quantile function of the GPD(xi, beta) distribution
 ##' @author Marius Hofert
-qGPD <- function(p, xi, beta, lower.tail=TRUE, log.p=FALSE)
+qGPD <- function(p, xi, beta, lower.tail = TRUE, log.p = FALSE)
 {
     stopifnot(beta > 0)
     p <- if(log.p) pmin(p, 0) else pmin(pmax(p, 0), 1) # correctly extend
@@ -78,77 +78,82 @@ qGPD <- function(p, xi, beta, lower.tail=TRUE, log.p=FALSE)
 ##' @return n-vector containing GPD(xi, beta) random variates
 ##' @author Marius Hofert
 rGPD <- function(n, xi, beta)
-    qGPD(runif(n), xi=xi, beta=beta)
+    qGPD(runif(n), xi = xi, beta = beta)
 
 
-### Par(theta) = GPD(1/theta, 1/theta), theta > 0 distribution #################
+### Par(theta, kappa) = GPD(1/theta, kappa/theta), theta > 0 distribution ######
 
-## Note: - hard-coded here to be vectorized in the main argument and theta
-##       - F(x) = 1-(1+x)^{-theta}
-##       - E[X] = 1/(theta-1) for all theta > 1
-##       - Var[X] = 2/((theta-2)(theta-1)^2) for all theta > 2
+## Note: - Hard-coded here to be vectorized in the main argument and theta
+##       - F(x) = 1 - (kappa / (kappa + x))^{theta}, theta > 0, kappa > 0, x >= 0
+##       - E[X] = kappa / (theta-1) for all theta > 1 (see McNeil, Frey, Embrechts (2015))
+##       - Var[X] = theta * kappa^2 / ((theta-2)(theta-1)^2) for all theta > 2 (see McNeil, Frey, Embrechts (2015))
 
-##' @title Density of the Par(theta) distribution
+##' @title Density of the Par(theta, kappa) distribution
 ##' @param x evaluation points
 ##' @param theta parameter theta
+##' @param kappa parameter kappa
 ##' @param log logical indicating whether the log density is computed
-##' @return density of the Par(theta) distribution
+##' @return density of the Par(theta, kappa) distribution
 ##' @author Marius Hofert
-dPar <- function(x, theta, log=FALSE)
+dPar <- function(x, theta, kappa = 1, log = FALSE)
 {
-    stopifnot(theta > 0)
-    if(log) log(theta)-(theta+1)*log1p(x) else theta*(1+x)^(-theta-1)
+    stopifnot(theta > 0, kappa > 0)
+    if(log) log(theta/kappa) + (theta+1) * log(kappa/(kappa+x)) else (theta/kappa)*(kappa/(kappa+x))^(theta+1)
 }
 
-##' @title Distribution function of the Par(theta) distribution
+##' @title Distribution function of the Par(theta, kappa) distribution
 ##' @param q quantile
 ##' @param theta parameter theta
+##' @param kappa parameter kappa
 ##' @param lower.tail logical indicating whether lower/upper tail is used
 ##' @param log.p logical indicating whether probabilities are given as log()
-##' @return distribution function of the Par(theta) distribution
+##' @return distribution function of the Par(theta, kappa) distribution
 ##' @author Marius Hofert
-pPar <- function(q, theta, lower.tail=TRUE, log.p=FALSE)
+pPar <- function(q, theta, kappa = 1, lower.tail = TRUE, log.p = FALSE)
 {
-    stopifnot(theta > 0)
+    stopifnot(theta > 0, kappa > 0)
     if(lower.tail) {
-        if(log.p) log(1-(1+q)^(-theta)) else 1-(1+q)^(-theta)
-    } else if(log.p) -theta*log1p(q) else (1+q)^(-theta)
+        if(log.p) log(1-(kappa/(kappa+q))^theta) else 1-(kappa/(kappa+q))^theta
+    } else if(log.p) theta*(log(kappa)-log(kappa+q)) else (kappa/(kappa+q))^theta
 }
 
-##' @title Quantile function of the Par(theta) distribution
+##' @title Quantile function of the Par(theta, kappa) distribution
 ##' @param p probability
 ##' @param theta parameter theta
+##' @param kappa parameter kappa
 ##' @param lower.tail logical indicating whether lower/upper tail is used
 ##' @param log.p logical indicating whether probabilities are given as log()
-##' @return quantile function of the Par(theta) distribution
+##' @return quantile function of the Par(theta, kappa) distribution
 ##' @author Marius Hofert
-qPar <- function(p, theta, lower.tail=TRUE, log.p=FALSE)
+qPar <- function(p, theta, kappa = 1, lower.tail = TRUE, log.p = FALSE)
 {
-    stopifnot(0 <= p, p <= 1, theta > 0)
+    stopifnot(0 <= p, p <= 1, theta > 0, kappa > 0)
     if(lower.tail) {
-        if(log.p) (-expm1(p))^(-1/theta)-1 else (1-p)^(-1/theta)-1
-    } else if(log.p) expm1(-p/theta) else p^(-1/theta)-1
+        if(log.p) kappa * ((-expm1(p))^(-1/theta)-1) else kappa * ((1-p)^(-1/theta)-1)
+    } else if(log.p) kappa * expm1(-p/theta) else kappa * (p^(-1/theta)-1)
 }
 
-##' @title Generating random variates from a Pareto(theta) distribution
+##' @title Generating random variates from a Pareto(theta, kappa) distribution
 ##' @param n sample size n
 ##' @param theta parameter theta
-##' @return n-vector containing Pareto(theta) random variates
+##' @param kappa parameter kappa
+##' @return n-vector containing Pareto(theta, kappa) random variates
 ##' @author Marius Hofert
-rPar <- function(n, theta)
+rPar <- function(n, theta, kappa = 1)
 {
-    stopifnot(theta > 0)
-    qPar(runif(n), theta=theta)
+    stopifnot(theta > 0, kappa > 0)
+    qPar(runif(n), theta = theta, kappa = kappa)
 }
 
-##' @title Primitive of the Par(theta) survival function
+##' @title Primitive of the Par(theta, kappa) survival function
 ##' @param q quantile
 ##' @param theta parameter theta
+##' @param kappa parameter kappa
 ##' @return \int\bar{F}(x) dx
 ##' @author Marius Hofert
-bar_pPar_primitive <- function(q, theta)
+bar_pPar_primitive <- function(q, theta, kappa = 1)
 {
-    stopifnot(theta > 0)
-    if(theta==1) log1p(q) else (1+q)^(1-theta) / (1-theta)
+    stopifnot(theta > 0, kappa > 0)
+    if(theta == 1) kappa*log(kappa+q) else (kappa/(1-theta)) * (kappa/(kappa+q))^(theta-1)
 }
 

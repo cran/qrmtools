@@ -1,15 +1,19 @@
 ### ARMA-GARCH #################################################################
 
 ##' @title Fitting ARMA-GARCH processes
-##' @param x A matrix-like data structure
-##' @param ugarchspec.list An object of class uGARCHspec (as returned by
+##' @param x matrix-like data structure
+##' @param ugarchspec.list object of class uGARCHspec (as returned by
 ##'        ugarchspec()) or a list of such
-##' @param verbose A logical indicating whether verbose output is given
-##' @param ... Additional arguments passed to the underlying ugarchfit() or HoltWinters()
-##' @return A list of length equal to the number of columns of x containing
+##' @param solver string indicating the solver used; see ?ugarchfit
+##' @param verbose logical indicating whether verbose output is given
+##' @param ... additional arguments passed to the underlying ugarchfit() or HoltWinters()
+##' @return list of length equal to the number of columns of x containing
 ##'         the fitted objects
 ##' @author Marius Hofert
-fit_ARMA_GARCH <- function(x, ugarchspec.list = ugarchspec(), verbose = TRUE, ...)
+##' @note The default ugarchspec.list fits an ARMA(1,1)-GARCH(1,1) with N(0,1)
+##'       standardized residuals
+fit_ARMA_GARCH <- function(x, ugarchspec.list = ugarchspec(), solver = "hybrid",
+                           verbose = TRUE, ...)
 {
     ## Checking and expanding ugarchspec.list to a list of length d
     if(!is.matrix(x)) x <- cbind(x) # is.matrix() is also true for 'xts' objects
@@ -29,7 +33,8 @@ fit_ARMA_GARCH <- function(x, ugarchspec.list = ugarchspec(), verbose = TRUE, ..
         on.exit(close(pb)) # on exit, close progress bar
     }
     for(j in seq_len(d)) {
-        res <- catch(ugarchfit(ugarchspec.list[[j]], data = x[,j], ...)) # fitting
+        res <- catch(ugarchfit(ugarchspec.list[[j]], data = x[,j], solver = solver,
+                               ...)) # fitting
         if(!is.null(res$value)) fit[[j]] <- res$value
         if(!is.null(res$warning)) warn[[j]] <- res$warning
         if(!is.null(res$error)) err[[j]]  <- res$error

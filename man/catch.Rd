@@ -8,15 +8,15 @@
 catch(expr)
 }
 \arguments{
-  \item{expr}{An expression to be evaluated, typically a function call.}
+  \item{expr}{expression to be evaluated, typically a function call.}
 }
 \value{
-  A \code{\link{list}} with components:
-  \item{\code{value}}{The value of \code{expr} or \code{NULL} in case of
+  \code{\link{list}} with components:
+  \item{\code{value}}{value of \code{expr} or \code{NULL} in case of
     an error.}
-  \item{\code{warning}}{The warning message (see \code{\link{simpleWarning}} or
+  \item{\code{warning}}{warning message (see \code{\link{simpleWarning}} or
     \code{\link{warning}()}) or \code{\link{NULL}} in case of no warning.}
-  \item{\code{error}}{The error message (see \code{\link{simpleError}} or
+  \item{\code{error}}{error message (see \code{\link{simpleError}} or
     \code{\link{stop}()}) or \code{\link{NULL}} in case of no error.}
 }
 \details{

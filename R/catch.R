@@ -1,8 +1,8 @@
 ### Catching warnings and errors ###############################################
 
 ##' @title Catching Results, Warnings and Errors Simultaneously
-##' @param expr An assignment or function evaluation
-##' @return A list with components:
+##' @param expr assignment or function evaluation
+##' @return list with components:
 ##'         'value'  : value of expr or simpleError
 ##'	    'warning': simpleWarning or NULL
 ##'         'error'  : simpleError or NULL

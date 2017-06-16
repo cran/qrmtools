@@ -1,5 +1,6 @@
 ## ---- message = FALSE----------------------------------------------------
-require(rugarch)
+library(qrmtools) # for qq_plot()
+library(rugarch)
 
 ## ------------------------------------------------------------------------
 ## Setup to simulate from
@@ -23,10 +24,10 @@ X <- fitted(x) # simulated process X_t = mu_t + epsilon_t for epsilon_t = sigma_
 sig <- sigma(x) # sigma_t (conditional standard deviations)
 eps <- x@path$residSim # epsilon_t = sigma_t * Z_t
 
-## Sanity checks
-stopifnot(all.equal(X, x@path$seriesSim, check.attributes = FALSE),
-          all.equal(sig, x@path$sigmaSim, check.attributes = FALSE),
-          all.equal(eps, x@path$residSim, check.attributes = FALSE))
+## Sanity checks (=> fitted() and sigma() grab out the right quantities)
+## Note: There is no such function for epsilon_t
+stopifnot(all.equal(X,   x@path$seriesSim, check.attributes = FALSE),
+          all.equal(sig, x@path$sigmaSim,  check.attributes = FALSE))
 
 ## ---- fig.align = "center", fig.width = 7.5, fig.height = 6--------------
 ## Plots
@@ -45,8 +46,8 @@ fit <- ugarchfit(spec, data = X) # components fit, model
 mu <- fitted(fit) # fitted hat{mu}_t (= hat{X}_t)
 sig <- sigma(fit) # fitted hat{sigma}_t
 
-## Sanity checks
-stopifnot(all.equal(as.numeric(mu), fit@fit$fitted.values),
+## Sanity checks (=> fitted() and sigma() grab out the right quantities)
+stopifnot(all.equal(as.numeric(mu),  fit@fit$fitted.values),
           all.equal(as.numeric(sig), fit@fit$sigma))
 
 ## ---- fig.align = "center", fig.width = 7.5, fig.height = 6--------------
@@ -63,17 +64,14 @@ resi <- as.numeric(residuals(fit))
 stopifnot(all.equal(fit@fit$residuals, resi))
 plot(resi, type = "l", xlab = "t", ylab = expression(epsilon[t])) # check residuals epsilon_t
 
-## Plot Z_t
+## Plot the standardized residuals Z_t
 Z <- fit@fit$z
 stopifnot(all.equal(Z, as.numeric(resi/sig)))
-qqplot(sqrt((nu-2)/nu) * qt(ppoints(length(Z)), df = nu), Z,
-       xlab = substitute("Standardized"~t[nu.]~"quantiles", list(nu. = nu)),
-       ylab = "Z quantiles") # check distribution of Z
-qqline(Z, distribution = function(p) sqrt((nu-2)/nu) * qt(p, df = nu))
+qq_plot(Z, FUN = function(p) sqrt((nu-2)/nu) * qt(p, df = nu))
 
 ## ------------------------------------------------------------------------
 ## VaR estimates and check
-alpha <- 0.99
+alpha <- 0.99 # VaR confidence level we consider here
 VaR <- as.numeric(quantile(fit, probs = alpha)) # a vector (since fit is a rugarch object)
 nu. <- fit@fit$coef["shape"] # extract (fitted) d.o.f. nu
 VaR. <- as.numeric(mu + sig * sqrt((nu.-2)/nu.) * qt(alpha, df = nu.)) # VaR_alpha computed manually
@@ -81,9 +79,9 @@ stopifnot(all.equal(VaR., VaR))
 ## => quantile(<rugarch object>, probs = alpha) provides VaR_alpha = hat{mu}_t + hat{sigma}_t * q_Z(alpha)
 
 ## ------------------------------------------------------------------------
-## Backtest VaR_0.95
+## Backtest VaR_0.99
 btest <- VaRTest(alpha, actual = X, VaR = VaR, conf.level = 0.95)
-btest$expected.exceed
+btest$expected.exceed # 0.99 * n
 btest$actual.exceed
 btest$uc.Decision # unconditional test decision (note: cc.Decision is NA here)
 

@@ -8,7 +8,7 @@
 ##' @param log logical indicating whether the log density is computed
 ##' @return density of the GEV(xi, mu, sigma) distribution
 ##' @author Marius Hofert
-dGEV <- function(x, xi, mu=0, sigma=1, log=FALSE)
+dGEV <- function(x, xi, mu = 0, sigma = 1, log = FALSE)
 {
     stopifnot(sigma > 0)
     y <- (x-mu)/sigma
@@ -34,7 +34,7 @@ dGEV <- function(x, xi, mu=0, sigma=1, log=FALSE)
 ##' @param log.p logical indicating whether probabilities are given as log()
 ##' @return distribution function of the GEV(xi, mu, sigma) distribution
 ##' @author Marius Hofert
-pGEV <- function(q, xi, mu=0, sigma=1, lower.tail=TRUE, log.p=FALSE)
+pGEV <- function(q, xi, mu = 0, sigma = 1, lower.tail = TRUE, log.p = FALSE)
 {
     stopifnot(sigma > 0)
     y <- (q-mu)/sigma
@@ -45,7 +45,7 @@ pGEV <- function(q, xi, mu=0, sigma=1, lower.tail=TRUE, log.p=FALSE)
     } else { # xi != 0
           xiy <- xi*y
           ii <- 1+xiy > 0
-          res <- rep(xi <= 0, length(q)) # correctly extend (0 if xi>0, 1 if xi<=0)
+          res <- rep(xi <= 0, length(q)) # correctly extend (0 if xi>0, 1 if xi <= 0)
           res[ii] <- if(lower.tail)
                          if(log.p) -(1+xiy[ii])^(-1/xi) else exp(-(1+xiy[ii])^(-1/xi))
                      else if(log.p) log1p(-exp(-(1+xiy[ii])^(-1/xi))) else 1-exp(-(1+xiy[ii])^(-1/xi))
@@ -62,7 +62,7 @@ pGEV <- function(q, xi, mu=0, sigma=1, lower.tail=TRUE, log.p=FALSE)
 ##' @param log.p logical indicating whether probabilities are given as log()
 ##' @return quantile function of the GEV(xi, mu, sigma) distribution
 ##' @author Marius Hofert
-qGEV <- function(p, xi, mu=0, sigma=1, lower.tail=TRUE, log.p=FALSE)
+qGEV <- function(p, xi, mu = 0, sigma = 1, lower.tail = TRUE, log.p = FALSE)
 {
     stopifnot(sigma > 0)
     p <- if(log.p) pmin(p, 0) else pmin(pmax(p, 0), 1) # correctly extend
@@ -76,7 +76,7 @@ qGEV <- function(p, xi, mu=0, sigma=1, lower.tail=TRUE, log.p=FALSE)
                  else if(log.p) ((-log1p(-exp(p)))^(-xi)-1)/xi else ((-log1p(-p))^(-xi)-1)/xi
           res <- if(xi < 0) pmin(res, -1/xi) else pmax(res, -1/xi)
     }
-    mu+sigma*res
+    mu + sigma * res
 }
 
 ##' @title Generating random numbers from a GEV(xi, mu, sigma) distribution
@@ -86,5 +86,5 @@ qGEV <- function(p, xi, mu=0, sigma=1, lower.tail=TRUE, log.p=FALSE)
 ##' @param sigma parameter sigma
 ##' @return n-vector containing GEV(xi, mu, sigma) random variates
 ##' @author Marius Hofert
-rGEV <- function(n, xi, mu=0, sigma=1)
-    qGEV(runif(n), xi=xi, mu=mu, sigma=sigma)
+rGEV <- function(n, xi, mu = 0, sigma = 1)
+    qGEV(runif(n), xi = xi, mu = mu, sigma = sigma)

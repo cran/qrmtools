@@ -1,8 +1,8 @@
 ### Composite distributions ####################################################
 
 ##' @title Check a Composite Distribution 'distr'
-##' @param distr A composite distribution object
-##' @return A logical indicating whether the provided composite distribution
+##' @param distr composite distribution object
+##' @return logical indicating whether the provided composite distribution
 ##'         is valid
 ##' @author Marius Hofert
 check_distr <- function(distr)
@@ -34,11 +34,11 @@ check_distr <- function(distr)
 }
 
 ##' @title Evaluate <d/p/q/r>fun(x)
-##' @param x Arguments of fun()
-##' @param fun Distribution base name
-##' @param param Distributional parameters
-##' @param prefix One of d/p/q/r
-##' @return The function values
+##' @param x arguments of fun()
+##' @param fun distribution base name
+##' @param param distributional parameters
+##' @param prefix one of d/p/q/r
+##' @return function values
 ##' @author Marius Hofert
 ##' @note - This even works when 'fun' has no parameters
 ##'       - Inspired by asCall() from 'copula'
@@ -52,18 +52,18 @@ eval_named_distr <- function(x, fun, param, prefix)
 }
 
 ##' @title d/p/q-Functions for Composite Distributions
-##' @param x The evaluation points
-##' @param cuts The right-end cut-off points determining the partition elements
+##' @param x evaluation points
+##' @param cuts right-end cut-off points determining the partition elements
 ##'        (length 1 less than distr and weights)
-##' @param distr a list of length equal to length(cuts)+1 containing either lists
+##' @param distr list of length equal to length(cuts)+1 containing either lists
 ##'        or functions. If distr[i] is a...
 ##'        1) ... list, it either contains...
 ##'        1.1) ... a name string and a parameter (vector)
 ##'        1.2) ... the functions p*() and then d*() or q*()
 ##'        2) ... function, it is p*() (d*() is assumed to *not* exist in this
 ##'           case => NA)
-##' @param weights The probability weights (have to add up to 1)
-##' @param method The method (d/p/q)
+##' @param weights probability weights (have to add up to 1)
+##' @param method method (d/p/q)
 ##' @return d/p/q values of the composite distribution
 ##' @author Marius Hofert
 composite <- function(x, cuts, distr, weights, method = c("d","p","q"))
@@ -96,7 +96,7 @@ composite <- function(x, cuts, distr, weights, method = c("d","p","q"))
 
         ## evaluate d/p/q on bucket i
         ind <- if(method == "d" || method == "p") {
-            if(i == 1) x <= cuts[i] else if(i==l) cuts[i-1] < x else
+            if(i == 1) x <= cuts[i] else if(i == l) cuts[i-1] < x else
             cuts[i-1] < x & x <= cuts[i] # logical indicating whether x is in bucket i
         } else  # method == "q"
             (if(i == 1) s[i] <= x else s[i] < x) & x <= s[i+1] # logical indicating whether F(x) is in F(<bucket i>)

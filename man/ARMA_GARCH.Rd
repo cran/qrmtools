@@ -5,19 +5,21 @@
   Fail-safe componentwise fitting of univariate ARMA-GARCH processes.
 }
 \usage{
-fit_ARMA_GARCH(x, ugarchspec.list = ugarchspec(), verbose = TRUE, ...)
+fit_ARMA_GARCH(x, ugarchspec.list = ugarchspec(), solver = "hybrid",
+               verbose = TRUE, ...)
 }
 \arguments{
-  \item{x}{A \code{\link{matrix}}-like data structure, possibly an
+  \item{x}{\code{\link{matrix}}-like data structure, possibly an
     \code{xts} object.}
-  \item{ugarchspec.list}{An object of class \code{uGARCHspec} (as returned by
+  \item{ugarchspec.list}{object of class \code{uGARCHspec} (as returned by
     \code{ugarchspec()}) or a list of such. In case of a list, its
     length has to be equal to the number of columns of
     \code{x}. \code{ugarchspec.list} provides the ARMA-GARCH
     specifications for each of the time series (columns of \code{x}).}
-  \item{verbose}{A \code{\link{logical}} indicating whether verbose
+  \item{solver}{string indicating the solver used; see \code{?ugarchfit}.}
+  \item{verbose}{\code{\link{logical}} indicating whether verbose
     output is given.}
-  \item{\dots}{Additional arguments passed to the underlying
+  \item{\dots}{additional arguments passed to the underlying
     \code{\link{ugarchfit}()}.}
 }
 \value{
@@ -34,7 +36,7 @@ library(copula)
 data(SMI.12) # Swiss Market Index data
 stocks <- c("CSGN", "BAER", "UBSN", "SREN", "ZURN") # components we work with
 x <- SMI.12[, stocks]
-X <- -log_returns(x)
+X <- -returns(x)
 n <- nrow(X)
 d <- ncol(X)
 
@@ -49,19 +51,21 @@ uspec <- c(rep(list(ugarchspec(distribution.model = "std")), d-2), # ARMA(1,1)-G
            list(ugarchspec(variance.model = list(model = "sGARCH", garchOrder = c(2,1)),
                            mean.model = list(armaOrder = c(1,2), include.mean = TRUE),
                            distribution.model = "std")))
-fitAG <- fit_ARMA_GARCH(X, ugarchspec.list = uspec)
+system.time(fitAG <- fit_ARMA_GARCH(X, ugarchspec.list = uspec))
 str(fitAG, max.level = 1) # list with components fit, warning, error
 stopifnot(sapply(fitAG$error, is.null)) # NULL = no error
 stopifnot(sapply(fitAG$warning, is.null)) # NULL = no warning
 
+\dontrun{
 ## Pick out the standardized residuals, plot them and fit a t copula to them
-## Note: ugarchsim() needs the residuals to be standardized; so working with
+## Note: ugarchsim() needs the residuals to be standardized; working with
 ##       standardize = FALSE still requires to simulate them from the
 ##       respective standardized marginal distribution functions.
 Z <- sapply(fitAG$fit, residuals, standardize = TRUE)
 U <- pobs(Z)
 pairs(U, gap = 0)
-fitC <- fitCopula(tCopula(dim = d, dispstr = "un"), data = U, method = "mpl")
+system.time(fitC <- fitCopula(tCopula(dim = d, dispstr = "un"), data = U,
+                              method = "mpl"))
 
 ## Simulate (standardized) Z
 set.seed(271)
@@ -83,6 +87,7 @@ for(j in 1:d) {
     plot(X[,j],  type = "l", ylim = ran, ylab = paste(stocks[j], "-log-returns"))
     plot(X.[,j], type = "l", ylim = ran, ylab = "Simulated -log-returns")
 }
-par(opar)
+    par(opar)
+}
 }
 \keyword{ts}
