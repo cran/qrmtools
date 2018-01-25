@@ -43,8 +43,8 @@ x <- ugarchpath(spec, n.sim = n, m.sim = 1, rseed = 271) # n = length of simulat
 
 ## Extract the resulting series
 X <- fitted(x) # simulated process X_t = mu_t + epsilon_t for epsilon_t = sigma_t * Z_t
-sig <- sigma(x) # sigma_t (conditional standard deviations)
-eps <- x@path$residSim # epsilon_t = sigma_t * Z_t
+sig <- sigma(x) # volatility sigma_t (conditional standard deviations)
+eps <- x@path$residSim # unstandardized residuals epsilon_t = sigma_t * Z_t
 
 ## Sanity checks (=> fitted() and sigma() grab out the right quantities)
 ## Note: There is no such function for epsilon_t
@@ -83,7 +83,7 @@ stopifnot(all.equal(as.numeric(mu),  fit@fit$fitted.values),
 
 Again let's consider some sanity checks.
 ```{r, fig.align = "center", fig.width = 7.5, fig.height = 6}
-## Data X_t vs fitted hat{X}_t
+## Data X_t vs fitted hat{mu}_t
 plot(X, type = "l", xlab = "t",
      ylab = expression("Data"~X[t]~"and fitted values"~hat(mu)[t]))
 lines(as.numeric(mu), col = adjustcolor("blue", alpha.f = 0.5))
@@ -168,7 +168,7 @@ B <- 1000
 X.boot <- ugarchpath(fspec, n.sim = m, m.sim = B, rseed = 271) # simulate future paths; components path, model, seed
 
 ## Bootstrap VaR
-## Note: Each series is now an (m, B) matrix (each row is one path)
+## Note: Each series is now an (m, B) matrix (each column is one path of length m)
 X.t.boot <- fitted(X.boot) # extract simulated X_t
 sig.t.boot <- sigma(X.boot) # extract sigma_t
 eps.t.boot <- X.boot@path$residSim # extract epsilon_t

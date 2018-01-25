@@ -45,7 +45,8 @@ export(
     ## Result/warning/error catching
     "catch",
     ## Returns
-    "returns",
+    "returns", "returns_qrmtools",
     ## Data related functions
-    "get_data"
+    "get_data",
+    "nested_matrix"
 )

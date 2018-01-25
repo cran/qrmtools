@@ -35,7 +35,7 @@ dim <- 8 # variable dimension (we use 8 or 100 here)
 
 Investigate helper function $h(s,t)$ (the function for the inner
 root-finding to compute $D(s)$; see `dual_bound()`).
-```{r, fig.align = "center", fig.width = 6, fig.height = 6}
+```{r, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"}
 d <- 8 # dimension
 s <- c(1, 5, 10, 100, 500, 1000)
 t <- sapply(seq_along(s), function(i) {
@@ -70,7 +70,7 @@ sufficiently large in order to find a root $h(s,t) = 0$ for $t < s/d$.
 
 Now let's plot the dual bound $D(s)$ for various $\theta$ (this checks the outer
 root-finding).
-```{r, fig.align = "center", fig.width = 6, fig.height = 6}
+```{r, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"}
 theta <- c(0.5, 1, 2, 4) # theta values
 s <- seq(48, 2000, length.out = 257) # s values
 D <- sapply(theta, function(th)
@@ -111,7 +111,7 @@ plot(c, h.aux, type = "l", xlab = "c (in initial interval)",
 Check the objective function $h(c)$ (i.e., `Wang_h()` with numerical
 integration) on its domain. Note that $h$ is used to determine the root in the
 open interval $(0,(1-\alpha)/d)$ for computing worst Value-at-Risk.
-```{r, fig.align = "center", fig.width = 6, fig.height = 6}
+```{r, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"}
 h <- sapply(c, function(c.) qrmtools:::Wang_h(c., alpha = alpha, d = d, qF = qF))
 if(doPDF)
     pdf(file = (file <- paste0("fig_worst_VaR_",alpha,"_hom_Wang_h_Par=2_d=",d,"_num.pdf")),
@@ -167,7 +167,7 @@ z <- h
 z[z <= 0] <- NA # > 0 => makes log-scale possible
 ```
 
-```{r, fig.align = "center", fig.width = 6, fig.height = 6}
+```{r, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"}
 if(doPDF)
     pdf(file = (file <- paste0("fig_worst_VaR_",alpha,"_hom_Wang_h_Par_d=",d,".pdf")),
         width = 6, height = 6)
@@ -199,7 +199,7 @@ VaR <- simplify2array(sapply(alpha, function(a)
 ## => (best/worst VaR, theta, alpha)-matrix
 ```
 
-```{r, fig.align = "center", fig.width = 6, fig.height = 6}
+```{r, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"}
 if(doPDF)
     pdf(file = (file <- paste0("fig_worst_VaR_hom_Wang_Par_d=",d,".pdf")),
         width = 7, height = 7)
@@ -231,7 +231,7 @@ VaR <- simplify2array(sapply(d, function(d.)
 ## => (best/worst VaR, theta, d)-matrix
 ```
 
-```{r, fig.align = "center", fig.width = 6, fig.height = 6}
+```{r, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"}
 if(doPDF)
     pdf(file = (file <- paste0("fig_worst_VaR_hom_Wang_Par_alpha=",alpha,"_in_d.pdf")),
         width = 7, height = 7)
@@ -265,7 +265,7 @@ VaR <- simplify2array(sapply(d, function(d.)
 ## => (best/worst VaR, theta, d)-matrix
 ```
 
-```{r, fig.align = "center", fig.width = 6, fig.height = 6}
+```{r, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"}
 if(doPDF)
     pdf(file = (file <- paste0("fig_worst_VaR_hom_Wang_Par_alpha=",alpha,"_in_theta.pdf")),
         width = 6, height = 6)
@@ -444,7 +444,7 @@ for(i in seq_len(n.th)) {
 }
 ```
 
-```{r, fig.align = "center", fig.width = 6, fig.height = 6}
+```{r, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"}
 res. <- res/res[,"dual"] # standardize (by dual method)
 ylim <- range(res., na.rm = TRUE)
 if(doPDF)
@@ -556,7 +556,7 @@ VaR. <- simplify2array(sapply(d, function(d.)
 
 We can now compare the values (based on the non-transformed/transformed
 auxiliary function) in a graph.
-```{r, fig.align = "center", fig.width = 6, fig.height = 6}
+```{r, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"}
 ylim <- range(VaR, VaR.)
 if(doPDF)
     pdf(file = (file <- paste0("fig_worst_VaR_",alpha,"_hom_comparison_num_problems.pdf")),
@@ -641,7 +641,7 @@ for(i in seq_along(d)) {
 
 Here's a plot which shows the improvement in run time (in %).
 For larger dimensions $d$, the improvement is very close to 100%.
-```{r, fig.align = "center", fig.width = 6, fig.height = 6}
+```{r, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"}
 if(doPDF)
     pdf(file = (file <- paste0("fig_ARA_speed-up.pdf")),
         width = 6, height = 6)
@@ -845,7 +845,7 @@ res.up  <- sapply(tol, function(t) rearrange(X.up, tol = t, sample = FALSE, is.s
 res.up. <- rearrange(X.up, tol = NULL, sample = FALSE, is.sorted = TRUE)$bound # for tol = NULL
 ```
 
-```{r, fig.align = "center", fig.width = 6, fig.height = 6}
+```{r, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"}
 ## Plot the lower and upper bound on worst VaR as a function in the chosen tol
 if(doPDF)
     pdf(file = (file <- paste0("fig_worst_VaR_bounds_application.pdf")),

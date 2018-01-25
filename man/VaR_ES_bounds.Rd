@@ -52,10 +52,10 @@ ABRA(alpha, qF, N.exp = seq(8, 19, by = 1), absreltol = c(0, 0.01),
   \item{alpha}{confidence level for VaR and ES (e.g., 0.99).}
   \item{d}{dimension (number of risk factors; \eqn{\ge 2}{ >= 2}). For
     \code{crude_VaR_bounds()}, \code{d} only needs to be given in
-    the homogeneous case in which \code{qF()} is a \code{\link{function}}.}
-  \item{qF}{marginal quantile function (in the homogeneous case) or
-    a \code{d}-list containing the marginal quantile functions (in the
-    general case).}
+    the homogeneous case in which \code{qF} is a \code{\link{function}}.}
+  \item{qF}{\code{d}-list containing the marginal quantile functions.
+    For \code{crude_VaR_bounds()}, \code{qF} can also be function
+    (homogeneous case, dimension \code{d}).}
   \item{method}{\code{\link{character}} string. For
     \describe{
       \item{\code{VaR_bounds_hom()}:}{\code{method = "Wang"} and
@@ -604,14 +604,14 @@ set.seed(271)
 ra <- rearrange(X)
 bra <- block_rearrange(X)
 stopifnot(ra$converged, bra$converged,
-          all.equal(ra$bound, bra$bound, tolerance = 5e-3))
+          all.equal(ra$bound, bra$bound, tolerance = 6e-3))
 
 ## Checking ABRA against ARA
 set.seed(271)
 ara  <- ARA (alpha, qF = qPar)
 abra <- ABRA(alpha, qF = qPar)
 stopifnot(ara$converged, abra$converged,
-          all.equal(ara$bound[["low"]], abra$bound[["low"]], tolerance = 1e-3),
-          all.equal(ara$bound[["up"]],  abra$bound[["up"]],  tolerance = 5e-3))
+          all.equal(ara$bound[["low"]], abra$bound[["low"]], tolerance = 2e-3),
+          all.equal(ara$bound[["up"]],  abra$bound[["up"]],  tolerance = 6e-3))
 }
 \keyword{programming}

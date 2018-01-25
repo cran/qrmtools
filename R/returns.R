@@ -89,3 +89,4 @@ returns <- function(x, method = c("logarithmic", "simple", "diff"), inverse = FA
     },
     stop("Wrong 'method'"))
 }
+returns_qrmtools <- returns # alias

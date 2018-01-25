@@ -11,7 +11,7 @@ qF <- function(p, th = 2) qPar(p, theta = th) # Pareto quantile function
 pF <- function(q, th = 2) pPar(q, theta = th) # Pareto distribution function
 dim <- 8 # variable dimension (we use 8 or 100 here)
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6----------------
+## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
 d <- 8 # dimension
 s <- c(1, 5, 10, 100, 500, 1000)
 t <- sapply(seq_along(s), function(i) {
@@ -41,7 +41,7 @@ legend("topright", lty = rep(1,6), col = cols,
            function(i) substitute(s==s., list(s. = s[i])))))
 if(doPDF) dev.off()
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6----------------
+## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
 theta <- c(0.5, 1, 2, 4) # theta values
 s <- seq(48, 2000, length.out = 257) # s values
 D <- sapply(theta, function(th)
@@ -71,7 +71,7 @@ par(mar = c(5, 4+1, 4, 2) + 0.1) # increase space (for y axis label)
 plot(c, h.aux, type = "l", xlab = "c (in initial interval)",
      ylab = expression(frac(d-1,d)~{F^{-1}}(a[c])+frac(1,d)~{F^{-1}}(b[c])))
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6----------------
+## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
 h <- sapply(c, function(c.) qrmtools:::Wang_h(c., alpha = alpha, d = d, qF = qF))
 if(doPDF)
     pdf(file = (file <- paste0("fig_worst_VaR_",alpha,"_hom_Wang_h_Par=2_d=",d,"_num.pdf")),
@@ -110,7 +110,7 @@ for(j in 1:length(theta))
 z <- h
 z[z <= 0] <- NA # > 0 => makes log-scale possible
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6----------------
+## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
 if(doPDF)
     pdf(file = (file <- paste0("fig_worst_VaR_",alpha,"_hom_Wang_h_Par_d=",d,".pdf")),
         width = 6, height = 6)
@@ -134,7 +134,7 @@ VaR <- simplify2array(sapply(alpha, function(a)
                                               theta = th)), simplify = FALSE))
 ## => (best/worst VaR, theta, alpha)-matrix
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6----------------
+## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
 if(doPDF)
     pdf(file = (file <- paste0("fig_worst_VaR_hom_Wang_Par_d=",d,".pdf")),
         width = 7, height = 7)
@@ -163,7 +163,7 @@ VaR <- simplify2array(sapply(d, function(d.)
                                               theta = th)), simplify = FALSE))
 ## => (best/worst VaR, theta, d)-matrix
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6----------------
+## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
 if(doPDF)
     pdf(file = (file <- paste0("fig_worst_VaR_hom_Wang_Par_alpha=",alpha,"_in_d.pdf")),
         width = 7, height = 7)
@@ -192,7 +192,7 @@ VaR <- simplify2array(sapply(d, function(d.)
                                               theta = th)), simplify = FALSE))
 ## => (best/worst VaR, theta, d)-matrix
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6----------------
+## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
 if(doPDF)
     pdf(file = (file <- paste0("fig_worst_VaR_hom_Wang_Par_alpha=",alpha,"_in_theta.pdf")),
         width = 6, height = 6)
@@ -357,7 +357,7 @@ for(i in seq_len(n.th)) {
     setTxtProgressBar(pb, i) # update progress bar
 }
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6----------------
+## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
 res. <- res/res[,"dual"] # standardize (by dual method)
 ylim <- range(res., na.rm = TRUE)
 if(doPDF)
@@ -433,7 +433,7 @@ VaR. <- simplify2array(sapply(d, function(d.)
                                            avoid.cancellation = TRUE)),
     simplify = FALSE))
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6----------------
+## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
 ylim <- range(VaR, VaR.)
 if(doPDF)
     pdf(file = (file <- paste0("fig_worst_VaR_",alpha,"_hom_comparison_num_problems.pdf")),
@@ -498,7 +498,7 @@ for(i in seq_along(d)) {
                  system.time(rearrange(X, sample = FALSE, is.sorted = TRUE))[["elapsed"]])
 }
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6----------------
+## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
 if(doPDF)
     pdf(file = (file <- paste0("fig_ARA_speed-up.pdf")),
         width = 6, height = 6)
@@ -639,7 +639,7 @@ res.low. <- rearrange(X.low, tol = NULL, sample = FALSE, is.sorted = TRUE)$bound
 res.up  <- sapply(tol, function(t) rearrange(X.up, tol = t, sample = FALSE, is.sorted = TRUE)$bound)
 res.up. <- rearrange(X.up, tol = NULL, sample = FALSE, is.sorted = TRUE)$bound # for tol = NULL
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6----------------
+## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
 ## Plot the lower and upper bound on worst VaR as a function in the chosen tol
 if(doPDF)
     pdf(file = (file <- paste0("fig_worst_VaR_bounds_application.pdf")),

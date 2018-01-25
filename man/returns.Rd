@@ -1,5 +1,6 @@
 \name{returns}
 \alias{returns}
+\alias{returns_qrmtools}
 \title{Computing Returns and Inverse Transformation}
 \description{
   Compute log-returns, simple returns and basic differences (or the
@@ -8,6 +9,8 @@
 \usage{
 returns(x, method = c("logarithmic", "simple", "diff"), inverse = FALSE,
         start, start.date)
+returns_qrmtools(x, method = c("logarithmic", "simple", "diff"),
+                 inverse = FALSE, start, start.date)
 }
 \arguments{
   \item{x}{matrix or vector (possibly a \code{xts} object) to be turned
@@ -34,6 +37,12 @@ returns(x, method = c("logarithmic", "simple", "diff"), inverse = FALSE,
 \details{
   If \code{inverse = FALSE} and \code{x} is an \code{xts} object, the
   returned object is an \code{xts}, too.
+
+  Note that the \R package \pkg{timeSeries} also contains a function
+  \code{returns()} (and hence the order in which \pkg{timeSeries} and
+  \pkg{qrmtools} are loaded matters to get the right \code{returns()}).
+  For this reason, \code{returns_qrmtools()} is an alias for
+  \code{returns()} from \pkg{qrmtools}.
 }
 \author{Marius Hofert}
 \examples{
