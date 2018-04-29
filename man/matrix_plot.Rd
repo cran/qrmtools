@@ -31,7 +31,7 @@ matrix_plot(x, ylim = rev(c(0.5, nrow(x) + 0.5)),
     key's default colors.}
   \item{col.regions}{see \code{\link{levelplot}()}. If \code{\link{NULL}}, a
     useful default is computed based on \code{at}.}
-  \item{\dots}{additional arguments passed to the underlying function
+  \item{\dots}{additional arguments passed to the underlying
     \code{\link{levelplot}()}.}
 }
 \value{

@@ -1,159 +1,179 @@
-### GPD(xi, beta) distribution #################################################
+### GPD(shape, scale) distribution #############################################
 
-##' @title Density of the GPD(xi, beta) distribution
+##' @title Density of the GPD(shape, scale) distribution
 ##' @param x evaluation points
-##' @param xi parameter xi
-##' @param beta parameter beta
+##' @param shape parameter xi
+##' @param scale parameter beta
 ##' @param log logical indicating whether the log density is computed
-##' @return density of the GPD(xi, beta) distribution
+##' @return density of the GPD(shape, scale) distribution
 ##' @author Marius Hofert
-dGPD <- function(x, xi, beta, log = FALSE)
+dGPD <- function(x, shape, scale, log = FALSE)
 {
-    stopifnot(beta > 0)
-    res <- if(log) rep(-Inf, length(x)) else rep(0, length(x)) # correctly extend
-    if(xi == 0) { # xi == 0
-        ind <- x >= 0
-        if(any(ind))
-            res[ind] <- if(log) -x[ind]/beta-log(beta) else exp(-x[ind]/beta)/beta
-    } else { # xi != 0
-        ind <- if(xi > 0) x >= 0 else 0 <= x & x <= -beta/xi
-        if(any(ind))
-            res[ind] <- if(log) -(1/xi+1)*log1p(xi*x[ind]/beta)-log(beta)
-            else (1+xi*x[ind]/beta)^(-(1/xi+1))/beta
+    l <- length(x)
+    if(scale <= 0)
+        return(rep(if(log) -Inf else 0, l)) # for logLik_GPD()
+    if(shape == 0) { # shape == 0
+        res <- -x/scale-log(scale)
+    } else { # shape != 0
+        ## Note: If shape < 0, the support is [0, -scale/shape]
+        res <- rep(-Inf, l) # correctly extend log-density
+        ii <- if(shape > 0) 0 <= x else 0 <= x & x < -scale/shape # those indices for which density is positive
+        res[ii] <- -(1/shape + 1) * log1p(shape * x[ii] / scale) - log(scale)
     }
-    res
+    if(log) res else exp(res)
 }
 
-##' @title Distribution function of the GPD(xi, beta) distribution (vectorized in q)
+##' @title Distribution function of the GPD(shape, scale) distribution (vectorized in q)
 ##' @param q quantile
-##' @param xi parameter xi
-##' @param beta parameter beta
+##' @param shape parameter xi
+##' @param scale parameter beta
 ##' @param lower.tail logical indicating whether lower/upper tail is used
 ##' @param log.p logical indicating whether probabilities are given as log()
-##' @return distribution function of the GPD(xi, beta) distribution
+##' @return distribution function of the GPD(shape, scale) distribution
 ##' @author Marius Hofert
-pGPD <- function(q, xi, beta, lower.tail = TRUE, log.p = FALSE)
+pGPD <- function(q, shape, scale, lower.tail = TRUE, log.p = FALSE)
 {
-    stopifnot(beta > 0)
-    if(xi == 0) { # xi == 0
-        q <- pmax(q, 0) # correctly extend (instead of stopifnot(x >= 0))
-        if(lower.tail)
-            if(log.p) log1p(-exp(-q/beta)) else 1-exp(-q/beta)
-        else if(log.p) -q/beta else exp(-q/beta)
-    } else { # xi != 0
-        q <- if(xi > 0) pmax(q, 0) else pmin(pmax(q, 0), -beta/xi) # correctly extend
-        if(lower.tail)
-            if(log.p) log1p(-(1+xi*q/beta)^(-1/xi)) else 1-(1+xi*q/beta)^(-1/xi)
-        else if(log.p) -log1p(xi*q/beta)/xi else (1+xi*q/beta)^(-1/xi)
+    stopifnot(scale > 0)
+    q <- if(shape >= 0) pmax(q, 0) else pmin(pmax(q, 0), -scale/shape) # correctly extend (q >= 0; q <= -scale/shape if shape < 0)
+    ## Note: - This 'extension' works correctly here as R correctly deals with Inf
+    ##       - It avoids having to set res outside the compact support (=> two regions)
+    if(shape == 0) { # shape == 0
+        if(lower.tail) {
+            if(log.p) {
+                log1p(-exp(-q/scale))
+            } else {
+                1-exp(-q/scale)
+            }
+        } else {
+            if(log.p) {
+                -q/scale
+            } else {
+                exp(-q/scale)
+            }
+        }
+    } else { # shape != 0
+        if(lower.tail) {
+            if(log.p) {
+                log1p(-(1+shape*q/scale)^(-1/shape))
+            } else {
+                1-(1+shape*q/scale)^(-1/shape)
+            }
+        } else {
+            if(log.p) {
+                -log1p(shape*q/scale)/shape
+            } else {
+                (1+shape*q/scale)^(-1/shape)
+            }
+        }
     }
 }
 
-##' @title Quantile function of the GPD(xi, beta) distribution (vectorized in p)
+##' @title Quantile function of the GPD(shape, scale) distribution (vectorized in p)
 ##' @param p probability
-##' @param xi parameter xi
-##' @param beta parameter beta
+##' @param shape parameter xi
+##' @param scale parameter beta
 ##' @param lower.tail logical indicating whether lower/upper tail is used
 ##' @param log.p logical indicating whether probabilities are given as log()
-##' @return quantile function of the GPD(xi, beta) distribution
+##' @return quantile function of the GPD(shape, scale) distribution
 ##' @author Marius Hofert
-qGPD <- function(p, xi, beta, lower.tail = TRUE, log.p = FALSE)
+qGPD <- function(p, shape, scale, lower.tail = TRUE, log.p = FALSE)
 {
-    stopifnot(beta > 0)
+    stopifnot(scale > 0)
     p <- if(log.p) pmin(p, 0) else pmin(pmax(p, 0), 1) # correctly extend
-    if(xi == 0) { # xi == 0
+    if(shape == 0) { # shape == 0
         if(lower.tail)
-            if(log.p) (-beta)*log1p(-exp(p)) else (-beta)*log1p(-p)
-        else if(log.p) (-beta)*p else (-beta)*log(p)
-    } else { # xi != 0
+            if(log.p) (-scale)*log1p(-exp(p)) else (-scale)*log1p(-p)
+        else if(log.p) (-scale)*p else (-scale)*log(p)
+    } else { # shape != 0
         if(lower.tail)
-            if(log.p) (beta/xi)*((-expm1(p))^(-xi)-1) else (beta/xi)*((1-p)^(-xi)-1)
-        else if(log.p) (beta/xi)*expm1(-xi*p) else (beta/xi)*(p^(-xi)-1)
+            if(log.p) (scale/shape)*((-expm1(p))^(-shape)-1) else (scale/shape)*((1-p)^(-shape)-1)
+        else if(log.p) (scale/shape)*expm1(-shape*p) else (scale/shape)*(p^(-shape)-1)
     }
 }
 
-##' @title Generating random variates from a GPD(xi, beta) distribution
+##' @title Generating random variates from a GPD(shape, scale) distribution
 ##' @param n sample size n
-##' @param xi parameter xi
-##' @param beta parameter beta
-##' @return n-vector containing GPD(xi, beta) random variates
+##' @param shape parameter xi
+##' @param scale parameter beta
+##' @return n-vector containing GPD(shape, scale) random variates
 ##' @author Marius Hofert
-rGPD <- function(n, xi, beta)
-    qGPD(runif(n), xi = xi, beta = beta)
+rGPD <- function(n, shape, scale)
+    qGPD(runif(n), shape = shape, scale = scale)
 
 
-### Par(theta, kappa) = GPD(1/theta, kappa/theta), theta > 0 distribution ######
+### Par(shape, scale) = Par(theta, kappa) = GPD(1/theta, kappa/theta), theta > 0 distribution
 
 ## Note: - Hard-coded here to be vectorized in the main argument and theta
-##       - F(x) = 1 - (kappa / (kappa + x))^{theta}, theta > 0, kappa > 0, x >= 0
+##       - F(x) = 1 - (1+x/kappa)^{-theta}, theta > 0, kappa > 0, x >= 0
 ##       - E[X] = kappa / (theta-1) for all theta > 1 (see McNeil, Frey, Embrechts (2015))
 ##       - Var[X] = theta * kappa^2 / ((theta-2)(theta-1)^2) for all theta > 2 (see McNeil, Frey, Embrechts (2015))
 
-##' @title Density of the Par(theta, kappa) distribution
+##' @title Density of the Par(shape, scale) distribution
 ##' @param x evaluation points
-##' @param theta parameter theta
-##' @param kappa parameter kappa
+##' @param shape parameter theta
+##' @param scale parameter kappa
 ##' @param log logical indicating whether the log density is computed
-##' @return density of the Par(theta, kappa) distribution
+##' @return density of the Par(shape, scale) distribution
 ##' @author Marius Hofert
-dPar <- function(x, theta, kappa = 1, log = FALSE)
+dPar <- function(x, shape, scale = 1, log = FALSE)
 {
-    stopifnot(theta > 0, kappa > 0)
-    if(log) log(theta/kappa) + (theta+1) * log(kappa/(kappa+x)) else (theta/kappa)*(kappa/(kappa+x))^(theta+1)
+    stopifnot(shape > 0, scale > 0)
+    if(log) log(shape/scale) + (shape+1) * log(scale/(scale+x)) else (shape/scale)*(scale/(scale+x))^(shape+1)
 }
 
-##' @title Distribution function of the Par(theta, kappa) distribution
+##' @title Distribution function of the Par(shape, scale) distribution
 ##' @param q quantile
-##' @param theta parameter theta
-##' @param kappa parameter kappa
+##' @param shape parameter theta
+##' @param scale parameter kappa
 ##' @param lower.tail logical indicating whether lower/upper tail is used
 ##' @param log.p logical indicating whether probabilities are given as log()
-##' @return distribution function of the Par(theta, kappa) distribution
+##' @return distribution function of the Par(shape, scale) distribution
 ##' @author Marius Hofert
-pPar <- function(q, theta, kappa = 1, lower.tail = TRUE, log.p = FALSE)
+pPar <- function(q, shape, scale = 1, lower.tail = TRUE, log.p = FALSE)
 {
-    stopifnot(theta > 0, kappa > 0)
+    stopifnot(shape > 0, scale > 0)
     if(lower.tail) {
-        if(log.p) log(1-(kappa/(kappa+q))^theta) else 1-(kappa/(kappa+q))^theta
-    } else if(log.p) theta*(log(kappa)-log(kappa+q)) else (kappa/(kappa+q))^theta
+        if(log.p) log(1-(scale/(scale+q))^shape) else 1-(scale/(scale+q))^shape
+    } else if(log.p) shape*(log(scale)-log(scale+q)) else (scale/(scale+q))^shape
 }
 
-##' @title Quantile function of the Par(theta, kappa) distribution
+##' @title Quantile function of the Par(shape, scale) distribution
 ##' @param p probability
-##' @param theta parameter theta
-##' @param kappa parameter kappa
+##' @param shape parameter theta
+##' @param scale parameter kappa
 ##' @param lower.tail logical indicating whether lower/upper tail is used
 ##' @param log.p logical indicating whether probabilities are given as log()
-##' @return quantile function of the Par(theta, kappa) distribution
+##' @return quantile function of the Par(shape, scale) distribution
 ##' @author Marius Hofert
-qPar <- function(p, theta, kappa = 1, lower.tail = TRUE, log.p = FALSE)
+qPar <- function(p, shape, scale = 1, lower.tail = TRUE, log.p = FALSE)
 {
-    stopifnot(0 <= p, p <= 1, theta > 0, kappa > 0)
+    stopifnot(0 <= p, p <= 1, shape > 0, scale > 0)
     if(lower.tail) {
-        if(log.p) kappa * ((-expm1(p))^(-1/theta)-1) else kappa * ((1-p)^(-1/theta)-1)
-    } else if(log.p) kappa * expm1(-p/theta) else kappa * (p^(-1/theta)-1)
+        if(log.p) scale * ((-expm1(p))^(-1/shape)-1) else scale * ((1-p)^(-1/shape)-1)
+    } else if(log.p) scale * expm1(-p/shape) else scale * (p^(-1/shape)-1)
 }
 
-##' @title Generating random variates from a Pareto(theta, kappa) distribution
+##' @title Generating random variates from a Pareto(shape, scale) distribution
 ##' @param n sample size n
-##' @param theta parameter theta
-##' @param kappa parameter kappa
-##' @return n-vector containing Pareto(theta, kappa) random variates
+##' @param shape parameter theta
+##' @param scale parameter kappa
+##' @return n-vector containing Pareto(shape, scale) random variates
 ##' @author Marius Hofert
-rPar <- function(n, theta, kappa = 1)
+rPar <- function(n, shape, scale = 1)
 {
-    stopifnot(theta > 0, kappa > 0)
-    qPar(runif(n), theta = theta, kappa = kappa)
+    stopifnot(shape > 0, scale > 0)
+    qPar(runif(n), shape = shape, scale = scale)
 }
 
-##' @title Primitive of the Par(theta, kappa) survival function
+##' @title Primitive of the Par(shape, scale) survival function
 ##' @param q quantile
-##' @param theta parameter theta
-##' @param kappa parameter kappa
+##' @param shape parameter theta
+##' @param scale parameter kappa
 ##' @return \int\bar{F}(x) dx
 ##' @author Marius Hofert
-bar_pPar_primitive <- function(q, theta, kappa = 1)
+bar_pPar_primitive <- function(q, shape, scale = 1)
 {
-    stopifnot(theta > 0, kappa > 0)
-    if(theta == 1) kappa*log(kappa+q) else (kappa/(1-theta)) * (kappa/(kappa+q))^(theta-1)
+    stopifnot(shape > 0, scale > 0)
+    if(shape == 1) scale*log(scale+q) else (scale/(1-shape)) * (scale/(scale+q))^(shape-1)
 }
 

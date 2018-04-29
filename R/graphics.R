@@ -1,4 +1,4 @@
-### Graphical tools ############################################################
+### General graphical tools ####################################################
 
 ##' @title Image Indicating NAs in a Data Set
 ##' @param x matrix (ideally an xts object)
@@ -41,7 +41,7 @@ NA_plot <- function(x, col = c("black", "white"), xlab = "Time", ylab = "Compone
 ##' @param col default colors for the color key
 ##' @param col.regions see levelplot()
 ##' @param ... additional arguments passed to levelplot()
-##' @return level plot
+##' @return the plot, a Trellis object
 ##' @author Marius Hofert
 ##' @note - Another option would be:
 ##'         corrplot::corrplot(err, method = "color", col = grey(seq(0.4, 1, length.out = 200)),
@@ -92,8 +92,8 @@ matrix_plot <- function(x, ylim = rev(c(0.5, nrow(x) + 0.5)),
 
 ##' @title Density Plot of the Values from a Lower Triangular Matrix
 ##' @param x matrix
-##' @param xlab x-axis label
-##' @param main title
+##' @param xlab x-axis label; see plot()
+##' @param main title; see plot()
 ##' @param text see mtext()
 ##' @param side see mtext()
 ##' @param line see mtext()
@@ -202,4 +202,39 @@ qq_plot <-  function(x, FUN = qnorm, xlab = "Theoretical quantiles", ylab = "Sam
         stop("Wrong 'method'"))
     }
     invisible()
+}
+
+##' @title Plot of an Empirical Distribution Function
+##' @param x data of which the empirical distribution function is to be plotted
+##' @param do.points logical indicating whether points are to be plotted
+##' @param log either "" or "x", indicating whether a logarithmic x-axis is used
+##' @param xlim x-axis limits; default avoids possible failure if log = "x"
+##'        and data points are all positive (plot.stepfun() extends the range,
+##'        possibly below 0)
+##' @param main title
+##' @param xlab x-axis label
+##' @param ylab y-axis label
+##' @param ... additional arguments passed to the underlying plot method of stepfun();
+##'        see plot.stepfun()
+##' @return see plot.stepfun()
+##' @author Marius Hofert
+##' @note MWE:
+##'       x <- 1:100/100
+##'       plot(stepfun(x = x, y = c(0, ecdf(x)(x))), log = "x")
+##'       plot(stepfun(x = x, y = c(0, ecdf(x)(x))), log = "x", xlim = range(x))
+##'       plot.stepfun # => extends the range (below 0)
+##'       Note: Manually extending the range a little bit to the left
+##'             does not make sense (because of log-scale
+##'             => artificial extension to the left). Best to leave it like this.
+edf_plot <- function(x, do.points = length(x) <= 100, log = "",
+                     xlim = range(x, na.rm = TRUE),
+                     main = "", xlab = "Value", ylab = "Probability", ...)
+{
+    x <- sort(as.numeric(x)) # required by ecdf()
+    y <- c(0, ecdf(x)(x)) # plot.stepfun() requires 'y' to be one longer than 'x' (y = values *between* x's)
+    ## => log = "y" does not make sense anymore at this point
+    if(grepl("y", log)) stop('log = "y" not available.')
+    sf <- stepfun(x = x, y = y) # ok, does not extend x-range
+    plot(sf, do.points = do.points, log = log, xlim = xlim,
+         main = main, xlab = xlab, ylab = ylab, ...) # see plot.stepfun()
 }

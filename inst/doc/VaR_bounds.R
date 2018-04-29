@@ -1,14 +1,13 @@
 ## ---- message = FALSE----------------------------------------------------
 library(qrmtools)
-library(QRM)
 library(copula)
 library(combinat)
 library(sfsmisc)
 doPDF <- FALSE
 
 ## ------------------------------------------------------------------------
-qF <- function(p, th = 2) qPar(p, theta = th) # Pareto quantile function
-pF <- function(q, th = 2) pPar(q, theta = th) # Pareto distribution function
+qF <- function(p, th = 2) qPar(p, shape = th) # Pareto quantile function
+pF <- function(q, th = 2) pPar(q, shape = th) # Pareto distribution function
 dim <- 8 # variable dimension (we use 8 or 100 here)
 
 ## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
@@ -46,7 +45,7 @@ theta <- c(0.5, 1, 2, 4) # theta values
 s <- seq(48, 2000, length.out = 257) # s values
 D <- sapply(theta, function(th)
             sapply(s, function(s.)
-                   dual_bound(s., d = d, pF = function(q) pPar(q, theta = th)))) # (s, theta) matrix
+                   dual_bound(s., d = d, pF = function(q) pPar(q, shape = th)))) # (s, theta) matrix
 if(doPDF)
     pdf(file = (file <- paste0("fig_worst_VaR_hom_dual_D_s_Par=",
                              paste0(theta, collapse="_"),"_d=",d,".pdf")),
@@ -66,13 +65,13 @@ if(doPDF) dev.off()
 d <- 8 # dimension
 alpha <- 0.99 # confidence level
 c <- seq(0, (1-alpha)/d, length.out = 129) # domain of h
-h.aux <- qrmtools:::Wang_h_aux(c, alpha = alpha, d = d, qF = qF)
+h.aux <- qrmtools:::Wang_h_aux(c, level = alpha, d = d, qF = qF)
 par(mar = c(5, 4+1, 4, 2) + 0.1) # increase space (for y axis label)
 plot(c, h.aux, type = "l", xlab = "c (in initial interval)",
      ylab = expression(frac(d-1,d)~{F^{-1}}(a[c])+frac(1,d)~{F^{-1}}(b[c])))
 
 ## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
-h <- sapply(c, function(c.) qrmtools:::Wang_h(c., alpha = alpha, d = d, qF = qF))
+h <- sapply(c, function(c.) qrmtools:::Wang_h(c., level = alpha, d = d, qF = qF))
 if(doPDF)
     pdf(file = (file <- paste0("fig_worst_VaR_",alpha,"_hom_Wang_h_Par=2_d=",d,"_num.pdf")),
         width = 6, height = 6)
@@ -84,14 +83,14 @@ if(doPDF) dev.off()
 
 ## ------------------------------------------------------------------------
 sapply(c(0, (1-alpha)/d), function(c.)
-       qrmtools:::Wang_h(c., alpha = alpha, d = d, qF = qF)) # -Inf, 0
+       qrmtools:::Wang_h(c., level = alpha, d = d, qF = qF)) # -Inf, 0
 
 ## ------------------------------------------------------------------------
 method <- "Wang.Par" # this also holds for (the numerical) method = "Wang"
 th <- 0.99
-qrmtools:::Wang_h(0, alpha = alpha, d = d, method = method, theta = th) # NaN => uniroot() fails
+qrmtools:::Wang_h(0, level = alpha, d = d, method = method, shape = th) # NaN => uniroot() fails
 ## Note: Wang_h() is actually already NaN for c <= 1e-17
-qrmtools:::Wang_h_aux(0, alpha = alpha, d = d, method = method, theta = th) # Inf
+qrmtools:::Wang_h_aux(0, level = alpha, d = d, method = method, shape = th) # Inf
 
 ## ------------------------------------------------------------------------
 d <- dim # dimension
@@ -106,7 +105,7 @@ c <- seq(0, (1-alpha)/d, length.out = 2^13+1)
 h <- matrix(, nrow = length(c), ncol = length(theta))
 for(j in 1:length(theta))
     h[,j] <- sapply(c, function(c.)
-        qrmtools:::Wang_h(c., alpha = alpha, d = d, method = "Wang.Par", theta = theta[j]))
+        qrmtools:::Wang_h(c., level = alpha, d = d, method = "Wang.Par", shape = theta[j]))
 z <- h
 z[z <= 0] <- NA # > 0 => makes log-scale possible
 
@@ -131,7 +130,7 @@ alpha <- 1-2^seq(-0.001, -10, length.out = 128) # confidence levels; concentrate
 theta <- c(0.1, 0.5, 1, 5, 10, 50) # theta values
 VaR <- simplify2array(sapply(alpha, function(a)
     sapply(theta, function(th) VaR_bounds_hom(a, d = d, method = "Wang.Par",
-                                              theta = th)), simplify = FALSE))
+                                              shape = th)), simplify = FALSE))
 ## => (best/worst VaR, theta, alpha)-matrix
 
 ## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
@@ -160,7 +159,7 @@ alpha <- 0.99 # confidence level
 theta <- c(0.1, 0.5, 1, 5, 10, 50) # theta values
 VaR <- simplify2array(sapply(d, function(d.)
     sapply(theta, function(th) VaR_bounds_hom(alpha, d = d., method = "Wang.Par",
-                                              theta = th)), simplify = FALSE))
+                                              shape = th)), simplify = FALSE))
 ## => (best/worst VaR, theta, d)-matrix
 
 ## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
@@ -189,7 +188,7 @@ theta <- 10^seq(-1, log(50, base = 10), length.out = 50) # theta values
 alpha <- 0.99 # confidence level
 VaR <- simplify2array(sapply(d, function(d.)
     sapply(theta, function(th) VaR_bounds_hom(alpha, d = d., method = "Wang.Par",
-                                              theta = th)), simplify = FALSE))
+                                              shape = th)), simplify = FALSE))
 ## => (best/worst VaR, theta, d)-matrix
 
 ## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
@@ -216,55 +215,55 @@ if(doPDF) dev.off()
 
 ## ------------------------------------------------------------------------
 ## Initial interval for the root finding in case of worst VaR
-init_interval <- function(alpha, d, theta, trafo = FALSE, adjusted = FALSE)
+init_interval <- function(alpha, d, shape, trafo = FALSE, adjusted = FALSE)
 {
     if(trafo) {
-        low <- if(theta == 1) {
+        low <- if(shape == 1) {
             d/2
         } else {
-            (d-1)*(1+theta)/(d-1+theta)
+            (d-1)*(1+shape)/(d-1+shape)
         }
-        up <- if(theta > 1) {
-            r <- (1+d/(theta-1))^theta
+        up <- if(shape > 1) {
+            r <- (1+d/(shape-1))^shape
             if(adjusted) 2*r else r
-        } else if(theta == 1) {
+        } else if(shape == 1) {
             e <- exp(1)
             (d+1)^(e/(e-1))
         } else {
-            d*theta/(1-theta)+1
+            d*shape/(1-shape)+1
         }
         c(low, up)
     } else {
-        low <- if(theta > 1) {
-            r <- (1-alpha)/((d/(theta-1)+1)^theta + d-1)
+        low <- if(shape > 1) {
+            r <- (1-alpha)/((d/(shape-1)+1)^shape + d-1)
             if(adjusted) r/2 else r
-        } else if(theta == 1) {
+        } else if(shape == 1) {
             e <- exp(1)
             (1-alpha)/((d+1)^(e/(e-1))+d-1)
         } else {
-            r <- (1-theta)*(1-alpha)/d
+            r <- (1-shape)*(1-alpha)/d
             if(adjusted) r/2 else r
         }
-        up <- if(theta == 1) (1-alpha)/(3*d/2-1)
-              else (1-alpha)*(d-1+theta)/((d-1)*(2*theta+d))
+        up <- if(shape == 1) (1-alpha)/(3*d/2-1)
+              else (1-alpha)*(d-1+shape)/((d-1)*(2*shape+d))
         c(low, up)
     }
 }
 
 ## Function to compute the best/worst Value-at-Risk in the homogeneous case with
 ## Par(theta) margins
-VaR_hom_Par <- function(alpha, d, theta, method = c("worst", "best"),
+VaR_hom_Par <- function(alpha, d, shape, method = c("worst", "best"),
                         trafo = FALSE, interval = NULL, adjusted = FALSE,
                         avoid.cancellation = FALSE, ...)
 {
     ## Pareto quantile function
-    qF <- function(p) (1 - p)^(-1/theta) - 1
+    qF <- function(p) (1 - p)^(-1/shape) - 1
 
     ## Compute \bar{I}
-    Ibar <- function(a, b, alpha, d, theta)
+    Ibar <- function(a, b, alpha, d, shape)
     {
-        if(theta == 1) log((1-a)/(1-b))/(b-a) - 1
-        else (theta/(1-theta))*((1-b)^(1-1/theta)-(1-a)^(1-1/theta))/(b-a) - 1
+        if(shape == 1) log((1-a)/(1-b))/(b-a) - 1
+        else (shape/(1-shape))*((1-b)^(1-1/shape)-(1-a)^(1-1/shape))/(b-a) - 1
     }
 
     ## Main
@@ -276,11 +275,11 @@ VaR_hom_Par <- function(alpha, d, theta, method = c("worst", "best"),
         ## on a transformed scale
         h <- if(trafo) {
             ## Auxiliary function to find the root of on (1, Inf)
-            if(theta == 1) {
+            if(shape == 1) {
                 function(x) x^2 + x*(-d*log(x)+d-2)-(d-1)
             } else {
                 function(x)
-                (d/(1-theta)-1)*x^(-1/theta + 1) - (d-1)*x^(-1/theta) + x - (d*theta/(1-theta) + 1)
+                (d/(1-shape)-1)*x^(-1/shape + 1) - (d-1)*x^(-1/shape) + x - (d*shape/(1-shape) + 1)
             }
         } else {
             ## Auxiliary function to find the root of on (0, (1-alpha)/d)
@@ -288,23 +287,23 @@ VaR_hom_Par <- function(alpha, d, theta, method = c("worst", "best"),
                 a <- alpha+(d-1)*c
                 b <- 1-c
                 Ib <- if(c == (1-alpha)/d) { # Properly deal with limit c = (1-alpha)/d
-                    ((1-alpha)/d)^(-1/theta) - 1
+                    ((1-alpha)/d)^(-1/shape) - 1
                 } else {
-                    Ibar(a = a, b = b, alpha = alpha, d = d, theta = theta)
+                    Ibar(a = a, b = b, alpha = alpha, d = d, shape = shape)
                 }
                 Ib - (qF(a)*(d-1)/d + qF(b)/d)
             }
         }
 
         ## Do the optimization
-        if(is.null(interval)) interval <- init_interval(alpha, d, theta,
+        if(is.null(interval)) interval <- init_interval(alpha, d, shape,
                                                         trafo = trafo, adjusted = adjusted)
         c <- uniroot(h, interval = interval, ...)$root
         if(trafo) # convert value back to the right scale (c-scale)
             c <- (1-alpha)/(c+d-1)
         if(avoid.cancellation) {
             t1 <- (1-alpha)/c-(d-1)
-            d * ((c^(-1/theta)/d) * ((d-1)*t1^(-1/theta) + 1) - 1) # = qF(a)*(d-1) + qF(b)
+            d * ((c^(-1/shape)/d) * ((d-1)*t1^(-1/shape) + 1) - 1) # = qF(a)*(d-1) + qF(b)
         } else {
             a <- alpha+(d-1)*c
             b <- 1-c
@@ -312,8 +311,8 @@ VaR_hom_Par <- function(alpha, d, theta, method = c("worst", "best"),
         }
     },
     "best" = {
-        max((d-1)*0 + (1-alpha)^(-1/theta)-1, # Note: Typo in Wang, Peng, Yang (2013)
-            d*Ibar(a = 0, b = alpha, alpha = alpha, d = d, theta))
+        max((d-1)*0 + (1-alpha)^(-1/shape)-1, # Note: Typo in Wang, Peng, Yang (2013)
+            d*Ibar(a = 0, b = alpha, alpha = alpha, d = d, shape))
     },
     stop("Wrong 'method'"))
 }
@@ -323,8 +322,8 @@ alpha <- 0.99 # confidence level
 d <- dim # dimension
 n.th <- 32 # number of thetas
 th <- seq(0.2, 5, length.out = n.th) # thetas
-qFs <- lapply(th, function(th.) {th.; function(p) qPar(p, theta = th.)}) # n.th-vector of Pareto quantile functions
-pFs <- lapply(th, function(th.) {th.; function(q) pPar(q, theta = th.)}) # n.th-vector of Pareto dfs
+qFs <- lapply(th, function(th.) {th.; function(p) qPar(p, shape = th.)}) # n.th-vector of Pareto quantile functions
+pFs <- lapply(th, function(th.) {th.; function(q) pPar(q, shape = th.)}) # n.th-vector of Pareto dfs
 N <- 1e4 # number of discretization points for RA(); N = 1e5 does not improve the situation
 
 ## ---- results = "hide", warning = FALSE----------------------------------
@@ -339,11 +338,11 @@ for(i in seq_len(n.th)) {
     Wang.num.res <- tryCatch(VaR_bounds_hom(alpha, d = d, qF = qFs[[i]])[2], error = function(e) e)
     res[i,"Wang"] <- if(is(Wang.num.res, "simpleError")) NA else Wang.num.res
     ## Our straightforward implementation
-    res[i,"straightforward"] <- VaR_hom_Par(alpha, d = d, theta = th[i])
+    res[i,"straightforward"] <- VaR_hom_Par(alpha, d = d, shape = th[i])
     ## Our straightforward implementation based on the transformed auxiliary function
-    res[i,"transformed"] <- VaR_hom_Par(alpha, d = d, theta = th[i], trafo = TRUE)
+    res[i,"transformed"] <- VaR_hom_Par(alpha, d = d, shape = th[i], trafo = TRUE)
     ## "Wang.Par" (using a smaller uniroot() tolerance and adjusted initial interval)
-    res[i,"Wang.Par"] <- VaR_bounds_hom(alpha, d = d, method = "Wang.Par", theta = th[i])[2]
+    res[i,"Wang.Par"] <- VaR_bounds_hom(alpha, d = d, method = "Wang.Par", shape = th[i])[2]
     ## "dual" (with uniroot()'s default tolerance)
     res[i,"dual"] <- VaR_bounds_hom(alpha, d = d, method = "dual",
                                     interval = crude_VaR_bounds(alpha, qF = qFs[[i]], d = d),
@@ -384,7 +383,7 @@ if(doPDF) dev.off()
 ## ---- fig.align = "center", fig.width = 6, fig.height = 6----------------
 tol <- 2.2204e-16
 wVaR.tol <- sapply(th, function(th.)
-    VaR_hom_Par(alpha = alpha, d = d, theta = th., tol = tol))
+    VaR_hom_Par(alpha = alpha, d = d, shape = th., tol = tol))
 plot(th, wVaR.tol/res[,"dual"], type = "l", ylim = ylim,
      xlab = expression(theta), ylab = "Wang's approach (straightforward) but with smaller tol")
 
@@ -394,7 +393,7 @@ d <- seq(2, 1002, by = 20) # dimensions
 theta <- c(0.1, 0.5, 1, 5, 10, 50) # theta values
 VaR <- simplify2array(sapply(d, function(d.)
     sapply(theta, function(th) {
-        res <- tryCatch(VaR_hom_Par(alpha, d = d., theta = th, tol = tol),
+        res <- tryCatch(VaR_hom_Par(alpha, d = d., shape = th, tol = tol),
                         error = function(e) e)
         if(is(res, "simpleError")) { warning(conditionMessage(res)); NA }
         else res
@@ -402,13 +401,13 @@ VaR <- simplify2array(sapply(d, function(d.)
 
 ## ------------------------------------------------------------------------
 VaR <- simplify2array(sapply(d, function(d.)
-    sapply(theta, function(th) VaR_hom_Par(alpha, d = d., theta = th, tol = tol, adjusted = TRUE)),
+    sapply(theta, function(th) VaR_hom_Par(alpha, d = d., shape = th, tol = tol, adjusted = TRUE)),
     simplify = FALSE))
 
 ## ------------------------------------------------------------------------
 d <- 500
 th <- 20
-VaR_hom_Par(alpha, d = d, theta = th, trafo = TRUE) # Inf
+VaR_hom_Par(alpha, d = d, shape = th, trafo = TRUE) # Inf
 
 ## ------------------------------------------------------------------------
 h <- function(x)
@@ -418,17 +417,17 @@ x <- uniroot(h, interval = interval)$root
 (c <- (1-alpha)/(x+d-1)) # convert back to c-scale
 a <- alpha+(d-1)*c
 b <- 1-c
-qPar(a, theta = th)*(d-1) + qPar(b, theta = th) # Inf
-stopifnot(b == 1) # => b is 1 => qPar(b, theta = th) = Inf
+qPar(a, shape = th)*(d-1) + qPar(b, shape = th) # Inf
+stopifnot(b == 1) # => b is 1 => qPar(b, shape = th) = Inf
 
 ## ------------------------------------------------------------------------
-qPar(a, theta = th)*(d-1) + c^(-1/th)-1
+qPar(a, shape = th)*(d-1) + c^(-1/th)-1
 
 ## ------------------------------------------------------------------------
 d <- seq(2, 1002, by = 20) # dimensions
 theta <- c(0.1, 0.5, 1, 5, 10, 50) # theta values
 VaR. <- simplify2array(sapply(d, function(d.)
-    sapply(theta, function(th) VaR_hom_Par(alpha, d = d., theta = th,
+    sapply(theta, function(th) VaR_hom_Par(alpha, d = d., shape = th,
                                            trafo = TRUE, adjusted = TRUE,
                                            avoid.cancellation = TRUE)),
     simplify = FALSE))
@@ -488,7 +487,7 @@ if(FALSE)
 d <- 2^(4:8) # 16, ..., 256 (to save time here)
 res <- matrix(, nrow = length(d), ncol = 2) # matrix containing run time results
 colnames(res) <- c("basic", "sophisticated")
-qF <- function(p, th = 2) qPar(p, theta = th) # Pareto quantile function
+qF <- function(p, th = 2) qPar(p, shape = th) # Pareto quantile function
 
 ## For each d, measure the run time
 for(i in seq_along(d)) {
@@ -579,23 +578,22 @@ d <- ncol(L)
 res <- vector("list", length = d)
 names(res) <- colnames(L)
 for(k in seq_len(d)) {
-
     ## Determine the threshold for company k
     L. <- L[,k]
     u <- quantile(L., probs = 0.8, names = FALSE) # threshold
 
     ## Fit a GPD to the excesses
-    fit <- fit.GPD(L., threshold = u)
-    stopifnot(fit$converged)
-    xi <- fit$par.ests[["xi"]] # fitted xi
-    beta <- fit$par.ests[["beta"]] # fitted beta
+    excess <- L.[L.>u]-u # excesses
+    fit <- fit_GPD_MLE(excess)
+    stopifnot(fit$converged == 0)
+    xi <- fit$par[["shape"]] # fitted xi
+    beta <- fit$par[["scale"]] # fitted beta
     stopifnot(is.numeric(xi), is.numeric(beta))
 
     ## Graphical goodness-of-fit check for the GPD fit
-    excess <- L.[L.>u]-u # excesses
     if(FALSE) {
         excess. <- sort(excess) # sorted data
-        qF <- function(p) qGPD(p, xi = xi, beta = beta)
+        qF <- function(p) qGPD(p, shape = xi, scale = beta)
         qF. <- qF(ppoints(length(excess.))) # theoretical quantiles
         stock <- names(res)[k]
         plot(qF., excess., xlab = "Theoretical quantiles",
@@ -606,14 +604,13 @@ for(k in seq_len(d)) {
 
     ## Update res
     res[[k]] <- list(loss = L., excess = excess, u = u, xi = xi, beta = beta)
-
 }
 
 ## ------------------------------------------------------------------------
 xi. <- sapply(res, function(x) x$xi) # all fitted xi's
 beta. <- sapply(res, function(x) x$beta) # all fitted beta's
 alpha <- 0.99 # confidence level
-qF <- lapply(res, function(r) { function(p) qGPD(p, xi = r$xi, beta = r$beta) }) # list quantile functions
+qF <- lapply(res, function(r) { function(p) qGPD(p, shape = r$xi, scale = r$beta) }) # list quantile functions
 set.seed(271) # set a seed (for reproducibility)
 res.ARA <- ARA(alpha, qF = qF) # apply ARA()
 stopifnot(res.ARA$converged) # check convergence

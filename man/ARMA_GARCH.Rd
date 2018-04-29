@@ -28,6 +28,10 @@ fit_ARMA_GARCH(x, ugarchspec.list = ugarchspec(), solver = "hybrid",
   a list of such.
 }
 \author{Marius Hofert}
+\seealso{
+  \code{\link{fit_GARCH_11}()} for fast(er) and numerically more
+  robust fitting of GARCH(1,1) processes.
+}
 \examples{
 library(rugarch)
 library(copula)

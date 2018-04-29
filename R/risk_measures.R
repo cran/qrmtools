@@ -2,9 +2,9 @@
 
 ### 1 Value-at-Risk ############################################################
 
-##' @title Nonparametric VaR estimator
+##' @title Nonparametric VaR Estimator
 ##' @param x vector of losses
-##' @param alpha confidence level
+##' @param level confidence level alpha
 ##' @param names see ?quantile
 ##' @param type 'type' used (1 = inverse of empirical df); see ?quantile
 ##' @param ... see ?quantile
@@ -14,54 +14,79 @@
 ##'       type = 7 (quantile()'s default) would interpolate between the two
 ##'       largest losses (to be continuous) and thus return a(n even) smaller
 ##'       VaR_alpha estimate.
-VaR_np <- function(x, alpha, names = FALSE, type = 1, ...)
-    quantile(x, probs = alpha, names = names, type = type, ...) # vectorized in x and alpha
+VaR_np <- function(x, level, names = FALSE, type = 1, ...)
+    quantile(x, probs = level, names = names, type = type, ...) # vectorized in x and level
 
-##' @title Value-at-Risk for normal and t distributions
-##' @param alpha confidence level
-##' @param mu location
-##' @param sigma scale
+##' @title Value-at-Risk for Normal and t Distributions
+##' @param level confidence level alpha
+##' @param loc location mu
+##' @param scale scale sigma
 ##' @param df degrees of freedom; Inf for the normal distribution
 ##' @return Value-at-Risk
 ##' @author Marius Hofert
-VaR_t <- function(alpha, mu = 0, sigma = 1, df = Inf)
+VaR_t <- function(level, loc = 0, scale = 1, df = Inf)
 {
-    stopifnot(0 <= alpha, alpha <= 1, sigma > 0, df > 0)
-    mu + sigma * if(identical(df, Inf)) qnorm(alpha) else qt(alpha, df = df)
+    stopifnot(0 <= level, level <= 1, scale > 0, df > 0)
+    loc + scale * if(identical(df, Inf)) qnorm(level) else qt(level, df = df)
 }
 
-##' @title Value-at-Risk for the Pareto distribution
-##' @param alpha confidence level
-##' @param theta Pareto parameter
-##' @param kappa Pareto parameter
+##' @title Value-at-Risk for the GPD
+##' @param level confidence level alpha
+##' @param shape parameter xi
+##' @param scale parameter beta
 ##' @return Value-at-Risk
 ##' @author Marius Hofert
-VaR_Par <- function(alpha, theta, kappa = 1) qPar(alpha, theta = theta, kappa = kappa)
+VaR_GPD <- function(level, shape, scale)
+    qGPD(level, shape = shape, scale = scale)
+
+##' @title Value-at-Risk for the Pareto Distribution
+##' @param level confidence level alpha
+##' @param shape parameter theta
+##' @param scale parameter kappa
+##' @return Value-at-Risk
+##' @author Marius Hofert
+VaR_Par <- function(level, shape, scale = 1)
+    qPar(level, shape = shape, scale = scale)
+
+##' @title Semi-parametric VaR Estimator in the POT Method
+##' @param level confidence level alpha
+##' @param threshold threshold u
+##' @param p.exceed exceedance probability; typically mean(x > threshold)
+##'        for x being the original data
+##' @param shape parameter xi
+##' @param scale parameter beta
+##' @return Value-at-Risk
+##' @author Marius Hofert
+VaR_POT <- function(level, threshold, p.exceed, shape, scale)
+{
+    stopifnot(0 <= p.exceed, p.exceed <= level, level <= 1, scale > 0)
+    threshold + (scale/shape) * (((1-level)/p.exceed)^(-shape) - 1)
+}
 
 
 ### 2 Expected shortfall #######################################################
 
-##' @title Nonparametric expected shortfall estimator
+##' @title Nonparametric Expected Shortfall Estimator
 ##' @param x vector of losses
-##' @param alpha confidence level
+##' @param level confidence level alpha
 ##' @param method method
 ##' @param verbose logical indicating whether verbose output is provided in
 ##'        case the mean is taken over (too) few losses
 ##' @param ... additional arguments passed VaR_np()
 ##' @return nonparametric ES_alpha estimate (derived under the assumption of continuity)
 ##' @author Marius Hofert
-##' @note - Vectorized in x and alpha
-##'       - ">" : Mathematically correct for discrete dfs, but
-##'               produces NaN for alpha > (n-1)/n (=> F^-(alpha) = x_{(n)} but
+##' @note - Vectorized in x and level
+##'       - ">" : Mathematically correct for continuous and discrete dfs, but
+##'               produces NaN for level > (n-1)/n (=> F^-(level) = x_{(n)} but
 ##'               there is no loss strictly beyond x_{(n)})
 ##'         ">=": mean() will always include the largest loss (so no NaN appears),
 ##'               but might be computed just based on this one loss.
-ES_np <- function(x, alpha, method = c(">", ">="), verbose = FALSE, ...)
+ES_np <- function(x, level, method = c(">", ">="), verbose = FALSE, ...)
 {
-    stopifnot(0 < alpha, alpha < 1)
-    VaR <- VaR_np(x, alpha = alpha, ...) # length(alpha)-vector
+    stopifnot(0 < level, level < 1)
+    VaR <- VaR_np(x, level = level, ...) # length(level)-vector
     method <- match.arg(method)
-    vapply(VaR, function(v) { # v = VaR value for one alpha
+    vapply(VaR, function(v) { # v = VaR value for one level
         ind <- if(method == ">") x > v else x >= v
         if(verbose) {
             num <- sum(ind)
@@ -77,30 +102,60 @@ ES_np <- function(x, alpha, method = c(">", ">="), verbose = FALSE, ...)
     }, NA_real_)
 }
 
-##' @title Expected shortfall for normal and t distributions
-##' @param alpha confidence level
-##' @param mu location
-##' @param sigma scale
+##' @title Expected Shortfall for Normal and t Distributions
+##' @param level confidence level alpha
+##' @param loc location mu
+##' @param scale scale sigma
 ##' @param df degrees of freedom; Inf for the normal distribution
 ##' @return Expected shortfall
 ##' @author Marius Hofert
-ES_t <- function(alpha, mu = 0, sigma = 1, df = Inf)
+ES_t <- function(level, loc = 0, scale = 1, df = Inf)
 {
-    stopifnot(0 <= alpha, alpha <= 1, sigma > 0, df > 0)
-    mu + (sigma/(1-alpha)) * if(identical(df, Inf)) dnorm(qnorm(alpha)) else
-    dt(qt(alpha, df = df), df = df) * (df + qt(alpha, df = df)^2) / (df-1)
+    stopifnot(0 <= level, level <= 1, scale > 0, df > 0)
+    loc + (scale/(1-level)) * if(identical(df, Inf)) dnorm(qnorm(level)) else
+    dt(qt(level, df = df), df = df) * (df + qt(level, df = df)^2) / (df-1)
 }
 
-##' @title Expected shortfall for the Pareto distribution
-##' @param alpha confidence level
-##' @param theta Pareto parameter
-##' @param kappa Pareto parameter
+##' @title Expected Shortfall for the GPD
+##' @param level confidence level alpha
+##' @param shape parameter xi
+##' @param scale parameter beta
 ##' @return Expected shortfall
 ##' @author Marius Hofert
-ES_Par <- function(alpha, theta, kappa = 1)
+ES_GPD <- function(level, shape, scale)
 {
-    stopifnot(0 <= alpha, alpha <= 1, theta > 1, kappa > 0)
-    kappa * ((theta / (theta-1)) * (1-alpha)^(-1/theta) - 1)
+    stopifnot(0 <= level, level <= 1, shape < 1, scale > 0)
+    VaR <- VaR_GPD(level, shape = shape, scale = scale)
+    VaR + (scale + shape * VaR)/(1-shape) # VaR + mean excess function at VaR
+}
+
+##' @title Expected Shortfall for the Pareto Distribution
+##' @param level confidence level alpha
+##' @param shape parameter theta
+##' @param scale parameter kappa
+##' @return Expected shortfall
+##' @author Marius Hofert
+ES_Par <- function(level, shape, scale = 1)
+{
+    stopifnot(0 <= level, level <= 1, shape > 1, scale > 0)
+    scale * ((shape / (shape-1)) * (1-level)^(-1/shape) - 1)
+}
+
+##' @title Semi-parametric ES Estimator in the POT Method
+##' @param level confidence level alpha
+##' @param threshold threshold u
+##' @param p.exceed exceedance probability; typically mean(x > threshold)
+##'        for x being the original data
+##' @param shape parameter xi
+##' @param scale parameter beta
+##' @return Expected shortfall
+##' @author Marius Hofert
+ES_POT <- function(level, threshold, p.exceed, shape, scale)
+{
+    stopifnot(shape < 1, scale > 0) # rest checked in VaR_POT()
+    VaR <- VaR_POT(level, threshold = threshold, p.exceed = p.exceed,
+                   shape = shape, scale = scale)
+    (VaR + scale - shape * threshold) / (1 - shape)
 }
 
 
@@ -110,21 +165,21 @@ ES_Par <- function(alpha, theta, kappa = 1)
 ##' @param x running variable ("c")
 ##' @param X (n, d)-matrix containing random sample from the underlying
 ##'        multivariate distribution H
-##' @param alpha d-vector of confidence levels
+##' @param level d-vector of confidence levels
 ##' @param measure character string specifying the risk measure
 ##' @return value of E(Lambda_alpha(X-c))
 ##' @author Marius Hofert
-ELambda <- function(x, X, alpha, measure = c("gExp", "gVaR"))
+ELambda <- function(x, X, level, measure = c("gExp", "gVaR"))
 {
     X. <- sweep(X, MARGIN = 2, STATS = x, FUN = "-")
     norm <- sqrt(rowSums(X.^2))
     measure <- match.arg(measure)
     switch(measure,
     "gExp" = {
-        mean(0.5 * norm * (norm + rowSums(X. * rep(alpha, each = nrow(X.)))))
+        mean(0.5 * norm * (norm + rowSums(X. * rep(level, each = nrow(X.)))))
     },
     "gVaR" = {
-        mean(0.5 *        (norm + rowSums(X. * rep(alpha, each = nrow(X.)))))
+        mean(0.5 *        (norm + rowSums(X. * rep(level, each = nrow(X.)))))
     },
     stop("Wrong 'measure'"))
 }
@@ -132,24 +187,24 @@ ELambda <- function(x, X, alpha, measure = c("gExp", "gVaR"))
 ##' @title Multivariate Geometric VaR
 ##' @param x (n, d)-matrix containing random sample from the underlying
 ##'        multivariate distribution H
-##' @param alpha d-vector of confidence levels; can also be a (N, d)-matrix where
-##'        N is the number of alpha vectors of dimension d each
+##' @param level d-vector of confidence levels; can also be a (N, d)-matrix where
+##'        N is the number of 'level' vectors of dimension d each
 ##' @param start d-vector of initial values for the minimization of ELambda()
 ##' @param method method for optim()
 ##' @param ... additional arguments passed to the underlying optim()
 ##' @return value of optim() containing the geometric VaR in the component 'par'
 ##' @author Marius Hofert
-##' @note if length(alpha) == 1, 'lower' and 'upper' need to be provided for
+##' @note if length(level) == 1, 'lower' and 'upper' need to be provided for
 ##'       method "Brent"
-gVaR <- function(x, alpha, start = colMeans(x),
-                 method = if(length(alpha) == 1) "Brent" else "Nelder-Mead", ...)
+gVaR <- function(x, level, start = colMeans(x),
+                 method = if(length(level) == 1) "Brent" else "Nelder-Mead", ...)
 {
     if(!is.matrix(x)) x <- rbind(x)
-    if(is.matrix(alpha)) {
-        apply(alpha, 1, function(a) optim(par = start, fn = ELambda, X = x, alpha = a,
+    if(is.matrix(level)) {
+        apply(level, 1, function(a) optim(par = start, fn = ELambda, X = x, level = a,
                                           measure = "gVaR", method = method, ...))
-    } else { # alpha is a single vector (for d > 1) or number (for d = 1)
-        optim(par = start, fn = ELambda, X = x, alpha = alpha, measure = "gVaR",
+    } else { # level is a single vector (for d > 1) or number (for d = 1)
+        optim(par = start, fn = ELambda, X = x, level = level, measure = "gVaR",
               method = method, ...)
     }
 }
@@ -157,25 +212,24 @@ gVaR <- function(x, alpha, start = colMeans(x),
 ##' @title Multivariate Geometric Expectile
 ##' @param x (n, d)-matrix containing random sample from the underlying
 ##'        multivariate distribution H
-##' @param alpha d-vector of confidence levels; can also be a (N, d)-matrix where
-##'        N is the number of alpha vectors of dimension d each
+##' @param level d-vector of confidence levels; can also be a (N, d)-matrix where
+##'        N is the number of level vectors of dimension d each
 ##' @param start d-vector of initial values for the minimization of ELambda()
 ##' @param method method for optim()
 ##' @param ... additional arguments passed to the underlying optim()
 ##' @return value of optim() containing the geometric Exp in the component 'par'
 ##' @author Marius Hofert
-##' @note if length(alpha) == 1, 'lower' and 'upper' need to be provided for
+##' @note if length(level) == 1, 'lower' and 'upper' need to be provided for
 ##'       method "Brent"
-gEX <- function(x, alpha, start = colMeans(x),
-                 method = if(length(alpha) == 1) "Brent" else "Nelder-Mead", ...)
+gEX <- function(x, level, start = colMeans(x),
+                 method = if(length(level) == 1) "Brent" else "Nelder-Mead", ...)
 {
     if(!is.matrix(x)) x <- rbind(x)
-    if(is.matrix(alpha)) {
-        apply(alpha, 1, function(a) optim(par = start, fn = ELambda, X = x, alpha = a,
+    if(is.matrix(level)) {
+        apply(level, 1, function(a) optim(par = start, fn = ELambda, X = x, level = a,
                                           measure = "gExp", method = method, ...))
-    } else { # alpha is a single vector (for d > 1) or number (for d = 1)
-        optim(par = start, fn = ELambda, X = x, alpha = alpha, measure = "gExp",
+    } else { # level is a single vector (for d > 1) or number (for d = 1)
+        optim(par = start, fn = ELambda, X = x, level = level, measure = "gExp",
               method = method, ...)
     }
 }
-

@@ -1,10 +1,14 @@
 \name{risk_measures}
 \alias{VaR_np}
 \alias{VaR_t}
+\alias{VaR_GPD}
 \alias{VaR_Par}
+\alias{VaR_POT}
 \alias{ES_np}
 \alias{ES_t}
+\alias{ES_GPD}
 \alias{ES_Par}
+\alias{ES_POT}
 \alias{gVaR}
 \alias{gEX}
 \title{Risk Measures}
@@ -12,21 +16,25 @@
   Computing risk measures.
 }
 \usage{
-## value-at-risk
-VaR_np(x, alpha, names = FALSE, type = 1, ...)
-VaR_t(alpha, mu = 0, sigma = 1, df = Inf)
-VaR_Par(alpha, theta, kappa = 1)
+## Value-at-risk
+VaR_np(x, level, names = FALSE, type = 1, ...)
+VaR_t(level, loc = 0, scale = 1, df = Inf)
+VaR_GPD(level, shape, scale)
+VaR_Par(level, shape, scale = 1)
+VaR_POT(level, threshold, p.exceed, shape, scale)
 
-## expected shortfall
-ES_np(x, alpha, method = c(">", ">="), verbose = FALSE, ...)
-ES_t(alpha, mu = 0, sigma = 1, df = Inf)
-ES_Par(alpha, theta, kappa = 1)
+## Expected shortfall
+ES_np(x, level, method = c(">", ">="), verbose = FALSE, ...)
+ES_t(level, loc = 0, scale = 1, df = Inf)
+ES_GPD(level, shape, scale)
+ES_Par(level, shape, scale = 1)
+ES_POT(level, threshold, p.exceed, shape, scale)
 
-## multivariate geometric value-at-risk and expectiles
-gVaR(x, alpha, start = colMeans(x),
-     method = if(length(alpha) == 1) "Brent" else "Nelder-Mead", ...)
-gEX(x, alpha, start = colMeans(x),
-    method = if(length(alpha) == 1) "Brent" else "Nelder-Mead", ...)
+## Multivariate geometric value-at-risk and expectiles
+gVaR(x, level, start = colMeans(x),
+     method = if(length(level) == 1) "Brent" else "Nelder-Mead", ...)
+gEX(x, level, start = colMeans(x),
+    method = if(length(level) == 1) "Brent" else "Nelder-Mead", ...)
 }
 \arguments{
   \item{x}{
@@ -36,23 +44,43 @@ gEX(x, alpha, start = colMeans(x),
       \item{otherwise}{\code{\link{vector}} of losses.}
     }
   }
-  \item{alpha}{
+  \item{level}{
     \describe{
       \item{\code{gVaR()}, \code{gEX()}}{\code{\link{vector}} or
-	\code{\link{matrix}} of	(rowwise) confidence levels (all in
-	\eqn{[0,1]}).}
+	\code{\link{matrix}} of	(rowwise) confidence levels \eqn{\alpha}{alpha}
+	(all in \eqn{[0,1]}).}
       \item{otherwise}{confidence level \eqn{\alpha\in[0,1]}{alpha in
 	  [0,1]}.}
     }
   }
   \item{names}{see \code{?\link{quantile}}.}
   \item{type}{see \code{?\link{quantile}}.}
-  \item{mu}{location parameter.}
-  \item{sigma}{scale parameter, a positive number.}
+  \item{loc}{location parameter \eqn{\mu}{mu}.}
+  \item{shape}{
+    \describe{
+      \item{\code{VaR_GPD()}, \code{ES_GPD()}}{GPD shape parameter
+	\eqn{\xi}{xi}, a real number.}
+      \item{\code{VaR_Par()}, \code{ES_Par()}}{Pareto shape parameter
+	\eqn{\theta}{theta}, a positive number.}
+    }
+  }
+  \item{scale}{
+    \describe{
+      \item{\code{VaR_t()}, \code{ES_t()}}{\eqn{$t$}{t} scale parameter
+	\eqn{\sigma}{sigma}, a positive number.}
+      \item{\code{VaR_GPD()}, \code{ES_GPD()}}{GPD scale parameter
+	\eqn{\beta}{beta}, a positive number.}
+      \item{\code{VaR_Par()}, \code{ES_Par()}}{Pareto scale parameter
+	\eqn{\kappa}{kappa}, a positive number.}
+    }
+  }
   \item{df}{degrees of freedom, a positive number; choose \code{df = Inf}
     for the normal distribution.}
-  \item{theta}{Pareto shape parameter, a positive number.}
-  \item{kappa}{Pareto scale parameter, a positive number.}
+  \item{threshold}{threhold \eqn{u}{u} (used to estimate the exceedance
+    probability based on the data \code{x}).}
+  \item{p.exceed}{exceedance probability; typically \code{mean(x > threshold)}
+    for \code{x} being the data modeled with the peaks-over-threshold
+    (POT) method.}
   \item{start}{\code{\link{vector}} of initial values for the underlying
     \code{\link{optim}()}.}
   \item{method}{
@@ -86,6 +114,9 @@ gEX(x, alpha, start = colMeans(x),
 
   \code{VaR_t()}, \code{ES_t()} compute value-at-risk and expected
   shortfall for the \eqn{t} (or normal) distribution.
+
+  \code{VaR_GPD()}, \code{ES_GPD()} compute value-at-risk and expected
+  shortfall for the generalized Pareto distribution (GPD).
 
   \code{VaR_Par()}, \code{ES_Par()} compute value-at-risk and expected
   shortfall for the Pareto distribution.
@@ -123,18 +154,18 @@ L <- rlnorm(1000, meanlog = -1, sdlog = 2) # L ~ LN(mu, sig^2)
 ##       - E(L) = exp(mu + (sig^2)/2), var(L) = (exp(sig^2)-1)*exp(2*mu + sig^2)
 ##         To obtain a sample with E(L) = a and var(L) = b, use:
 ##         mu = log(a)-log(1+b/a^2)/2 and sig = sqrt(log(1+b/a^2))
-VaR_np(L, alpha = 0.99)
-ES_np(L,  alpha = 0.99)
+VaR_np(L, level = 0.99)
+ES_np(L,  level = 0.99)
 
 ## Example 2.16 in McNeil, Frey, Embrechts (2015)
 V <- 10000 # value of the portfolio today
 sig <- 0.2/sqrt(250) # daily volatility (annualized volatility of 20%)
 nu <- 4 # degrees of freedom for the t distribution
 alpha <- seq(0.001, 0.999, length.out = 256) # confidence levels
-VaRnorm <- VaR_t(alpha, sigma = V*sig, df = Inf)
-VaRt4 <- VaR_t(alpha, sigma = V*sig*sqrt((nu-2)/nu), df = nu)
-ESnorm <- ES_t(alpha, sigma = V*sig, df = Inf)
-ESt4 <- ES_t(alpha, sigma = V*sig*sqrt((nu-2)/nu), df = nu)
+VaRnorm <- VaR_t(alpha, scale = V*sig, df = Inf)
+VaRt4 <- VaR_t(alpha, scale = V*sig*sqrt((nu-2)/nu), df = nu)
+ESnorm <- ES_t(alpha, scale = V*sig, df = Inf)
+ESt4 <- ES_t(alpha, scale = V*sig*sqrt((nu-2)/nu), df = nu)
 ran <- range(VaRnorm, VaRt4, ESnorm, ESt4)
 plot(alpha, VaRnorm, type = "l", ylim = ran, xlab = expression(alpha), ylab = "")
 lines(alpha, VaRt4, col = "royalblue3")
@@ -160,14 +191,14 @@ set.seed(271) # for reproducibility
 U <- rCopula(n, cop = cop) # copula sample
 theta <- c(2.5, 4) # marginal Pareto parameters
 stopifnot(theta > 2) # need finite 2nd moments
-X <- sapply(1:2, function(j) qPar(U[,j], theta = theta[j])) # generate X
+X <- sapply(1:2, function(j) qPar(U[,j], shape = theta[j])) # generate X
 N <- 17 # number of angles (rather small here because of run time)
 phi <- seq(0, 2*pi, length.out = N) # angles
 r <- 0.98 # radius
 alpha <- r * cbind(alpha1 = cos(phi), alpha2 = sin(phi)) # vector of confidence levels
 
 ## Compute geometric value-at-risk
-system.time(res <- gVaR(X, alpha = alpha))
+system.time(res <- gVaR(X, level = alpha))
 gvar <- t(sapply(seq_len(nrow(alpha)), function(i) {
     x <- res[[i]]
     if(x[["convergence"]] != 0) # 0 = 'converged'
@@ -177,7 +208,7 @@ gvar <- t(sapply(seq_len(nrow(alpha)), function(i) {
 })) # (N, 2)-matrix
 
 ## Compute geometric expectiles
-system.time(res <- gEX(X, alpha = alpha))
+system.time(res <- gEX(X, level = alpha))
 gex <- t(sapply(seq_len(nrow(alpha)), function(i) {
     x <- res[[i]]
     if(x[["convergence"]] != 0) # 0 = 'converged'

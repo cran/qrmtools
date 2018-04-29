@@ -1,5 +1,5 @@
 Package: qrmtools
-Version: 0.0-8
+Version: 0.0-9
 Encoding: UTF-8
 Title: Tools for Quantitative Risk Management
 Description: Functions and data sets for reproducing selected results from
@@ -22,9 +22,9 @@ Imports: graphics, lattice, quantmod, Quandl, zoo, xts, methods,
 Suggests: combinat, copula, knitr, mvtnorm, QRM, sfsmisc, RColorBrewer,
         sn
 Enhances:
-License: GPL-2 | GPL-3
+License: GPL (>= 3) | file LICENCE
 NeedsCompilation: yes
 VignetteBuilder: knitr
 Repository: CRAN
-Date/Publication: 2018-01-25 22:07:43 UTC
-Packaged: 2018-01-25 21:15:20 UTC; mhofert
+Date/Publication: 2018-04-29 03:29:57 UTC
+Packaged: 2018-04-29 01:06:30 UTC; mhofert

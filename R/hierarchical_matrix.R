@@ -1,15 +1,15 @@
-### Constructing nested block matrices #########################################
+### Constructing hierarchical matrices #########################################
 
-##' @title Constructing nested block matrices
+##' @title Constructing Hierarchical Matrices
 ##' @param x list of length 2 or 3 containing the homogeneous entry of the
 ##'        current block, the components belonging to the current block and,
 ##'        possibly, another (nested) list of the same type.
 ##'        See also 'nacList' as described on ?onacopulaL of the R package copula.
 ##' @param diagonal diagonal entries (default 1)
-##' @return nested block matrix
+##' @return Hierarchical matrix
 ##' @author Marius Hofert
-##' @note based on ideas of copula::nacPairthetas
-nested_matrix <- function(x, diagonal = rep(1, d))
+##' @note Based on ideas of copula::nacPairthetas
+hierarchical_matrix <- function(x, diagonal = rep(1, d))
 {
     stopifnot(is.list(x))
     ## Auxiliary function for determining d (size of return matrix M)

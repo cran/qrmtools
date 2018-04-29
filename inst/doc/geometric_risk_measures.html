@@ -12,7 +12,7 @@
 
 <meta name="author" content="Marius Hofert, Klaus Herrmann and Mélina Mailhot" />
 
-<meta name="date" content="2018-01-25" />
+<meta name="date" content="2018-04-28" />
 
 <title>Geometric Risk Measures</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Geometric Risk Measures</h1>
 <h4 class="author"><em>Marius Hofert, Klaus Herrmann and Mélina Mailhot</em></h4>
-<h4 class="date"><em>2018-01-25</em></h4>
+<h4 class="date"><em>2018-04-28</em></h4>
 
 
 
@@ -130,22 +130,22 @@ dH &lt;-<span class="st"> </span><span class="cf">function</span>(x, y)
     <span class="kw">dCopula</span>(<span class="kw">cbind</span>(<span class="kw">psn</span>(x, <span class="dt">xi =</span> xi, <span class="dt">omega =</span> om, <span class="dt">alpha =</span> al), <span class="kw">pt</span>(y, <span class="dt">df =</span> nu)),
             <span class="dt">copula =</span> cop) <span class="op">*</span><span class="st"> </span><span class="kw">dsn</span>(x, <span class="dt">xi =</span> xi, <span class="dt">omega =</span> om, <span class="dt">alpha =</span> al) <span class="op">*</span><span class="st"> </span><span class="kw">dt</span>(y, <span class="dt">df =</span> nu)
 h &lt;-<span class="st"> </span><span class="kw">outer</span>(x, y, <span class="dt">FUN =</span> dH)</code></pre></div>
-<p>Now we can compute geometric VaRs and geometric expectiles for both sets of confidence levels; note that <code>gVaR()</code> and <code>gEX()</code> are matricized in <code>alpha</code>.</p>
+<p>Now we can compute geometric VaRs and geometric expectiles for both sets of confidence levels; note that <code>gVaR()</code> and <code>gEX()</code> are matricized in <code>level</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Compute geometric VaR and expectile for both sets of indices alpha
-gVaR.a1 &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">vapply</span>(<span class="kw">gVaR</span>(X, <span class="dt">alpha =</span> a1), <span class="st">`</span><span class="dt">[[</span><span class="st">`</span>, <span class="kw">numeric</span>(<span class="dv">2</span>), <span class="st">&quot;par&quot;</span>),
+gVaR.a1 &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">vapply</span>(<span class="kw">gVaR</span>(X, <span class="dt">level =</span> a1), <span class="st">`</span><span class="dt">[[</span><span class="st">`</span>, <span class="kw">numeric</span>(<span class="dv">2</span>), <span class="st">&quot;par&quot;</span>),
                   <span class="dt">ncol =</span> <span class="dv">2</span>, <span class="dt">byrow =</span> <span class="ot">TRUE</span>)
-gEX.a1  &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">vapply</span>(<span class="kw">gEX</span> (X, <span class="dt">alpha =</span> a1), <span class="st">`</span><span class="dt">[[</span><span class="st">`</span>, <span class="kw">numeric</span>(<span class="dv">2</span>), <span class="st">&quot;par&quot;</span>),
+gEX.a1  &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">vapply</span>(<span class="kw">gEX</span> (X, <span class="dt">level =</span> a1), <span class="st">`</span><span class="dt">[[</span><span class="st">`</span>, <span class="kw">numeric</span>(<span class="dv">2</span>), <span class="st">&quot;par&quot;</span>),
                   <span class="dt">ncol =</span> <span class="dv">2</span>, <span class="dt">byrow =</span> <span class="ot">TRUE</span>)
-gVaR.a2 &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">vapply</span>(<span class="kw">gVaR</span>(X, <span class="dt">alpha =</span> a2), <span class="st">`</span><span class="dt">[[</span><span class="st">`</span>, <span class="kw">numeric</span>(<span class="dv">2</span>), <span class="st">&quot;par&quot;</span>),
+gVaR.a2 &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">vapply</span>(<span class="kw">gVaR</span>(X, <span class="dt">level =</span> a2), <span class="st">`</span><span class="dt">[[</span><span class="st">`</span>, <span class="kw">numeric</span>(<span class="dv">2</span>), <span class="st">&quot;par&quot;</span>),
                   <span class="dt">ncol =</span> <span class="dv">2</span>, <span class="dt">byrow =</span> <span class="ot">TRUE</span>)
-gEX.a2  &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">vapply</span>(<span class="kw">gEX</span> (X, <span class="dt">alpha =</span> a2), <span class="st">`</span><span class="dt">[[</span><span class="st">`</span>, <span class="kw">numeric</span>(<span class="dv">2</span>), <span class="st">&quot;par&quot;</span>),
+gEX.a2  &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">vapply</span>(<span class="kw">gEX</span> (X, <span class="dt">level =</span> a2), <span class="st">`</span><span class="dt">[[</span><span class="st">`</span>, <span class="kw">numeric</span>(<span class="dv">2</span>), <span class="st">&quot;par&quot;</span>),
                   <span class="dt">ncol =</span> <span class="dv">2</span>, <span class="dt">byrow =</span> <span class="ot">TRUE</span>)</code></pre></div>
 <p>We can also compute the geometric VaR and geometric expectile at the specific points <code>p1</code> and <code>p2</code> chosen above.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Compute geometric VaR and expectile for the points p1 and p2
-gVaR.p1 &lt;-<span class="st"> </span><span class="kw">gVaR</span>(X, <span class="dt">alpha =</span> p1)<span class="op">$</span>par
-gEX.p1  &lt;-<span class="st">  </span><span class="kw">gEX</span>(X, <span class="dt">alpha =</span> p1)<span class="op">$</span>par
-gVaR.p2 &lt;-<span class="st"> </span><span class="kw">gVaR</span>(X, <span class="dt">alpha =</span> p2)<span class="op">$</span>par
-gEX.p2  &lt;-<span class="st">  </span><span class="kw">gEX</span>(X, <span class="dt">alpha =</span> p2)<span class="op">$</span>par</code></pre></div>
+gVaR.p1 &lt;-<span class="st"> </span><span class="kw">gVaR</span>(X, <span class="dt">level =</span> p1)<span class="op">$</span>par
+gEX.p1  &lt;-<span class="st">  </span><span class="kw">gEX</span>(X, <span class="dt">level =</span> p1)<span class="op">$</span>par
+gVaR.p2 &lt;-<span class="st"> </span><span class="kw">gVaR</span>(X, <span class="dt">level =</span> p2)<span class="op">$</span>par
+gEX.p2  &lt;-<span class="st">  </span><span class="kw">gEX</span>(X, <span class="dt">level =</span> p2)<span class="op">$</span>par</code></pre></div>
 <p>Finally, let us plot the geometric risk measures.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Plot
 <span class="kw">par</span>(<span class="dt">pty =</span> <span class="st">&quot;s&quot;</span>)
@@ -177,7 +177,7 @@ res &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="dv
     U &lt;-<span class="st"> </span><span class="kw">rCopula</span>(n, <span class="dt">copula =</span> cop) <span class="co"># sample copula</span>
     X &lt;-<span class="st"> </span><span class="kw">cbind</span>(<span class="kw">qsn</span>(U[,<span class="dv">1</span>], <span class="dt">xi =</span> xi, <span class="dt">omega =</span> om, <span class="dt">alpha =</span> al),
                <span class="kw">qt</span>(U[,<span class="dv">2</span>], <span class="dt">df =</span> nu)) <span class="co"># map to skew-normal and t_4 margins</span>
-    <span class="kw">matrix</span>(<span class="kw">vapply</span>(<span class="kw">gEX</span>(X, <span class="dt">alpha =</span> a1), <span class="st">`</span><span class="dt">[[</span><span class="st">`</span>, <span class="kw">numeric</span>(<span class="dv">2</span>), <span class="st">&quot;par&quot;</span>), <span class="dt">ncol =</span> <span class="dv">2</span>,
+    <span class="kw">matrix</span>(<span class="kw">vapply</span>(<span class="kw">gEX</span>(X, <span class="dt">level =</span> a1), <span class="st">`</span><span class="dt">[[</span><span class="st">`</span>, <span class="kw">numeric</span>(<span class="dv">2</span>), <span class="st">&quot;par&quot;</span>), <span class="dt">ncol =</span> <span class="dv">2</span>,
            <span class="dt">byrow =</span> <span class="ot">TRUE</span>)
 })</code></pre></div>
 <p>Here are the various geometric expectile curves (each based on the first set of confidence levels considered before).</p>
@@ -202,12 +202,12 @@ ran &lt;-<span class="st"> </span><span class="kw">range</span>(gEX.a1, res) <sp
 u &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>) <span class="op">/</span><span class="st"> </span><span class="kw">sqrt</span>(<span class="dv">2</span>) <span class="co"># direction</span>
 n. &lt;-<span class="st"> </span><span class="dv">64</span>
 mag &lt;-<span class="st"> </span><span class="kw">tail</span>(<span class="kw">head</span>(<span class="kw">seq</span>(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>, <span class="dt">length.out =</span> n.), <span class="dt">n =</span> <span class="op">-</span><span class="dv">1</span>), <span class="dt">n =</span> <span class="op">-</span><span class="dv">1</span>) <span class="co"># magnitude</span>
-a &lt;-<span class="st"> </span><span class="kw">matrix</span>(mag <span class="op">*</span><span class="st"> </span><span class="kw">rep</span>(u, <span class="dt">each =</span> n. <span class="op">-</span><span class="st"> </span><span class="dv">2</span>), <span class="dt">ncol =</span> <span class="dv">2</span>)  <span class="co"># alpha</span></code></pre></div>
+a &lt;-<span class="st"> </span><span class="kw">matrix</span>(mag <span class="op">*</span><span class="st"> </span><span class="kw">rep</span>(u, <span class="dt">each =</span> n. <span class="op">-</span><span class="st"> </span><span class="dv">2</span>), <span class="dt">ncol =</span> <span class="dv">2</span>) <span class="co"># alpha</span></code></pre></div>
 <p>Now compute geometric VaRs and geometric expectiles for these confidence levels.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Compute geometric VaRs and expectiles for the alphas
-gVaR.a &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">vapply</span>(<span class="kw">gVaR</span>(X, <span class="dt">alpha =</span> a), <span class="st">`</span><span class="dt">[[</span><span class="st">`</span>, <span class="kw">numeric</span>(<span class="dv">2</span>), <span class="st">&quot;par&quot;</span>),
+gVaR.a &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">vapply</span>(<span class="kw">gVaR</span>(X, <span class="dt">level =</span> a), <span class="st">`</span><span class="dt">[[</span><span class="st">`</span>, <span class="kw">numeric</span>(<span class="dv">2</span>), <span class="st">&quot;par&quot;</span>),
                  <span class="dt">ncol =</span> <span class="dv">2</span>, <span class="dt">byrow =</span> <span class="ot">TRUE</span>)
-gEX.a  &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">vapply</span>(<span class="kw">gEX</span> (X, <span class="dt">alpha =</span> a), <span class="st">`</span><span class="dt">[[</span><span class="st">`</span>, <span class="kw">numeric</span>(<span class="dv">2</span>), <span class="st">&quot;par&quot;</span>),
+gEX.a  &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">vapply</span>(<span class="kw">gEX</span> (X, <span class="dt">level =</span> a), <span class="st">`</span><span class="dt">[[</span><span class="st">`</span>, <span class="kw">numeric</span>(<span class="dv">2</span>), <span class="st">&quot;par&quot;</span>),
                  <span class="dt">ncol =</span> <span class="dv">2</span>, <span class="dt">byrow =</span> <span class="ot">TRUE</span>)</code></pre></div>
 <p>Here is a graphical representation.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Plot of margins of geometric VaRs and expectiles

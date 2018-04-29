@@ -9,18 +9,18 @@
   generation for the generalized extreme value distribution (GEV).
 }
 \usage{
-dGEV(x, xi, mu = 0, sigma = 1, log = FALSE)
-pGEV(q, xi, mu = 0, sigma = 1, lower.tail = TRUE, log.p = FALSE)
-qGEV(p, xi, mu = 0, sigma = 1, lower.tail = TRUE, log.p = FALSE)
-rGEV(n, xi, mu = 0, sigma = 1)
+dGEV(x, shape, loc = 0, scale = 1, log = FALSE)
+pGEV(q, shape, loc = 0, scale = 1, lower.tail = TRUE, log.p = FALSE)
+qGEV(p, shape, loc = 0, scale = 1, lower.tail = TRUE, log.p = FALSE)
+rGEV(n, shape, loc = 0, scale = 1)
 }
 \arguments{
   \item{x, q}{vector of quantiles.}
   \item{p}{vector of probabilities.}
   \item{n}{number of observations.}
-  \item{xi}{GEV shape parameter, a real number.}
-  \item{mu}{GEV location parameter, a real number.}
-  \item{sigma}{GEV scale parameter, a positive number.}
+  \item{shape}{GEV shape parameter \eqn{\xi}{xi}, a real.}
+  \item{loc}{GEV location parameter \eqn{\mu}{mu}, a real.}
+  \item{scale}{GEV scale parameter \eqn{\sigma}{sigma}, a positive real.}
   \item{lower.tail}{\code{\link{logical}}; if TRUE (default)
     probabilities are \eqn{P(X \le x)}{P(X <= x)} otherwise, \eqn{P(X > x)}.}
   \item{log, log.p}{logical; if TRUE, probabilities p are given as log(p).}
@@ -48,7 +48,7 @@ rGEV(n, xi, mu = 0, sigma = 1)
 }
 \examples{
 ## Basic sanity checks
-plot(pGEV(rGEV(1000, xi = 0.5), xi = 0.5)) # should be U[0,1]
-curve(dGEV(x, xi = 0.5), from = -3, to = 5)
+plot(pGEV(rGEV(1000, shape = 0.5), shape = 0.5)) # should be U[0,1]
+curve(dGEV(x, shape = 0.5), from = -3, to = 5)
 }
 \keyword{distribution}

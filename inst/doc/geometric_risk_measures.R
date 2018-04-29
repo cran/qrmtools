@@ -53,21 +53,21 @@ h <- outer(x, y, FUN = dH)
 
 ## ------------------------------------------------------------------------
 ## Compute geometric VaR and expectile for both sets of indices alpha
-gVaR.a1 <- matrix(vapply(gVaR(X, alpha = a1), `[[`, numeric(2), "par"),
+gVaR.a1 <- matrix(vapply(gVaR(X, level = a1), `[[`, numeric(2), "par"),
                   ncol = 2, byrow = TRUE)
-gEX.a1  <- matrix(vapply(gEX (X, alpha = a1), `[[`, numeric(2), "par"),
+gEX.a1  <- matrix(vapply(gEX (X, level = a1), `[[`, numeric(2), "par"),
                   ncol = 2, byrow = TRUE)
-gVaR.a2 <- matrix(vapply(gVaR(X, alpha = a2), `[[`, numeric(2), "par"),
+gVaR.a2 <- matrix(vapply(gVaR(X, level = a2), `[[`, numeric(2), "par"),
                   ncol = 2, byrow = TRUE)
-gEX.a2  <- matrix(vapply(gEX (X, alpha = a2), `[[`, numeric(2), "par"),
+gEX.a2  <- matrix(vapply(gEX (X, level = a2), `[[`, numeric(2), "par"),
                   ncol = 2, byrow = TRUE)
 
 ## ------------------------------------------------------------------------
 ## Compute geometric VaR and expectile for the points p1 and p2
-gVaR.p1 <- gVaR(X, alpha = p1)$par
-gEX.p1  <-  gEX(X, alpha = p1)$par
-gVaR.p2 <- gVaR(X, alpha = p2)$par
-gEX.p2  <-  gEX(X, alpha = p2)$par
+gVaR.p1 <- gVaR(X, level = p1)$par
+gEX.p1  <-  gEX(X, level = p1)$par
+gVaR.p2 <- gVaR(X, level = p2)$par
+gEX.p2  <-  gEX(X, level = p2)$par
 
 ## ---- fig.align = "center", fig.width = 6, fig.height = 6----------------
 ## Plot
@@ -97,7 +97,7 @@ res <- lapply(1:B, function(b) { # iterate over 1:B
     U <- rCopula(n, copula = cop) # sample copula
     X <- cbind(qsn(U[,1], xi = xi, omega = om, alpha = al),
                qt(U[,2], df = nu)) # map to skew-normal and t_4 margins
-    matrix(vapply(gEX(X, alpha = a1), `[[`, numeric(2), "par"), ncol = 2,
+    matrix(vapply(gEX(X, level = a1), `[[`, numeric(2), "par"), ncol = 2,
            byrow = TRUE)
 })
 
@@ -120,13 +120,13 @@ points(rbind(colMeans(X)), pch = 19, cex = 1.2) # filled dot
 u <- c(1, 1) / sqrt(2) # direction
 n. <- 64
 mag <- tail(head(seq(-1, 1, length.out = n.), n = -1), n = -1) # magnitude
-a <- matrix(mag * rep(u, each = n. - 2), ncol = 2)  # alpha
+a <- matrix(mag * rep(u, each = n. - 2), ncol = 2) # alpha
 
 ## ------------------------------------------------------------------------
 ## Compute geometric VaRs and expectiles for the alphas
-gVaR.a <- matrix(vapply(gVaR(X, alpha = a), `[[`, numeric(2), "par"),
+gVaR.a <- matrix(vapply(gVaR(X, level = a), `[[`, numeric(2), "par"),
                  ncol = 2, byrow = TRUE)
-gEX.a  <- matrix(vapply(gEX (X, alpha = a), `[[`, numeric(2), "par"),
+gEX.a  <- matrix(vapply(gEX (X, level = a), `[[`, numeric(2), "par"),
                  ncol = 2, byrow = TRUE)
 
 ## ---- fig.align = "center", fig.width = 6, fig.height = 6----------------

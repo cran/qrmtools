@@ -3,30 +3,30 @@
 ### 1 Crude VaR bounds (for both best and worst VaR) ###########################
 
 ##' @title Crude bounds for any VaR_alpha
-##' @param alpha confidence level
+##' @param level confidence level
 ##' @param qF (list of) marginal quantile functions
 ##' @param d if qF is a function, dimension for the homogeneous case; ignored
 ##'        otherwise
 ##' @param ... ellipsis argument passed to qF()
 ##' @return 2-vector containing crude VaR_alpha bounds
 ##' @author Marius Hofert
-crude_VaR_bounds <- function(alpha, qF, d = NULL, ...)
+crude_VaR_bounds <- function(level, qF, d = NULL, ...)
 {
     ## ... are passed to *all* qF()
     if(is.list(qF)) { # inhomogeneous case
         if(!all(unlist(lapply(qF, is.function))))
             stop("qF has to be a (quantile) function or list of such")
         d <- length(qF)
-        qF.low <- sapply(qF, function(qF.) qF.(alpha/d, ...))
-        qF.up  <- sapply(qF, function(qF.) qF.((d-1+alpha)/d, ...))
+        qF.low <- sapply(qF, function(qF.) qF.(level/d, ...))
+        qF.up  <- sapply(qF, function(qF.) qF.((d-1+level)/d, ...))
         d * c(min(qF.low), max(qF.up))
     } else { # homogeneous case
         if(!is.function(qF))
             stop("qF has to be a (quantile) function or list of such")
         if(is.null(d))
             stop("if qF is a single function, d has to be a positive integer")
-        qF.low <- qF(alpha, ...) # => lower bound d * VaR_alpha(F)
-        qF.up  <- qF((d-1+alpha)/d, ...)
+        qF.low <- qF(level, ...) # => lower bound d * VaR_alpha(F)
+        qF.up  <- qF((d-1+level)/d, ...)
         d * c(qF.low, qF.up)
     }
 }
@@ -106,32 +106,32 @@ dual_bound <- function(s, d, pF, tol = .Machine$double.eps^0.25, ...)
 ##' @title Scaled right-hand side term in the objective function for computing
 ##'        worst VaR as in McNeil, Frey, Embrechts (2015, Prop. 8.32)
 ##' @param c evaluation point
-##' @param alpha confidence level alpha
+##' @param level confidence level alpha
 ##' @param d dimension d
 ##' @param method character string giving the method
 ##'        generic = numerical integration; Wang.Par = Pareto distibution
-##' @param ... ellipsis argument containing theta (for method = "Wang.Par")
+##' @param ... ellipsis argument containing shape (for method = "Wang.Par")
 ##'        or qF (for method = "generic")
 ##' @return Right-hand side term in Prop. 3.1
 ##' @author Marius Hofert
 ##' @note for the correct 'c', this is the conditional expectation
-Wang_h_aux <- function(c, alpha, d, method = c("generic", "Wang.Par"), ...)
+Wang_h_aux <- function(c, level, d, method = c("generic", "Wang.Par"), ...)
 {
     ddd <- list(...)
     method <- match.arg(method)
     switch(method,
     "generic" = {
         qF <- ddd$qF # needs 'qF()'
-        a <- alpha + (d-1)*c
+        a <- level + (d-1)*c
         b <- 1-c
         qF(a)*(d-1)/d + qF(b)/d
     },
     "Wang.Par" = {
-        ## We don't use qF(a)*(d-1)/d + qF(b)/d for qF(x) = qPar(x, theta = theta)
+        ## We don't use qF(a)*(d-1)/d + qF(b)/d for qF(x) = qPar(x, shape = shape)
         ## here as qF(b) = qF(1-c) and 1-c == 1 for small c > 0 => numerically,
         ## qF(b) = Inf then.
-        th <- ddd$theta # needs 'theta'
-        t1 <- (1-alpha)/c-(d-1)
+        th <- ddd$shape # needs 'shape'
+        t1 <- (1-level)/c-(d-1)
         (c^(-1/th)/d) * ((d-1)*t1^(-1/th) + 1) - 1 # checked (= qF(a)*(d-1)/d + qF(b)/d)
     },
     stop("Wrong method"))
@@ -140,15 +140,15 @@ Wang_h_aux <- function(c, alpha, d, method = c("generic", "Wang.Par"), ...)
 ##' @title Objective function for computing the worst VaR as in
 ##'        McNeil, Frey, Embrechts (2015, Prop. 8.32)
 ##' @param c evaluation point
-##' @param alpha confidence level alpha
+##' @param level confidence level alpha
 ##' @param d dimension d
 ##' @param method character string giving the method
 ##' @param ... ellipsis argument passed to Wang_h_aux() and integrate()
 ##' @return objective function for computing the worst VaR
 ##' @author Marius Hofert
-Wang_h <- function(c, alpha, d, method = c("generic", "Wang.Par"), ...)
+Wang_h <- function(c, level, d, method = c("generic", "Wang.Par"), ...)
 {
-    stopifnot(0 <= c, c <= (1-alpha)/d) # sanity check (otherwise b > a)
+    stopifnot(0 <= c, c <= (1-level)/d) # sanity check (otherwise b > a)
     method <- match.arg(method)
     ddd <- list(...)
 
@@ -156,10 +156,10 @@ Wang_h <- function(c, alpha, d, method = c("generic", "Wang.Par"), ...)
     Ibar <- switch(method,
     "generic" = {
         qF <- ddd$qF # needs 'qF()'
-        if(c == (1-alpha)/d) { # Properly deal with limit c = (1-alpha)/d
-            qF(1-(1-alpha)/d)
+        if(c == (1-level)/d) { # Properly deal with limit c = (1-alpha)/d
+            qF(1-(1-level)/d)
         } else {
-            a <- alpha + (d-1)*c
+            a <- level + (d-1)*c
             b <- 1-c
             ddd$qF <- NULL # remove from '...'
             int <- function(...)
@@ -168,12 +168,12 @@ Wang_h <- function(c, alpha, d, method = c("generic", "Wang.Par"), ...)
         }
     },
     "Wang.Par" = {
-        th <- ddd$theta # needs 'theta'
-        if(c == (1-alpha)/d) { # Properly deal with limit c = (1-alpha)/d
-            ((1-alpha)/d)^(-1/th) - 1
+        th <- ddd$shape # needs 'shape'
+        if(c == (1-level)/d) { # Properly deal with limit c = (1-alpha)/d
+            ((1-level)/d)^(-1/th) - 1
         } else {
-            t1 <- (1-alpha)/c-(d-1)
-            t2 <- 1-alpha-d*c
+            t1 <- (1-level)/c-(d-1)
+            t2 <- 1-level-d*c
             if(th == 1) log(t1)/t2 - 1
             else (th/(1-th))*c^(1-1/th)*(1-t1^(1-1/th))/t2 - 1
         }
@@ -181,7 +181,7 @@ Wang_h <- function(c, alpha, d, method = c("generic", "Wang.Par"), ...)
     stop("Wrong method"))
 
     ## Return
-    Ibar - Wang_h_aux(c, alpha = alpha, d = d, method = method, ...)
+    Ibar - Wang_h_aux(c, level = level, d = d, method = method, ...)
 }
 
 
@@ -207,7 +207,7 @@ Wang_h <- function(c, alpha, d, method = c("generic", "Wang.Par"), ...)
 ##'                       a smaller tolerance (see vignette).
 ##'           "dual": Embrechts, Puccetti, Rueschendorf (2013, Proposition 4)
 ##'                   Numerically less stable; no formula for best VaR known (=> NA)
-##' @param alpha confidence level
+##' @param level confidence level
 ##' @param d dimension
 ##' @param method character string giving the method
 ##' @param interval initial interval
@@ -222,29 +222,29 @@ Wang_h <- function(c, alpha, d, method = c("generic", "Wang.Par"), ...)
 ##'       - Updated version of Embrechts, Puccetti, Rueschendorf, Wang, Beleraj (2014)
 ##'         on Ruodu's website: Correct worst VaR but still wrong best VaR (Eq. (3.4)).
 ##'       - Both best and worst VaR are correct in McNeil, Frey, Embrechts (2015, Prop. 8.32)
-VaR_bounds_hom <- function(alpha, d, method = c("Wang", "Wang.Par", "dual"),
+VaR_bounds_hom <- function(level, d, method = c("Wang", "Wang.Par", "dual"),
                            interval = NULL, tol = NULL, ...)
 {
-    stopifnot(0 < alpha, alpha < 1, d >= 2)
+    stopifnot(0 < level, level < 1, d >= 2)
     method <- match.arg(method)
 
     ## Deal with d == 2 first ##################################################
 
     if(d == 2) { # See Embrechts, Puccetti, Rueschendorf (2013, Prop. 2)
         if(method == "Wang.Par") {
-            theta <- NULL # make CRAN check happy
-            if(!hasArg(theta))
-                stop("The Pareto case requires the parameter theta")
-            th <- list(...)$theta
-            stopifnot(length(th) == 1, th > 0) # check theta here
-            qF <- function(p) qPar(p, theta = th)
-            return( c((1-alpha)^(-1/th)-1, 2*(((1-alpha)/2)^(-1/th)-1)) )
+            shape <- NULL # make CRAN check happy
+            if(!hasArg(shape))
+                stop("The Pareto case requires the parameter 'shape'")
+            th <- list(...)$shape
+            stopifnot(length(th) == 1, th > 0) # check shape here
+            qF <- function(p) qPar(p, shape = th)
+            return( c((1-level)^(-1/th)-1, 2*(((1-level)/2)^(-1/th)-1)) )
         } else {
             qF <- NULL # make CRAN check happy
             if(!hasArg(qF))
                 stop("The quantile function qF of F is required")
             qF <- list(...)$qF
-            return(c(qF(alpha), 2*qF((1+alpha)/2)))
+            return(c(qF(level), 2*qF((1+level)/2)))
         }
     }
 
@@ -260,22 +260,22 @@ VaR_bounds_hom <- function(alpha, d, method = c("Wang", "Wang.Par", "dual"),
                    qF <- ddd$qF # get qF()
                    ddd$qF <- NULL # remove from '...'
                    int <- function(...)
-                       integrate(qF, lower = 0, upper = alpha, ...)$value / alpha
-                   max((d-1)*qF(0)+qF(alpha), # See (*) above
+                       integrate(qF, lower = 0, upper = level, ...)$value / level
+                   max((d-1)*qF(0)+qF(level), # See (*) above
                        d * do.call(int, ddd))
                },
                "Wang.Par" = {
-                   theta <- NULL # make CRAN check happy
-                   if(!hasArg(theta))
-                       stop("Method 'Wang.Par' requires the parameter theta")
-                   th <- list(...)$theta
-                   stopifnot(length(th) == 1, th > 0) # check theta here
+                   shape <- NULL # make CRAN check happy
+                   if(!hasArg(shape))
+                       stop("Method 'Wang.Par' requires the parameter 'shape'")
+                   th <- list(...)$shape
+                   stopifnot(length(th) == 1, th > 0) # check shape here
                    Ibar <- if(th == 1) {
-                       -log1p(-alpha) - alpha
+                       -log1p(-level) - level
                    } else {
-                       ((1-alpha)^(1-1/th)-1)/(1-1/th) - alpha
+                       ((1-level)^(1-1/th)-1)/(1-1/th) - level
                    }
-                   max((d-1)*0 + (1-alpha)^(-1/th)-1, # See (*) above
+                   max((d-1)*0 + (1-level)^(-1/th)-1, # See (*) above
                        d * Ibar)
                },
                "dual" = { # "dual" only provides worst VaR
@@ -296,64 +296,64 @@ VaR_bounds_hom <- function(alpha, d, method = c("Wang", "Wang.Par", "dual"),
                if(!hasArg(qF))
                    stop("Method 'Wang' requires the quantile function qF of F")
                ## Check 'interval'
-               if(is.null(interval)) interval <- c(0, (1-alpha)/d)
+               if(is.null(interval)) interval <- c(0, (1-level)/d)
                else {
                    if(interval[1] < 0) stop("interval[1] needs to be >= 0")
-                   if(interval[1] > (1-alpha)/d) stop("interval[2] needs to be <= (1-alpha)/d")
+                   if(interval[1] > (1-level)/d) stop("interval[2] needs to be <= (1-level)/d")
                    if(interval[1] >= interval[2]) stop("interval[1] needs to be smaller than interval[2]")
                }
 
                ## Compute (and adjust) function values at endpoints
-               h.low <- Wang_h(interval[1], alpha = alpha, d = d, ...)
+               h.low <- Wang_h(interval[1], level = level, d = d, ...)
                if(is.na(h.low))
                    stop("Objective function at interval[1] is NA or NaN. Provide a larger interval[1].")
                h.up <- -h.low # avoid that uniroot() fails due to 0 at upper interval endpoint
 
                ## Root-finding on 'interval'
-               c. <- uniroot(function(c) Wang_h(c, alpha = alpha, d = d, ...),
+               c. <- uniroot(function(c) Wang_h(c, level = level, d = d, ...),
                              interval = interval, f.lower = h.low, f.upper = h.up, tol = tol)$root
-               d * Wang_h_aux(c., alpha = alpha, d = d, ...)
+               d * Wang_h_aux(c., level = level, d = d, ...)
 
            },
            "Wang.Par" = {
 
                ## Critical here (see vignette): smaller tolerance and extending the initial interval
 
-               ## Check 'theta'
-               theta <- NULL # make CRAN check happy
-               if(!hasArg(theta))
-                   stop("Method 'Wang.Par' requires the parameter theta")
-               th <- list(...)$theta
-               stopifnot(length(th) == 1, th > 0) # check theta here
+               ## Check 'shape'
+               shape <- NULL # make CRAN check happy
+               if(!hasArg(shape))
+                   stop("Method 'Wang.Par' requires the parameter 'shape'")
+               th <- list(...)$shape
+               stopifnot(length(th) == 1, th > 0) # check shape here
 
                ## Compute uniroot() initial interval
                if(is.null(interval)) {
                    low <- if(th > 1) {
-                       r <- (1-alpha)/((d/(th-1)+1)^th + d-1)
-                       r/2 # adjustment to guarantee numerically that h is of opposite sign (required for very large theta)
+                       r <- (1-level)/((d/(th-1)+1)^th + d-1)
+                       r/2 # adjustment to guarantee numerically that h is of opposite sign (required for very large shape)
                    } else if(th == 1) {
                        e <- exp(1)
-                       (1-alpha)/((d+1)^(e/(e-1))+d-1)
+                       (1-level)/((d+1)^(e/(e-1))+d-1)
                    } else {
-                       r <- (1-th)*(1-alpha)/d
-                       r/2 # adjustment to guarantee numerically that h is of opposite sign (required for very small theta)
+                       r <- (1-th)*(1-level)/d
+                       r/2 # adjustment to guarantee numerically that h is of opposite sign (required for very small shape)
                    }
                    up <- if(th == 1) {
-                       (1-alpha)/(3*d/2-1)
+                       (1-level)/(3*d/2-1)
                    } else {
-                       (1-alpha)*(d-1+th)/((d-1)*(2*th+d))
+                       (1-level)*(d-1+th)/((d-1)*(2*th+d))
                    }
                    interval <- c(low, up)
                } else {
                    if(interval[1] < 0) stop("interval[1] needs to be >= 0")
-                   if(interval[1] > (1-alpha)/d) stop("interval[2] needs to be <= (1-alpha)/d")
+                   if(interval[1] > (1-level)/d) stop("interval[2] needs to be <= (1-level)/d")
                    if(interval[1] >= interval[2]) stop("interval[1] needs to be smaller than interval[2]")
                }
 
                ## Root-finding on 'interval'
-               h <- function(c) Wang_h(c, alpha = alpha, d = d, method = "Wang.Par", ...)
+               h <- function(c) Wang_h(c, level = level, d = d, method = "Wang.Par", ...)
                c <- uniroot(h, interval = interval, tol = tol)$root
-               d * Wang_h_aux(c, alpha = alpha, d = d, method = "Wang.Par", theta = th)
+               d * Wang_h_aux(c, level = level, d = d, method = "Wang.Par", shape = th)
 
            },
            "dual" = {
@@ -363,7 +363,7 @@ VaR_bounds_hom <- function(alpha, d, method = c("Wang", "Wang.Par", "dual"),
                    stop("Method 'dual' requires the distribution function pF")
                if(!hasArg(interval))
                    stop("Method 'dual' requires an initial interval c(s_l, s_u) to be given")
-               uniroot(function(s) dual_bound(s, d = d, tol = tol, ...) - (1-alpha),
+               uniroot(function(s) dual_bound(s, d = d, tol = tol, ...) - (1-level),
                        interval = interval, tol = tol)$root # s interval
                ## Note: We can't pass arguments to the inner root-finding
 
@@ -482,9 +482,9 @@ rearrange <- function(X, tol = 0, tol.type = c("relative", "absolute"),
         max
     },
     "best.ES" = {
-        alpha <- NULL # make CRAN check happy
-        stopifnot(hasArg(alpha)) # check if the confidence level 'alpha' has been provided (via '...')
-        function(x) ES_np(x, alpha = list(...)$alpha)
+        level <- NULL # make CRAN check happy
+        stopifnot(hasArg(level)) # check if 'level' has been provided (via '...')
+        function(x) ES_np(x, level = list(...)$level)
     },
     stop("Wrong 'method'"))
     tol.fun <- if(tol.type == "absolute") {
@@ -675,9 +675,9 @@ block_rearrange <- function(X, tol = 0, tol.type = c("absolute", "relative"),
         max
     },
     "best.ES" = {
-        alpha <- NULL # make CRAN check happy
-        stopifnot(hasArg(alpha)) # check if the confidence level 'alpha' has been provided (via '...')
-        function(x) ES_np(x, alpha = list(...)$alpha)
+        level <- NULL # make CRAN check happy
+        stopifnot(hasArg(level)) # check if 'level' has been provided (via '...')
+        function(x) ES_np(x, level = list(...)$level)
     },
     stop("Wrong 'method'"))
     tol.fun <- if(tol.type == "absolute") {
@@ -722,8 +722,10 @@ block_rearrange <- function(X, tol = 0, tol.type = c("absolute", "relative"),
         ## Oppositely order all columns belonging to block 'block' to the row
         ## sums of the complement block
         if(trace) B <- X # grab out matrix before rearranging
-        X.block.ordered <- X[order(rs.block), block, drop = FALSE] # (*)
-        X[, block] <- X.block.ordered[indices_opp_ordered_to(rs.complement.block),]
+        ord <- order(rs.block)
+        X.block.ordered <- X[ord, block, drop = FALSE] # (*)
+        oord <- indices_opp_ordered_to(rs.complement.block)
+        X[, block] <- X.block.ordered[oord,]
         ## Concerning (*): - In rearrange() we could work with X.lst.sorted and thus use
         ##                   presorted columns. Avoiding X[order(rs.block), block]
         ##                   doesn't seem possible here as rs.block can change all the time.
@@ -731,7 +733,9 @@ block_rearrange <- function(X, tol = 0, tol.type = c("absolute", "relative"),
         ##                 - Another reason is that we work with matrices here, not lists
         ##                   (the effect of this is probably rather minor given the sorting)
         ## Update the vector of row sums
-        X.rs <- rs.complement.block + .rowSums(X[, block], m = N, n = bsize)
+        X.rs <- rs.complement.block + rs.block[ord][oord] # formerly: rs.complement.block + .rowSums(X[, block], m = N, n = bsize)
+        ## Note: rs.block[ord][oord] = .rowSums(X[, block], m = N, n = bsize) (but avoiding to
+        ##       call *expensive* .rowSums() -- even if .rowSums() is already C code, see ./src/main/array.c -> do_colsum)
 
         ## Tracing
         if(trace) {
@@ -785,7 +789,7 @@ block_rearrange <- function(X, tol = 0, tol.type = c("absolute", "relative"),
 ### 3.2 Rearrangement Algorithm ################################################
 
 ##' @title Computing lower/upper bounds for the worst/best VaR or best ES with the RA
-##' @param alpha confidence level
+##' @param level confidence level
 ##' @param qF d-list of marginal quantile functions
 ##' @param N number of discretization points
 ##' @param abstol absolute convergence tolerance (to determine convergence)
@@ -811,12 +815,12 @@ block_rearrange <- function(X, tol = 0, tol.type = c("absolute", "relative"),
 ##' @author Marius Hofert
 ##' @note Notation is from p. 2757 in Embrechts, Puccetti, Rueschendorf (2013);
 ##'       variables are named according to the 'worst' VaR case.
-RA <- function(alpha, qF, N, abstol = 0, n.lookback = length(qF),
+RA <- function(level, qF, N, abstol = 0, n.lookback = length(qF),
                max.ra = Inf, method = c("worst.VaR", "best.VaR", "best.ES"),
                sample = TRUE)
 {
     ## Checks and Step 1 (get N, abstol)
-    stopifnot(0 < alpha, alpha < 1, is.null(abstol) || abstol >= 0,
+    stopifnot(0 < level, level < 1, is.null(abstol) || abstol >= 0,
               length(N) >= 1, N >= 2, is.logical(sample),
               is.list(qF), sapply(qF, is.function), (d <- length(qF)) >= 2, max.ra > d)
     method <- match.arg(method)
@@ -826,10 +830,10 @@ RA <- function(alpha, qF, N, abstol = 0, n.lookback = length(qF),
     ## Step 2 (build \underline{X}^\alpha)
     p <- switch(method, # N-vector of prob. in *increasing* order
     "worst.VaR" = { # discretize the [alpha, 1) tail
-        alpha + (1-alpha)*(0:(N-1))/N
+        level + (1-level)*(0:(N-1))/N
     },
     "best.VaR" = { # discretize the [0, alpha) tail
-        alpha*(0:(N-1))/N
+        level*(0:(N-1))/N
     },
     "best.ES" = { # discretize the space [0, 1) of probabilities
         (0:(N-1))/N
@@ -837,17 +841,17 @@ RA <- function(alpha, qF, N, abstol = 0, n.lookback = length(qF),
     stop("Wrong 'method'"))
     X.low <- sapply(qF, function(qF) qF(p))
     ## Adjust those that are -Inf (for method = "best")
-    ## use alpha*((0+1)/2 / N) = alpha/(2N) instead of 0 quantile
+    ## use level*((0+1)/2 / N) = level/(2N) instead of 0 quantile
     if(method == "best.VaR" || method == "best.ES")
         X.low[1,] <- sapply(1:d, function(j)
-        if(is.infinite(X.low[1,j])) qF[[j]](alpha/(2*N)) else X.low[1,j])
+        if(is.infinite(X.low[1,j])) qF[[j]](level/(2*N)) else X.low[1,j])
 
     ## Steps 3--7 (determine \underline{X}^*)
     res.low <- if(method == "best.ES") {
         rearrange(X.low, tol = abstol, tol.type = "absolute",
                   n.lookback = n.lookback, max.ra = max.ra,
                   method = method, sample = sample,
-                  is.sorted = TRUE, alpha = alpha) # need to pass 'alpha'
+                  is.sorted = TRUE, level = level) # need to pass 'level'
     } else {
         rearrange(X.low, tol = abstol, tol.type = "absolute",
                   n.lookback = n.lookback, max.ra = max.ra,
@@ -860,27 +864,27 @@ RA <- function(alpha, qF, N, abstol = 0, n.lookback = length(qF),
     ## Step 2 (build \overline{X}^\alpha)
     p <- switch(method, # N-vector of prob. in *increasing* order
     "worst.VaR" = { # discretize the (alpha, 1] tail
-        alpha + (1-alpha)*(1:N)/N
+        level + (1-level)*(1:N)/N
     },
     "best.VaR" = { # discretize the (0, alpha] tail
-        alpha*(1:N)/N
+        level*(1:N)/N
     },
     "best.ES" = { # discretize the space (0, 1] of probabilities
         (1:N)/N
     }, stop("Wrong 'method'"))
     X.up <- sapply(qF, function(qF) qF(p))
     ## Adjust those that are Inf (for method = "worst")
-    ## use alpha+(1-alpha)*(N-1+N)/(2*N) = alpha+(1-alpha)*(1-1/(2*N)) instead of 1 quantile
+    ## use level+(1-level)*(N-1+N)/(2*N) = level+(1-level)*(1-1/(2*N)) instead of 1 quantile
     if(method == "worst.VaR" || method == "best.ES")
         X.up[N,] <- sapply(1:d, function(j)
-        if(is.infinite(X.up[N,j])) qF[[j]](alpha+(1-alpha)*(1-1/(2*N))) else X.up[N,j])
+        if(is.infinite(X.up[N,j])) qF[[j]](level+(1-level)*(1-1/(2*N))) else X.up[N,j])
 
     ## Step 3--7 (determine \overline{X}^*)
     res.up <- if(method == "best.ES") {
         rearrange(X.up, tol = abstol, tol.type = "absolute",
                   n.lookback = n.lookback, max.ra = max.ra,
                   method = method, sample = sample,
-                  is.sorted = TRUE, alpha = alpha) # need to pass 'alpha'
+                  is.sorted = TRUE, level = level) # need to pass 'level'
     } else {
         rearrange(X.up, tol = abstol, tol.type = "absolute",
                   n.lookback = n.lookback, max.ra = max.ra,
@@ -903,7 +907,7 @@ RA <- function(alpha, qF, N, abstol = 0, n.lookback = length(qF),
 ### 3.3 Adaptive Rearrangement Algorithm #######################################
 
 ##' @title Computing lower/upper bounds for the worst/best VaR or best ES with the ARA
-##' @param alpha confidence level
+##' @param level confidence level
 ##' @param qF d-list of marginal quantile functions
 ##' @param N.exp vector of exponents of 2 used as discretization points
 ##' @param reltol vector of length 2 containing the relative convergence tolerances
@@ -933,14 +937,14 @@ RA <- function(alpha, qF, N, abstol = 0, n.lookback = length(qF),
 ##'         8) List of (N, d) input matrices X (for each bound)
 ##'         9) List of rearranged Xs (for each bound)
 ##' @author Marius Hofert
-ARA <- function(alpha, qF, N.exp = seq(8, 19, by = 1), reltol = c(0, 0.01),
+ARA <- function(level, qF, N.exp = seq(8, 19, by = 1), reltol = c(0, 0.01),
                 n.lookback = length(qF), max.ra = 10*length(qF),
                 method = c("worst.VaR", "best.VaR", "best.ES"),
                 sample = TRUE)
 {
     ## Checks and Step 1 (get N, reltol)
     lreltol <- length(reltol)
-    stopifnot(0 < alpha, alpha < 1, lreltol == 1 || lreltol == 2, reltol >= 0,
+    stopifnot(0 < level, level < 1, lreltol == 1 || lreltol == 2, reltol >= 0,
               length(N.exp) >= 1, N.exp >= 1, is.logical(sample),
               is.list(qF), sapply(qF, is.function), (d <- length(qF)) >= 2, max.ra > d)
     method <- match.arg(method)
@@ -957,27 +961,27 @@ ARA <- function(alpha, qF, N.exp = seq(8, 19, by = 1), reltol = c(0, 0.01),
         ## Step 2 (build \underline{X}^\alpha)
         p <- switch(method, # N-vector of prob. in *increasing* order
         "worst.VaR" = { # discretize the [alpha, 1) tail
-            alpha + (1-alpha)*(0:(N-1))/N
+            level + (1-level)*(0:(N-1))/N
         },
         "best.VaR" = { # discretize the [0, alpha) tail
-            alpha*(0:(N-1))/N
+            level*(0:(N-1))/N
         },
         "best.ES" = { # discretize the space [0, 1) of probabilities
             (0:(N-1))/N
         }, stop("Wrong 'method'"))
         X.low <- sapply(qF, function(qF) qF(p))
         ## Adjust those that are -Inf (for method = "best")
-        ## use alpha*((0+1)/2 / N) = alpha/(2N) instead of 0 quantile
+        ## use level*((0+1)/2 / N) = level/(2N) instead of 0 quantile
         if(method == "best.VaR" || method == "best.ES")
             X.low[1,] <- sapply(1:d, function(j)
-            if(is.infinite(X.low[1,j])) qF[[j]](alpha/(2*N)) else X.low[1,j])
+            if(is.infinite(X.low[1,j])) qF[[j]](level/(2*N)) else X.low[1,j])
 
         ## Steps 3--7 (determine \underline{X}^*)
         res.low <- if(method == "best.ES") {
             rearrange(X.low, tol = itol, tol.type = "relative",
                       n.lookback = n.lookback, max.ra = max.ra,
                       method = method, sample = sample,
-                      is.sorted = TRUE, alpha = alpha) # need to pass 'alpha'
+                      is.sorted = TRUE, level = level) # need to pass 'level'
         } else {
             rearrange(X.low, tol = itol, tol.type = "relative",
                       n.lookback = n.lookback, max.ra = max.ra,
@@ -990,27 +994,27 @@ ARA <- function(alpha, qF, N.exp = seq(8, 19, by = 1), reltol = c(0, 0.01),
         ## Step 2 (build \overline{X}^\alpha)
         p <- switch(method, # N-vector of prob. in *increasing* order
         "worst.VaR" = { # discretize the (alpha, 1] tail
-            alpha + (1-alpha)*(1:N)/N
+            level + (1-level)*(1:N)/N
         },
         "best.VaR" = { # discretize the (0, alpha] tail
-            alpha*(1:N)/N
+            level*(1:N)/N
         },
         "best.ES" = { # discretize the space (0, 1] of probabilities
             (1:N)/N
         }, stop("Wrong 'method'"))
         X.up <- sapply(qF, function(qF) qF(p))
         ## Adjust those that are Inf (for method = "worst")
-        ## use alpha+(1-alpha)*(N-1+N)/(2*N) = alpha+(1-alpha)*(1-1/(2*N)) instead of 1 quantile
+        ## use level+(1-level)*(N-1+N)/(2*N) = level+(1-level)*(1-1/(2*N)) instead of 1 quantile
         if(method == "worst.VaR" || method == "best.ES")
             X.up[N,] <- sapply(1:d, function(j)
-            if(is.infinite(X.up[N,j])) qF[[j]](alpha+(1-alpha)*(1-1/(2*N))) else X.up[N,j])
+            if(is.infinite(X.up[N,j])) qF[[j]](level+(1-level)*(1-1/(2*N))) else X.up[N,j])
 
         ## Step 3--7 (determine \overline{X}^*)
         res.up <- if(method == "best.ES") {
             rearrange(X.up, tol = itol, tol.type = "relative",
                       n.lookback = n.lookback, max.ra = max.ra,
                       method = method, sample = sample,
-                      is.sorted = TRUE, alpha = alpha) # need to pass 'alpha'
+                      is.sorted = TRUE, level = level) # need to pass 'level'
         } else {
             rearrange(X.up, tol = itol, tol.type = "relative",
                       n.lookback = n.lookback, max.ra = max.ra,
@@ -1043,7 +1047,7 @@ ARA <- function(alpha, qF, N.exp = seq(8, 19, by = 1), reltol = c(0, 0.01),
 ### 3.4 Adaptive Block Rearrangement Algorithm #################################
 
 ##' @title Computing lower/upper bounds for the worst/best VaR or best ES with the ABRA
-##' @param alpha confidence level
+##' @param level confidence level
 ##' @param qF d-list of marginal quantile functions
 ##' @param N.exp vector of exponents of 2 used as discretization points
 ##' @param absreltol vector of length 2 containing the absolute and relative
@@ -1073,14 +1077,14 @@ ARA <- function(alpha, qF, N.exp = seq(8, 19, by = 1), reltol = c(0, 0.01),
 ##'         8) List of (N, d) input matrices X (for each bound)
 ##'         9) List of rearranged Xs (for each bound)
 ##' @author Marius Hofert and Martin Stefanik
-ABRA <- function(alpha, qF, N.exp = seq(8, 19, by = 1), absreltol = c(0, 0.01),
+ABRA <- function(level, qF, N.exp = seq(8, 19, by = 1), absreltol = c(0, 0.01),
                  n.lookback = NULL, max.ra = Inf,
                  method = c("worst.VaR", "best.VaR", "best.ES"),
                  sample = TRUE)
 {
     ## Checks and Step 1 (get N, abstol)
     labsreltol <- length(absreltol)
-    stopifnot(0 < alpha, alpha < 1, labsreltol == 1 || labsreltol == 2, absreltol >= 0,
+    stopifnot(0 < level, level < 1, labsreltol == 1 || labsreltol == 2, absreltol >= 0,
               length(N.exp) >= 1, N.exp >= 1, is.logical(sample),
               is.list(qF), sapply(qF, is.function), (d <- length(qF)) >= 2)
     method <- match.arg(method)
@@ -1106,20 +1110,20 @@ ABRA <- function(alpha, qF, N.exp = seq(8, 19, by = 1), absreltol = c(0, 0.01),
         ## Step 2 (build \underline{X}^\alpha)
         p <- switch(method, # N-vector of prob. in *increasing* order
         "worst.VaR" = { # discretize the [alpha, 1) tail
-            alpha + (1-alpha)*(0:(N-1))/N
+            level + (1-level)*(0:(N-1))/N
         },
         "best.VaR" = { # discretize the [0, alpha) tail
-            alpha*(0:(N-1))/N
+            level*(0:(N-1))/N
         },
         "best.ES" = { # discretize the space [0, 1) of probabilities
             (0:(N-1))/N
         }, stop("Wrong 'method'"))
         X.low <- sapply(qF, function(qF) qF(p))
         ## Adjust those that are -Inf (for method = "best")
-        ## use alpha*((0+1)/2 / N) = alpha/(2N) instead of 0 quantile
+        ## use level*((0+1)/2 / N) = level/(2N) instead of 0 quantile
         if(method == "best.VaR" || method == "best.ES")
             X.low[1,] <- sapply(1:d, function(j)
-            if(is.infinite(X.low[1,j])) qF[[j]](alpha/(2*N)) else X.low[1,j])
+            if(is.infinite(X.low[1,j])) qF[[j]](level/(2*N)) else X.low[1,j])
 
         ## Steps 3--7 (determine \underline{X}^*)
         n.lookback.cur <- if(is.null(n.lookback))
@@ -1128,7 +1132,7 @@ ABRA <- function(alpha, qF, N.exp = seq(8, 19, by = 1), absreltol = c(0, 0.01),
             block_rearrange(X.low, tol = itol, tol.type = "absolute",
                             n.lookback = n.lookback.cur, max.ra = max.ra,
                             method = method, sample = sample,
-                            alpha = alpha) # need to pass 'alpha'
+                            level = level) # need to pass 'level'
         } else {
             block_rearrange(X.low, tol = itol, tol.type = "absolute",
                             n.lookback = n.lookback.cur, max.ra = max.ra,
@@ -1140,20 +1144,20 @@ ABRA <- function(alpha, qF, N.exp = seq(8, 19, by = 1), absreltol = c(0, 0.01),
         ## Step 2 (build \overline{X}^\alpha)
         p <- switch(method, # N-vector of prob. in *increasing* order
         "worst.VaR" = { # discretize the (alpha, 1] tail
-            alpha + (1-alpha)*(1:N)/N
+            level + (1-level)*(1:N)/N
         },
         "best.VaR" = { # discretize the (0, alpha] tail
-            alpha*(1:N)/N
+            level*(1:N)/N
         },
         "best.ES" = { # discretize the space (0, 1] of probabilities
             (1:N)/N
         }, stop("Wrong 'method'"))
         X.up <- sapply(qF, function(qF) qF(p))
         ## Adjust those that are Inf (for method = "worst")
-        ## use alpha+(1-alpha)*(N-1+N)/(2*N) = alpha+(1-alpha)*(1-1/(2*N)) instead of 1 quantile
+        ## use level+(1-level)*(N-1+N)/(2*N) = level+(1-level)*(1-1/(2*N)) instead of 1 quantile
         if(method == "worst.VaR" || method == "best.ES")
             X.up[N,] <- sapply(1:d, function(j)
-            if(is.infinite(X.up[N,j])) qF[[j]](alpha+(1-alpha)*(1-1/(2*N))) else X.up[N,j])
+            if(is.infinite(X.up[N,j])) qF[[j]](level+(1-level)*(1-1/(2*N))) else X.up[N,j])
 
         ## Step 3--7 (determine \overline{X}^*)
         n.lookback.cur <- if(is.null(n.lookback))
@@ -1162,7 +1166,7 @@ ABRA <- function(alpha, qF, N.exp = seq(8, 19, by = 1), absreltol = c(0, 0.01),
             block_rearrange(X.up, tol = itol, tol.type = "absolute",
                             n.lookback = n.lookback.cur, max.ra = max.ra,
                             method = method, sample = sample,
-                            alpha = alpha) # need to pass 'alpha'
+                            level = level) # need to pass 'level'
         } else {
             block_rearrange(X.up, tol = itol, tol.type = "absolute",
                             n.lookback = n.lookback.cur, max.ra = max.ra,

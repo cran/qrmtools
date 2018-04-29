@@ -37,7 +37,7 @@ get_data(x, from = NULL, to = NULL,
     monitoring should be done.}
   \item{warn}{\code{\link{logical}} indicating whether a warning
     is given showing the error message when fetching \code{x} fails.}
-  \item{\dots}{additional arguments passed to the underlying function
+  \item{\dots}{additional arguments passed to the underlying
     \code{\link{getSymbols}()} from \pkg{quantmod} or
     \code{\link{Quandl}()} from \pkg{Quandl} (if \code{src = "quandl"}).}
 }

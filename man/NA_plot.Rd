@@ -19,7 +19,7 @@ NA_plot(x, col = c("black", "white"), xlab = "Time", ylab = "Component",
   \item{side}{see \code{\link{mtext}()}.}
   \item{line}{see \code{\link{mtext}()}.}
   \item{adj}{see \code{\link{mtext}()}.}
-  \item{\dots}{additional arguments passed to the underlying function
+  \item{\dots}{additional arguments passed to the underlying
     \code{\link{image}()}.}
 }
 \value{

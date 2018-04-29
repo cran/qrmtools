@@ -1,7 +1,4 @@
-- make sure Alex is mentioned as author
-- Make new release as soon as 'plot.xts' changes (see Josh's email from
-  2017-04-05 (josh.m.ulrich@gmail.com))
-- Implement ES_bound_hom() for best ES in the homogeneous case
+- Maybe implement QRM::showRM() and use in qrmtutorial.org scripts
 
 ### (A)RA
 - Maybe write do.call(cbind()) and .rowSums(do.call(cbind())) as C functions

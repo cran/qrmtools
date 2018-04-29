@@ -35,7 +35,7 @@ qq_plot(x, FUN = qnorm, xlab = "Theoretical quantiles", ylab = "Sample quantiles
     passed to the underlying \code{\link{abline}()} functions. Defaults to
     \code{list(a = 0, b = 1)} if \code{method = "theoretical"} and \code{list()}
     if \code{method = "empirical"}.}
-  \item{\dots}{additional arguments passed to the underlying function
+  \item{\dots}{additional arguments passed to the underlying
     \code{\link{plot}()}.}
 }
 \value{

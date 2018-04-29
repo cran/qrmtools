@@ -15,8 +15,8 @@
 }
 \usage{
 ## Homogeneous case
-crude_VaR_bounds(alpha, qF, d = NULL, ...)
-VaR_bounds_hom(alpha, d, method = c("Wang", "Wang.Par", "dual"),
+crude_VaR_bounds(level, qF, d = NULL, ...)
+VaR_bounds_hom(level, d, method = c("Wang", "Wang.Par", "dual"),
                interval = NULL, tol = NULL, ...)
 dual_bound(s, d, pF, tol = .Machine$double.eps^0.25, ...)
 
@@ -35,21 +35,21 @@ block_rearrange(X, tol = 0, tol.type = c("absolute", "relative"),
 
 ## User interfaces
 ## Rearrangement Algorithm
-RA(alpha, qF, N, abstol = 0, n.lookback = length(qF), max.ra = Inf,
+RA(level, qF, N, abstol = 0, n.lookback = length(qF), max.ra = Inf,
    method = c("worst.VaR", "best.VaR", "best.ES"), sample = TRUE)
 ## Adaptive Rearrangement Algorithm
-ARA(alpha, qF, N.exp = seq(8, 19, by = 1), reltol = c(0, 0.01),
+ARA(level, qF, N.exp = seq(8, 19, by = 1), reltol = c(0, 0.01),
     n.lookback = length(qF), max.ra = 10*length(qF),
     method = c("worst.VaR", "best.VaR", "best.ES"),
     sample = TRUE)
 ## Adaptive Block Rearrangement Algorithm
-ABRA(alpha, qF, N.exp = seq(8, 19, by = 1), absreltol = c(0, 0.01),
+ABRA(level, qF, N.exp = seq(8, 19, by = 1), absreltol = c(0, 0.01),
      n.lookback = NULL, max.ra = Inf,
      method = c("worst.VaR", "best.VaR", "best.ES"),
      sample = TRUE)
 }
 \arguments{
-  \item{alpha}{confidence level for VaR and ES (e.g., 0.99).}
+  \item{level}{confidence level \eqn{\alpha}{alpha} for VaR and ES (e.g., 0.99).}
   \item{d}{dimension (number of risk factors; \eqn{\ge 2}{ >= 2}). For
     \code{crude_VaR_bounds()}, \code{d} only needs to be given in
     the homogeneous case in which \code{qF} is a \code{\link{function}}.}
@@ -188,8 +188,8 @@ ABRA(alpha, qF, N.exp = seq(8, 19, by = 1), absreltol = c(0, 0.01),
 	% are passed on to
 	the underlying \code{\link{integrate}()}. For
         \code{method = "Wang.Par"}
-	the ellipsis argument must contain the parameter
-	\eqn{\theta>0}{theta>0} of the Pareto distribution.
+	the ellipsis argument must contain the parameter \code{shape}
+	(the shape parameter \eqn{\theta>0}{theta>0} of the Pareto distribution).
 	For \code{method = "dual"}, the ellipsis argument must contain the
 	distribution function \code{pF()} and the initial interval
 	\code{interval} for the outer root finding procedure (not for
@@ -201,7 +201,7 @@ ABRA(alpha, qF, N.exp = seq(8, 19, by = 1), absreltol = c(0, 0.01),
       \item{\code{rearrange():}}{additional arguments passed to the underlying
        optimization function. Currently, this is only used if
        \code{method = "best.ES"} in which case the required confidence
-       level \eqn{\alpha}{alpha} must be provided as argument \code{alpha}.}
+       level \eqn{\alpha}{alpha} must be provided as argument \code{level}.}
     }}
 }
 \value{
@@ -419,23 +419,23 @@ ABRA(alpha, qF, N.exp = seq(8, 19, by = 1), absreltol = c(0, 0.01),
 \author{Marius Hofert}
 \references{
   Embrechts, P., Puccetti, G., \enc{Rüschendorf}{Rueschendorf}, L.,
-  Wang, R., Beleraj, A. (2014).  An Academic Response to Basel
+  Wang, R. and Beleraj, A. (2014).  An Academic Response to Basel
   3.5. \emph{Risks} \bold{2}(1), 25--48.
 
-  Embrechts, P., Puccetti, G., \enc{Rüschendorf}{Rueschendorf}, L. (2013).
+  Embrechts, P., Puccetti, G. and \enc{Rüschendorf}{Rueschendorf}, L. (2013).
   Model uncertainty and VaR aggregation. \emph{Journal of Banking \&
     Finance} \bold{37}, 2750--2764.
 
-  McNeil, A. J., Frey, R., and Embrechts, P. (2015).
+  McNeil, A. J., Frey, R. and Embrechts, P. (2015).
   \emph{Quantitative Risk Management: Concepts, Techniques, Tools}.
   Princeton University Press.
 
-  Hofert, M., Memartoluie, A., Saunders, D., Wirjanto, T. (2017).
+  Hofert, M., Memartoluie, A., Saunders, D. and Wirjanto, T. (2017).
   Improved Algorithms for Computing Worst
   Value-at-Risk. \emph{Statistics \& Risk Modeling}
   or, for an earlier version, \url{http://arxiv.org/abs/1505.02281}.
 
-  Bernard, C., \enc{Rüschendorf}{Rueschendorf}, L., Vanduffel,
+  Bernard, C., \enc{Rüschendorf}{Rueschendorf}, L. and Vanduffel,
   S. (2013). Value-at-Risk bounds with variance constraints.
   See \url{http://papers.ssrn.com/sol3/papers.cfm?abstract_id=2342068}.
 
@@ -456,7 +456,7 @@ ABRA(alpha, qF, N.exp = seq(8, 19, by = 1), absreltol = c(0, 0.01),
 alpha <- 0.95
 d <- 8
 theta <- 3
-qF <- rep(list(function(p) qPar(p, theta = theta)), d)
+qF <- rep(list(function(p) qPar(p, shape = theta)), d)
 
 ## Worst VaR
 N <- 5e4
@@ -490,8 +490,8 @@ stopifnot(RA.best.ES$converged,
 
 alpha <- 0.99 # VaR confidence level
 th <- 2 # Pareto parameter theta
-qF <- function(p, theta = th) qPar(p, theta = theta) # Pareto quantile function
-pF <- function(q, theta = th) pPar(q, theta = theta) # Pareto distribution function
+qF <- function(p, theta = th) qPar(p, shape = theta) # Pareto quantile function
+pF <- function(q, theta = th) pPar(q, shape = theta) # Pareto distribution function
 
 
 ### 2.1 The case d = 2 #########################################################
@@ -512,10 +512,10 @@ RAworst <- RA(alpha, qF = rep(list(qF), d), N = ARAworst$N.used)
 
 ## Compare
 stopifnot(all.equal(c(ARAbest$bounds[1], ARAbest$bounds[2],
-                      RAbest$bounds[1],  RAbest$bounds[2]),
+                       RAbest$bounds[1],  RAbest$bounds[2]),
                     rep(VaRbounds[1], 4), tolerance = 0.004, check.names = FALSE))
 stopifnot(all.equal(c(ARAworst$bounds[1], ARAworst$bounds[2],
-                      RAworst$bounds[1],  RAworst$bounds[2]),
+                       RAworst$bounds[1],  RAworst$bounds[2]),
                     rep(VaRbounds[2], 4), tolerance = 0.003, check.names = FALSE))
 
 
@@ -526,7 +526,7 @@ d <- 8 # dimension
 ## Compute VaR bounds with various methods
 I <- crude_VaR_bounds(alpha, qF = qF, d = d) # crude bound
 VaR.W     <- VaR_bounds_hom(alpha, d = d, method = "Wang", qF = qF)
-VaR.W.Par <- VaR_bounds_hom(alpha, d = d, method = "Wang.Par", theta = th)
+VaR.W.Par <- VaR_bounds_hom(alpha, d = d, method = "Wang.Par", shape = th)
 VaR.dual  <- VaR_bounds_hom(alpha, d = d, method = "dual", interval = I, pF = pF)
 
 ## Adaptive Rearrangement Algorithm (ARA) (with different relative tolerances)
@@ -537,11 +537,11 @@ ARAworst <- ARA(alpha, qF = rep(list(qF), d), reltol = c(0.001, 0.01))
 ## Rearrangement Algorithm (RA) with N as in ARA and abstol (roughly) chosen as in ARA
 RAbest  <- RA(alpha, qF = rep(list(qF), d), N = ARAbest$N.used,
               abstol = mean(tail(abs(diff(ARAbest$opt.row.sums$low)), n = 1),
-                          tail(abs(diff(ARAbest$opt.row.sums$up)), n = 1)),
+                            tail(abs(diff(ARAbest$opt.row.sums$up)), n = 1)),
               method = "best.VaR")
 RAworst <- RA(alpha, qF = rep(list(qF), d), N = ARAworst$N.used,
               abstol = mean(tail(abs(diff(ARAworst$opt.row.sums$low)), n = 1),
-                          tail(abs(diff(ARAworst$opt.row.sums$up)), n = 1)))
+                            tail(abs(diff(ARAworst$opt.row.sums$up)), n = 1)))
 
 ## Compare
 stopifnot(all.equal(c(VaR.W[1], ARAbest$bounds, RAbest$bounds),
@@ -589,7 +589,7 @@ N <- 2e4 # we use a smaller N here to save run time
 eps <- 0.1 # absolute tolerance
 xi <- c(1.19, 1.17, 1.01, 1.39, 1.23, 1.22, 0.85, 0.98)
 beta <- c(774, 254, 233, 412, 107, 243, 314, 124)
-qF.lst <- lapply(1:8, function(j){ function(p) qGPD(p, xi = xi[j], beta = beta[j])})
+qF.lst <- lapply(1:8, function(j){ function(p) qGPD(p, shape = xi[j], scale = beta[j])})
 set.seed(271)
 res.best <- RA(0.99, qF = qF.lst, N = N, abstol = eps, method = "best.VaR")
 print(format(res.best$bounds, scientific = TRUE), quote = FALSE) # close to first value of 1st row
