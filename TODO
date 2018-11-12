@@ -1,4 +1,5 @@
-- Maybe implement QRM::showRM() and use in qrmtutorial.org scripts
+- Implement QRM::showRM() and use in qrmtutorial.org scripts
+- Implement fit.mst() from QRM and use it
 
 ### (A)RA
 - Maybe write do.call(cbind()) and .rowSums(do.call(cbind())) as C functions

@@ -13,26 +13,26 @@ vignette: >
 ```{r, message = FALSE}
 library(qrmtools)
 library(copula)
-library(combinat)
-library(sfsmisc)
+library(combinat) # for permn()
+library(sfsmisc) # for eaxis()
 doPDF <- FALSE
 ```
 
 
 ## 1 Homogeneous case
 
-We start by considering the following setup in the homogeneous case, i.e., when
+We start by considering the following setup in the homogeneous case, that is, when
 all marginal distributions are equal.
 ```{r}
-qF <- function(p, th = 2) qPar(p, shape = th) # Pareto quantile function
-pF <- function(q, th = 2) pPar(q, shape = th) # Pareto distribution function
+qF2 <- function(p, th = 2) qPar(p, shape = th) # Par(2) quantile function
+pF2 <- function(q, th = 2) pPar(q, shape = th) # Par(2) distribution function
 dim <- 8 # variable dimension (we use 8 or 100 here)
 ```
 
 
 ### 1.1 Checks for method = "dual"
 
-Investigate helper function $h(s,t)$ (the function for the inner
+Investigate the helper function $h(s,t)$ (the function for the inner
 root-finding to compute $D(s)$; see `dual_bound()`).
 ```{r, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"}
 d <- 8 # dimension
@@ -44,8 +44,8 @@ t <- sapply(seq_along(s), function(i) {
 })
 f <- sapply(seq_along(s), function(i)
             sapply(t[,i], function(t.)
-                   qrmtools:::dual_bound_2(s[i], t = t., d = d, pF = pF) -
-                   qrmtools:::dual_bound_2_deriv_term(s[i], t = t., d = d, pF = pF)))
+                   qrmtools:::dual_bound_2(s[i], t = t., d = d, pF = pF2) -
+                   qrmtools:::dual_bound_2_deriv_term(s[i], t = t., d = d, pF = pF2)))
 palette <- colorRampPalette(c("maroon3", "darkorange2", "royalblue3"), space = "Lab")
 cols <- palette(6)
 if(doPDF)
@@ -101,17 +101,17 @@ Check `Wang_h_aux()`.
 d <- 8 # dimension
 alpha <- 0.99 # confidence level
 c <- seq(0, (1-alpha)/d, length.out = 129) # domain of h
-h.aux <- qrmtools:::Wang_h_aux(c, level = alpha, d = d, qF = qF)
+h.aux <- qrmtools:::Wang_h_aux(c, level = alpha, d = d, qF = qF2)
 par(mar = c(5, 4+1, 4, 2) + 0.1) # increase space (for y axis label)
 plot(c, h.aux, type = "l", xlab = "c (in initial interval)",
      ylab = expression(frac(d-1,d)~{F^{-1}}(a[c])+frac(1,d)~{F^{-1}}(b[c])))
 ```
 
-Check the objective function $h(c)$ (i.e., `Wang_h()` with numerical
+Check the objective function $h(c)$ (that is, `Wang_h()` with numerical
 integration) on its domain. Note that $h$ is used to determine the root in the
-open interval $(0,(1-\alpha)/d)$ for computing worst Value-at-Risk.
+open interval $(0,(1-\alpha)/d)$ for computing worst value-at-risk.
 ```{r, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"}
-h <- sapply(c, function(c.) qrmtools:::Wang_h(c., level = alpha, d = d, qF = qF))
+h <- sapply(c, function(c.) qrmtools:::Wang_h(c., level = alpha, d = d, qF = qF2))
 if(doPDF)
     pdf(file = (file <- paste0("fig_worst_VaR_",alpha,"_hom_Wang_h_Par=2_d=",d,"_num.pdf")),
         width = 6, height = 6)
@@ -125,7 +125,7 @@ if(doPDF) dev.off()
 Check the objective function $h$ at the endpoints of its domain.
 ```{r}
 sapply(c(0, (1-alpha)/d), function(c.)
-       qrmtools:::Wang_h(c., level = alpha, d = d, qF = qF)) # -Inf, 0
+       qrmtools:::Wang_h(c., level = alpha, d = d, qF = qF2)) # -Inf, 0
 ```
 
 $-\infty$ is not a problem for root finding (for $\theta > 1$; for $\theta <= 1$
@@ -186,8 +186,8 @@ if(doPDF) dev.off()
 ### 1.3 Compute best/worst $\mathrm{VaR}_\alpha$ (via "Wang.Par")
 
 After dealing with various numerical issues, we can now look at
-some example calculations of best/worst Value-at-Risk. We first
-plot Value-at-Risk as a function in $\alpha$.
+some example calculations of best/worst value-at-risk. We first
+plot value-at-risk as a function of $\alpha$.
 ```{r}
 d <- dim # dimension
 alpha <- 1-2^seq(-0.001, -10, length.out = 128) # confidence levels; concentrated near 1
@@ -219,7 +219,7 @@ legend("topright", bty = "n", lty = rep(1,length(theta)), col = cols,
 if(doPDF) dev.off()
 ```
 
-Now consider best/worst Value-at-Risk as a function in $d$.
+Now consider best/worst value-at-risk as a function of $d$. <!-- interestingly, best VaR is constant *except* for theta = 1 -->
 ```{r}
 d <- seq(2, 1002, by = 20) # dimensions
 alpha <- 0.99 # confidence level
@@ -251,8 +251,8 @@ legend("topleft", bty = "n", lty = rep(1,length(theta)), col = cols,
 if(doPDF) dev.off()
 ```
 
-We can also consider best/worst Value-at-Risk as a function in $\theta$. Note
-that, as before, best Value-at-Risk is the same for all $d$ here (depicted
+We can also consider best/worst value-at-risk as a function of $\theta$. Note
+that, as before, best value-at-risk is the same for all $d$ here (depicted
 in a green dashed line below).
 ```{r}
 d <- c(2, 10, 20, 100, 200, 1000) # dimensions
@@ -288,13 +288,12 @@ if(doPDF) dev.off()
 ```
 
 
-### 1.4 Comparison between various methods for computing worst Value-at-Risk
+### 1.4 Comparison between various methods for computing worst value-at-risk
 
 Now consider a graphical comparison between the various methods. To stress the
-numerical challenges, let us include the
-following implementation of Wang's approach (with various switches to
-highlight the individual numerical challenges)
-for the Pareto case.
+numerical challenges, let us include the following implementation of Wang's
+approach (with various switches to highlight the individual numerical
+challenges) for the Pareto case.
 ```{r}
 ## Initial interval for the root finding in case of worst VaR
 init_interval <- function(alpha, d, shape, trafo = FALSE, adjusted = FALSE)
@@ -332,7 +331,7 @@ init_interval <- function(alpha, d, shape, trafo = FALSE, adjusted = FALSE)
     }
 }
 
-## Function to compute the best/worst Value-at-Risk in the homogeneous case with
+## Function to compute the best/worst value-at-risk in the homogeneous case with
 ## Par(theta) margins
 VaR_hom_Par <- function(alpha, d, shape, method = c("worst", "best"),
                         trafo = FALSE, interval = NULL, adjusted = FALSE,
@@ -417,7 +416,6 @@ res <- matrix(, nrow = n.th, ncol = 7)
 colnames(res) <- c("Wang", "straightforward", "transformed", "Wang.Par",
                    "dual", "RA.low", "RA.up")
 pb <- txtProgressBar(max = n.th, style = if(isatty(stdout())) 3 else 1) # setup progress bar
-on.exit(close(pb)) # on exit, close progress bar
 for(i in seq_len(n.th)) {
     ## "Wang" (numerical integration with smaller uniroot() tolerance; still
     ## numerically critical -- we catch "the integral is probably divergent"-errors here)
@@ -441,6 +439,7 @@ for(i in seq_len(n.th)) {
     ## Progress
     setTxtProgressBar(pb, i) # update progress bar
 }
+close(pb) # close progress bar
 ```
 
 ```{r, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"}
@@ -520,7 +519,7 @@ VaR_hom_Par(alpha, d = d, shape = th, trafo = TRUE) # Inf
 
 As we can see, there is a problem as well. To understand it, consider
 the following minimized version of `VaR_hom_Par()` (for computing worst
-Value-at-Risk for $\theta\neq 1$ only).
+value-at-risk for $\theta\neq 1$ only).
 ```{r}
 h <- function(x)
      (d/(1-th)-1)*x^(-1/th + 1) - (d-1)*x^(-1/th) + x - (d*th/(1-th) + 1)
@@ -576,14 +575,74 @@ if(doPDF) dev.off()
 ```
 
 We see that the results differ slightly if both $d$ and $\theta$ are large. It
-remains numerically challenging to appropriately compute worst Value-at-Risk in
-this case. However, both of the above approaches work for dimensions even as
-large as $10^5$.
+remains numerically challenging to appropriately compute worst value-at-risk in
+this case. However, both of the above approaches seem to work for dimensions even
+as large as $10^5$.
 
 
 ## 2 Inhomogeneous case
 
-### 2.1 Run-time comparison (straightforward vs efficient implementation)
+### 2.1 A motivation for (column) rearrangements
+
+The basic idea goes back to Iman and Conover (1982, "A distribution-free
+approach to inducing rank correlation among input variables"). Suppose we have
+500 observations of two Pareto distributions. This is the joint sample under
+independence (as we independently draw the uniforms when constructing `X`):
+```{r, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"}
+## Generate samples
+n <- 1000 # sample size
+set.seed(271) # set a seed (for reproducibility)
+X <- cbind(qPar(runif(n), shape = 2), # Par(2) sample
+           qPar(runif(n), shape = 2.5)) # Par(2.5) sample
+## Plot
+if(doPDF)
+    pdf(file = (file <- paste0("fig_RA_motivation_indep.pdf")),
+        width = 6, height = 6)
+plot(X, xlab = expression(X[1]), ylab = expression(X[2]))
+if(doPDF) dev.off()
+```
+If we order the realizations in each column to be in increasing order (so the
+smallest (largest) entry of the first column lies next to the smallest (largest)
+entry of the second column of `X`), we obtain the following (comonotone) sample.
+```{r, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"}
+## Generate samples
+X. <- apply(X, 2, sort)
+## Plot
+if(doPDF)
+    pdf(file = (file <- paste0("fig_RA_motivation_comonotone.pdf")),
+        width = 6, height = 6)
+plot(X., xlab = expression(X[1]), ylab = expression(X[2]))
+if(doPDF) dev.off()
+```
+We take away that column rearrangements don't change the
+marginal distributions but the dependence between the two columns and thus
+the distributions of their sums. To see the latter (in terms of boxplots and
+kernel density estimates), consider:
+```{r, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"}
+## Samples of the sum of the components
+## Note: Their mean is the same (unaffected by the dependence)
+Xsum  <- rowSums(X)
+Xsum. <- rowSums(X.)
+## Quick plot
+boxplot(Xsum, Xsum., log = "y", names = c("Independence", "Comonotonicity"))
+## Kernel density estimates
+ran <- range(X, X.)
+dXsum  <- density(Xsum,  from = ran[1], to = ran[2])
+dXsum. <- density(Xsum., from = ran[1], to = ran[2])
+## Plot
+if(doPDF)
+    pdf(file = (file <- paste0("fig_RA_motivation_kernel_density_estimates.pdf")),
+        width = 6, height = 6)
+plot(dXsum, xlim = c(0, 5), ylim = c(0, max(dXsum$y, dXsum.$y)),
+     xlab = "x", ylab = "Kernel density estimate at x", main = "", type = "l")
+lines(dXsum., col = "royalblue3")
+legend("topright", bty = "n", lty = 1,
+       col = c("black", "royalblue3"), legend = c("Independence", "Comonotonicity"))
+if(doPDF) dev.off()
+```
+
+
+### 2.2 Run-time comparison (straightforward vs efficient implementation)
 
 A straightforward (but inefficient) implementation of a basic
 `rearrange(, sample = FALSE, is.sorted = TRUE)` is the following. Note that our
@@ -594,10 +653,12 @@ basic_rearrange_worst_VaR <- function(X, tol = 0)
     N <- nrow(X)
     d <- ncol(X)
     m.rs.old <- min(rowSums(X))
-    while (TRUE) {
-        Y <- X
+    Y <- X
+    while (TRUE)
+    {
         for(j in 1:d)
-            Y[,j] <- sort(Y[,j], decreasing = TRUE)[rank(rowSums(Y[,-j, drop = FALSE]), ties.method = "first")]
+            Y[,j] <- sort(Y[,j], decreasing = TRUE)[rank(rowSums(Y[,-j, drop = FALSE]),
+                                                         ties.method = "first")]
         Y.rs <- rowSums(Y)
         m.rs.new <- min(Y.rs)
         tol. <- abs((m.rs.new - m.rs.old)/m.rs.old)
@@ -620,20 +681,19 @@ sample = FALSE, is.sorted = TRUE)`). To this end, we consider the following setu
 ```{r}
 ## Build the input matrix (for worst VaR)
 alpha <- 0.99 # confidence level
-N <- 2^9 # 512
-p <- alpha + (1-alpha)*0:(N-1)/N
+N <- 2^9 # number of discretization points; 512 here
+p <- alpha + (1-alpha)*0:(N-1)/N # probabilities for evaluating marginal quantile functions
 if(FALSE)
     d <- 2^(4:10) # 16, ..., 1024
-d <- 2^(4:8) # 16, ..., 256 (to save time here)
+d <- 2^(4:8) # dimensions 16, ..., 256 (to save time here)
 res <- matrix(, nrow = length(d), ncol = 2) # matrix containing run time results
 colnames(res) <- c("basic", "sophisticated")
-qF <- function(p, th = 2) qPar(p, shape = th) # Pareto quantile function
 
-## For each d, measure the run time
+## For each d, measure the run time (some randomness involved here...)
 for(i in seq_along(d)) {
-    ## cat("Working on d =",d[i],"\n")
-    X <- sapply(rep(list(qF), d[i]), function(qF.) qF.(p))
-    res[i,] <- c(system.time(basic_rearrange_worst_VaR(X))[["elapsed"]],
+    mar <- rep(list(qF2), d[i]) # marginal quantile functions
+    X <- sapply(mar, function(qF) qF(p)) # evaluate marginal quantile functions at p
+    res[i,] <- c(system.time(basic_rearrange_worst_VaR(X))[["elapsed"]], # basic version
                  system.time(rearrange(X, sample = FALSE, is.sorted = TRUE))[["elapsed"]])
 }
 ```
@@ -650,13 +710,13 @@ if(doPDF) dev.off()
 ```
 
 
-### 2.2 How `rearrange()` acts on specific matrices
+### 2.3 How `rearrange()` acts on specific matrices
 
 To see how `rearrange()` actually proceeds, consider the following example. Due
 to `trace = TRUE`, the matrix is printed after each column rearrangement. A "|" and
 "=" indicate whether the respective column has changed or not, respectively, and
 the last two printed columns provide the row sums over all other columns but the
-current one as well as the new updated row sums (over all columns) after the
+current one, as well as the new updated row sums (over all columns) after the
 rearrangement. We see that for `tol = NULL` the algorithm stops after the first
 time $d$ (here: 3) consecutive rearrangements left the matrix unchanged.
 ```{r}
@@ -678,141 +738,173 @@ ncol = 3)`). It remains an open problem how an *efficient* algorithm can avoid
 such a case.
 
 
-### 2.3 Convergence
+### 2.4 Convergence
 
 Whether `rearrange()` converges or not depends to a large degree on the
 underlying sorting algorithm. We found that *unstable* sorting algorithms such
 as C's `qsort()` lead to `rearrange()` not terminating on certain input matrices.
-One example is the above matrix `B`, for which the 2nd/3rd column are constantly
-swapped after the first column being rearranged since the row sum of all others is
-`(4,4,4)` and termination then totally depends on how ranks are assigned to
-these three equal numbers. The current implementation is also not based on a
-*stable* sorting algorithm but a) is comparably fast and b) terminates on all
-input matrices. To see the latter, consider the following example in which we
-investigate the possible output matrices of `rearrange()` on all input matrices
-(obviously only for $d = 3$ due to run time; larger $N$ can be chosen but note
-that the effort is $(N!)^{d-1}$).
 
-```{r}
-### Investigate the probability of certain rearranged matrices to appear #######
+One such example is the above matrix `B`, for which the 2nd/3rd column are
+constantly swapped after the first column being rearranged since the row sum of
+all others is `(4,4,4)` and termination then depends on how ranks are assigned
+to these three equal numbers.
 
-##' @title Create a list of all possible input matrices for d = 3
-##' @param N The number of discretization points
-##' @param method The method how to create the list
-##' @return A N!^2-list (containing all possible (N,d) input matrices with 1:N in
-##'         the first column)
-##' @author Marius Hofert
-create_mat <- function(N)
-{
-    x_perm <- permn(N) # N!-long list containing all possible permutations of 1:N
-    N. <- factorial(N)
-    lst <- vector("list", length = N.^2)
-    cnt <- 0
-    for (i in 1:N.) { # double 'for' not time critical here
-        for (j in 1:N.){
-            cnt <- cnt+1
-            lst[[cnt]] <- cbind(1:N, x_perm[[i]], x_perm[[j]])
-        }
+The current implementation is still not based on a *stable* sorting algorithm
+(as this would largely compromise run time) but a) is comparably fast and
+b) terminates on all input matrices. To see the latter, consider the following
+example in which we investigate the possible output matrices of `rearrange()`
+on all input matrices (obviously only for $d = 3$ due to run time; larger $N$
+can be chosen but note that the effort is $(N!)^{d-1}$ here!).
+
+```{r, results = "hide"}
+## Create a (N!)^{d-1}-list of all possible input matrices (with integer
+## elements) and 1:N as first column.
+N <- 5 # chosen N (<= 6 due to extensive run time)
+x_perm <- permn(N) # N!-long list containing all possible permutations of 1:N
+N. <- factorial(N)
+mat <- vector("list", length = N.^2)
+cnt <- 0
+for (i in 1:N.) { # double 'for' not time critical here
+    for (j in 1:N.){
+        cnt <- cnt+1
+        mat[[cnt]] <- cbind(1:N, x_perm[[i]], x_perm[[j]]) # matrix with 1:N in first column
     }
-    lst
 }
 
-
-## Main
-N <- 5 # chosen N (<= 6 due to extensive run time)
-system.time(mat  <- create_mat(N)) # create the list of matrices (N!^2-many)
-
-## Rearrange all of them
+## Rearrange all these (unique) matrices
 N. <- factorial(N)^2
-system.time(mat.ra <- lapply(1:N., function(i) {
+system.time(matRAlst <- lapply(1:N., function(i) {
                 ## if(i %% (N./20) == 0) cat(round(100*i/N.),"% done!\n", sep = "");
                 rearrange(mat[[i]], tol = NULL, sample = FALSE)$X.rearranged
             }))
 
-## Go through all of the rearranged matrices, 'uniquify' them and count
-lst <- list(mat.ra[[1]])
+## Go through all rearranged matrices, unique()ify them and count
+uniqueLst <- list(matRAlst[[1]])
 freq <- c(1)
-for(i in 2:length(mat.ra))
+pb <- txtProgressBar(max = length(matRAlst), style = if(isatty(stdout())) 3 else 1) # setup progress bar
+for(i in 2:length(matRAlst))
 {
-    bool <- sapply(1:length(lst),
-                   function(i) { identical(lst[[i]], mat.ra[[i]]) }) # is mat.ra in lst?
-    if(any(bool)) { # mat.ra has been observed before
-        freq[min(which(bool))] <- freq[min(which(bool))] + 1
-    } else { # mat.ra has not been observed before
-        lst <- c(lst, mat.ra[[i]]) # append it to lst()
+    bool <- sapply(1:length(uniqueLst),
+                   function(k) { identical(matRAlst[[i]], uniqueLst[[k]]) }) # is uniqueLst[[k]] in matRAlst?
+    if(any(bool)) { # matRAlst[[i]] has been observed before
+        ind <- min(which(bool))
+        freq[ind] <- freq[ind] + 1 # increase frequency
+    } else { # matRAlst[[i]] has not been observed before
+        uniqueLst <- c(uniqueLst, matRAlst[i]) # append it to uniqueLst
         freq <- c(freq, 1) # append its frequency
     }
+    ## Progress
+    setTxtProgressBar(pb, i) # update progress bar
 }
-
-## Result
-lst # final rearranged matrices
-freq/N. # their corresponding probability
+close(pb) # close progress bar
 ```
 
-As we can see, not only does `rearrange()` terminate on all inputs, it also
-generates the same output matrix for all inputs.
+```{r, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"}
+## Distribution of (final) rearranged matrices
+(length(uniqueLst)/N.) * 100 # % of unique rearranged matrices
+p.mat <- freq/N. # their corresponding probabilities
+plot(p.mat, type = "l", xlab = "Index of unique matrices", ylab = "Probability")
+## => Matrices earlier on tend to appear more often (by construction!)
+```
+
+```{r, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"}
+## Distribution of the minimal row sums (= worst VaR estimates)
+VaR.est <- sapply(matRAlst, function(x) min(rowSums(x)))
+plot(VaR.est)
+table(VaR.est)/length(matRAlst) # probabilities
+```
+
+As we can see, `rearrange()` terminated on all inputs. Although it generated
+quite a different number of rearranged matrices, the implied minimal row sums
+(so value-at-risk estimates) were mostly the same (8 or 9, with about 0.125%
+also 7).
 
 
-### 2.4 A real data application
+### 2.5 A real data application
 
-We now consider the task of computing best and worst Value-at-Risk (VaR) at
-confidence level 99.9% for a real data set. To illustrate the ideas, we simply
-consider the negative log-returns of the constituents of the SMI from 2011-09-12
-to 2012-03-28. In a more realistic example where the marginal loss
-distributions typically come from different business lines or sub-units and
-there is less information about the dependence (or no hope to
-estimate it), one would consider real losses.
+We now consider the task of computing best and worst value-at-risk (VaR) at
+confidence level 99% for a portfolio consisting of shares of each of the
+20 constituents of the SMI from 2011-09-12 to 2012-03-28. For simplicity, the number of
+shares of each stock is assumed to be one over the numeric value of the stock
+price, so that the linearized loss is simply the sum of negative log-returns.
+The negative log-return of each stock is thus viewed as one loss and
+value-of-risk of the sum of these 20 losses is of interest. This fits
+precisely in the framework of the (Adaptive) Rearrangement Algorithm.
 
-First, let's compute the losses.
+First, let's compute the negative log-returns.
 ```{r}
 data(SMI.12)
-L <- -apply(log(SMI.12), 2, diff) # more sophisticated methods are available
+L <- -returns(SMI.12)
 n <- nrow(L)
 d <- ncol(L)
 ```
 
-Now let's fit GPDs to *each* margin, i.e., each SMI constituent. As threshold,
+Now let's fit GPDs to *each* margin, that is, each SMI constituent. As threshold,
 we simply choose the 80% quantile for each of margins (more sophisticated
 methods are available).
 ```{r}
 res <- vector("list", length = d)
 names(res) <- colnames(L)
-for(k in seq_len(d)) {
-    ## Determine the threshold for company k
+for(k in seq_len(d)) { # iterate over constituents
+    ## Determine the threshold for constituent k
     L. <- L[,k]
-    u <- quantile(L., probs = 0.8, names = FALSE) # threshold
+    thres <- quantile(L., probs = 0.8, names = FALSE) # threshold
 
-    ## Fit a GPD to the excesses
-    excess <- L.[L.>u]-u # excesses
-    fit <- fit_GPD_MLE(excess)
-    stopifnot(fit$converged == 0)
-    xi <- fit$par[["shape"]] # fitted xi
-    beta <- fit$par[["scale"]] # fitted beta
-    stopifnot(is.numeric(xi), is.numeric(beta))
-
-    ## Graphical goodness-of-fit check for the GPD fit
-    if(FALSE) {
-        excess. <- sort(excess) # sorted data
-        qF <- function(p) qGPD(p, shape = xi, scale = beta)
-        qF. <- qF(ppoints(length(excess.))) # theoretical quantiles
-        stock <- names(res)[k]
-        plot(qF., excess., xlab = "Theoretical quantiles",
-             ylab = "Sample quantiles", main = paste0("Q-Q plot for the fitted GPD(",
-             round(xi, 2),", ",round(beta, 2),") distribution for ", stock))
-        qqline(y = as.numeric(excess.), distribution = qF)
-    }
+    ## Fit a GPD to the excesses for constituent k
+    is.exceed <- L. > thres
+    p.exceed <- mean(is.exceed) # estimated threshold exceedance probability
+    excess <- L.[is.exceed] - thres # excesses
+    fit <- fit_GPD_MLE(excess) # fit a GPD to the excesses
+    stopifnot(fit$converged == 0) # convergence check
+    shape <- fit$par[["shape"]] # fitted shape xi
+    scale <- fit$par[["scale"]] # fitted scale beta
+    stopifnot(is.numeric(shape), is.numeric(scale), scale > 0) # sanity check
 
     ## Update res
-    res[[k]] <- list(loss = L., excess = excess, u = u, xi = xi, beta = beta)
+    res[[k]] <- list(loss = L., excess = excess, p.exceed = p.exceed,
+                     threshold = thres, shape = shape, scale = scale)
 }
 ```
 
-We can now apply the (Adaptive) Rearrangement Algorithm.
+We should also quickly assess the goodness-of-fit of the fitted GPDs
+```{r, fig.align = "center", fig.width = 6, fig.height = 7, fig.show = "hold"}
+if(doPDF)
+    pdf(file = (file <- paste0("fig_worst_VaR_bounds_application_GPD_fit_check.pdf")),
+        width = 6, height = 7)
+## Graphical goodness-of-fit assessment
+opar <- par(omd = c(0.02, 1, 0.02, 1), mar = rep(1, 4))
+layout(matrix(1:d, ncol = 4, byrow = TRUE)) # (5, 4)-layout
+for(k in 1:d) {
+    x <- sort(res[[k]]$excess)
+    qq_plot(x, FUN = function(p)
+        qGPD(p, shape = res[[k]]$shape, scale = res[[k]]$scale),
+        axes = FALSE, frame.plot = TRUE)
+    mtext("Fitted quantiles", side = 1, line = 0.5, cex = 0.6)
+    mtext("Empirical quantiles", side = 2, line = 0.5, cex = 0.6)
+    op <- par(usr = c(0, 1, 0, 1))
+    text(1/10, 9/10, names(res)[k], cex = 0.7, adj = 0)
+    y <- qGPD(ppoints(length(x)), shape = res[[k]]$shape, scale = res[[k]]$scale)
+    R2 <- sprintf("%.4f", cor(x, y)^2) # coefficient of determination R^2
+    text(9/10, 1/10, substitute(R^2 == r2, list(r2 = R2)), cex = 0.7, adj = 1)
+    par(op)
+}
+layout(1) # restore layout
+par(opar) # restore plot parameters
+if(doPDF) dev.off()
+```
+
+We can now apply the (Adaptive) Rearrangement Algorithm to the EVT based loss
+distributions.
 ```{r}
-xi. <- sapply(res, function(x) x$xi) # all fitted xi's
-beta. <- sapply(res, function(x) x$beta) # all fitted beta's
 alpha <- 0.99 # confidence level
-qF <- lapply(res, function(r) { function(p) qGPD(p, shape = r$xi, scale = r$beta) }) # list quantile functions
+stopifnot(sapply(res, function(r) r$p.exceed) >= 1 - alpha) # bar(F)(u) >= 1-alpha <=> F(u) <= alpha
+## => This was clear (as our threshold was chosen as a lower quantile than alpha
+##    but it is still good to check.
+qF <- lapply(res, function(r) {
+    function(p) qGPDtail(p, threshold = r$threshold,
+                         p.exceed = r$p.exceed,
+                         shape = r$shape, scale = r$scale)
+}) # list of quantile functions of the EVT based loss distributions
 set.seed(271) # set a seed (for reproducibility)
 res.ARA <- ARA(alpha, qF = qF) # apply ARA()
 stopifnot(res.ARA$converged) # check convergence
@@ -835,7 +927,7 @@ X.up[N,] <- sapply(1:d, function(j) if(is.infinite(X.up[N,j]))
                    qF[[j]](alpha+(1-alpha)*(1-1/(2*N))) else X.up[N,j])
 
 ## Apply rearrange() for various tolerances (incl. NULL)
-tol <- seq(0, 0.5, length.out = 21) # considered tolerances
+tol <- seq(0, 0.5, length.out = 21) # tolerances considered
 res.low  <- sapply(tol, function(t) rearrange(X.low,  tol = t, sample = FALSE, is.sorted = TRUE)$bound)
 res.low. <- rearrange(X.low, tol = NULL, sample = FALSE, is.sorted = TRUE)$bound # for tol = NULL
 res.up  <- sapply(tol, function(t) rearrange(X.up, tol = t, sample = FALSE, is.sorted = TRUE)$bound)
@@ -843,7 +935,7 @@ res.up. <- rearrange(X.up, tol = NULL, sample = FALSE, is.sorted = TRUE)$bound #
 ```
 
 ```{r, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"}
-## Plot the lower and upper bound on worst VaR as a function in the chosen tol
+## Plot the lower and upper bound on worst VaR as a function of the chosen tol
 if(doPDF)
     pdf(file = (file <- paste0("fig_worst_VaR_bounds_application.pdf")),
         width = 6, height = 6)
@@ -859,6 +951,42 @@ legend("topright", bty = "n", lty = rep(1,2),
 if(doPDF) dev.off()
 ```
 
-As we see, the results for `tol = NULL` (i.e., all columns oppositely ordered with
-respect to the sum of all others; indicated by '+') are identical to the
+As we see, the results for `tol = NULL` (that is, all columns oppositely ordered with
+respect to the sum of all others; indicated by a '+') are identical to the
 results for `tol = 0` here; the latter are typically much faster to compute.
+
+
+### 2.6 Worst VaR copula samples
+
+In this section we have a quick look at a sample from the copula (of the conditional
+distribution of being componentwise above the confidence level) that leads
+to the worst value-at-risk for three given margins (Pareto, log-normal, log-gamma).
+```{r, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"}
+## Define parameters of the three margins
+th <- 2.5 # Pareto parameter
+m <- 10 # mean of the lognormal
+v <- 20 # variance of the lognormal
+s <- 4 # shape of the gamma underlying the loggamma
+r <- 5 # rate of the gamma underlying the loggamma
+## Define list of marginal dfs
+qF <- list(qPar = function(p) (1 - p)^(-1/th) - 1,
+           qLN  = function(p) qlnorm(p, meanlog = log(m)-log(1+v/m^2)/2,
+                                          sdlog = sqrt(log(1+v/m^2))),
+           qLG  = function(p) exp(qgamma(p, shape = s, rate = r)))
+## Apply ARA()
+set.seed(271) # for reproducibility
+alpha <- 0.99 # confidence level
+wVaR <- ARA(alpha, qF = qF) # compute worst VaR (bounds)
+X <- wVaR[["X.rearranged"]]$up # extract rearranged matrix (upper bound)
+U <- pobs(X) # compute pseudo-observations
+colnames(U) <- c("U[1]", "U[2]", "U[3]")
+## Plot
+if(doPDF)
+    pdf(file = (file <- paste0("fig_worst_VaR_worst_copula_sample.pdf")),
+        width = 6, height = 6)
+cloud2(U, screen = list(z = 15, x = -60)) # default 'screen': z = 40, x = -60
+if(doPDF) dev.off()
+```
+We see that if one of the three components is large, the other two have to compensate
+for that (to keep the variance of the sum small, which is what the (A)RA tries to optimize)
+and so the locally singular components (strings to (1, 0, 0), (0, 1, 0), (0, 0, 1)) appear.

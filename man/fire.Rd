@@ -25,10 +25,10 @@ data("fire")
 }
 \author{Marius Hofert}
 \examples{
+library(xts)
 data("fire")
 str(fire)
 stopifnot(inherits(fire, "xts"), length(fire) == 2167)
-library(xts)
 plot.zoo(fire, ylab = "Fire insurance claim")
 }
 \keyword{datasets}

@@ -46,7 +46,7 @@ NA_plot <- function(x, col = c("black", "white"), xlab = "Time", ylab = "Compone
 ##' @note - Another option would be:
 ##'         corrplot::corrplot(err, method = "color", col = grey(seq(0.4, 1, length.out = 200)),
 ##'                            tl.col = "black", is.corr = FALSE)
-##'       - Check via example on ?matrix_plot
+##'       - Check via examples on ?matrix_plot
 matrix_plot <- function(x, ylim = rev(c(0.5, nrow(x) + 0.5)),
                         xlab = "Column", ylab = "Row",
                         scales = list(alternating = c(1,1), tck = c(1,0),
@@ -84,7 +84,9 @@ matrix_plot <- function(x, ylim = rev(c(0.5, nrow(x) + 0.5)),
     }
     if(min(x, na.rm = TRUE) < at[1] || max(x, na.rm = TRUE) > at[length(at)])
         stop("'x' values outside the range spanned by 'at'. Choose 'at' appropriately.")
-    levelplot(x, ylim = ylim, # correct (x-axis = column; y-axis = row (and decreasing))
+    ## Plot
+    ## Note: t() does not affect the above as we only determine ranges/max/min there
+    levelplot(t(x), ylim = ylim, # correct (x-axis = column; y-axis = row (and decreasing))
               xlab = xlab, ylab = ylab, col.regions = col.regions,
               scales = if(is.null(scales)) list(alternating = c(0,0), tck = c(0,0)) else scales,
               at = at, colorkey = if(is.null(colorkey)) list(at = at) else colorkey, ...)
@@ -228,7 +230,7 @@ qq_plot <-  function(x, FUN = qnorm, xlab = "Theoretical quantiles", ylab = "Sam
 ##'             => artificial extension to the left). Best to leave it like this.
 edf_plot <- function(x, do.points = length(x) <= 100, log = "",
                      xlim = range(x, na.rm = TRUE),
-                     main = "", xlab = "Value", ylab = "Probability", ...)
+                     main = "", xlab = "x", ylab = "Distribution function at x", ...)
 {
     x <- sort(as.numeric(x)) # required by ecdf()
     y <- c(0, ecdf(x)(x)) # plot.stepfun() requires 'y' to be one longer than 'x' (y = values *between* x's)
@@ -236,5 +238,5 @@ edf_plot <- function(x, do.points = length(x) <= 100, log = "",
     if(grepl("y", log)) stop('log = "y" not available.')
     sf <- stepfun(x = x, y = y) # ok, does not extend x-range
     plot(sf, do.points = do.points, log = log, xlim = xlim,
-         main = main, xlab = xlab, ylab = ylab, ...) # see plot.stepfun()
+         main = main, xlab = xlab, ylab = ylab, ...) # see plot.stepfun(), also for the return value!
 }

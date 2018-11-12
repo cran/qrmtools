@@ -15,6 +15,6 @@ static const R_CallMethodDef callMethods[] = {
 
 void R_init_qrmtools(DllInfo *dll)
 {
-    R_useDynamicSymbols(dll, FALSE);
-    R_registerRoutines(dll, NULL, callMethods, NULL, NULL); /* s. WRE (2015, Section 5.4) */
+	R_registerRoutines(dll, NULL, callMethods, NULL, NULL); /* s. WRE (2015, Section 5.4) */
+	R_useDynamicSymbols(dll, FALSE);
 }

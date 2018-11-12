@@ -27,13 +27,14 @@ rPar(n, shape, scale = 1)
   \item{x, q}{vector of quantiles.}
   \item{p}{vector of probabilities.}
   \item{n}{number of observations.}
-  \item{shape}{GPD parameter \eqn{\xi}{xi} (a real number) and
+  \item{shape}{GPD shape parameter \eqn{\xi}{xi} (a real number) and
     Pareto shape parameter \eqn{\theta}{theta} (a positive number).}
-  \item{scale}{GPD parameter \eqn{\beta}{beta} (a positive number)
+  \item{scale}{GPD scale parameter \eqn{\beta}{beta} (a positive number)
     and Pareto scale parameter \eqn{\kappa}{kappa} (a positive number).}
-  \item{lower.tail}{\code{\link{logical}}; if TRUE (default)
+  \item{lower.tail}{\code{\link{logical}}; if \code{TRUE} (default)
     probabilities are \eqn{P(X \le x)}{P(X <= x)} otherwise, \eqn{P(X > x)}.}
-  \item{log, log.p}{logical; if TRUE, probabilities p are given as log(p).}
+  \item{log, log.p}{logical; if \code{TRUE}, probabilities \code{p} are
+    given as \code{log(p)}.}
 }
 \value{
   \code{dGPD()} computes the density, \code{pGPD()} the distribution
@@ -71,7 +72,7 @@ rPar(n, shape, scale = 1)
 }
 \examples{
 ## Basic sanity checks
-plot(pGPD(rGPD(1000, shape = 0.5, scale = 3), shape = 0.5, scale = 3)) # should be U[0,1]
 curve(dGPD(x, shape = 0.5, scale = 3), from = -1, to = 5)
+plot(pGPD(rGPD(1000, shape = 0.5, scale = 3), shape = 0.5, scale = 3)) # should be U[0,1]
 }
 \keyword{distribution}

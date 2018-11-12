@@ -2,8 +2,8 @@
 
 ## ## Other packages
 ## - QRM:
-##   + fit.GEV() uses hard-coded value for shape and loc and scale from case shape = 0
-##     (see below)
+##   + fit.GEV() uses hard-coded value for shape (= 0.1) and loc and scale
+##     from case shape = 0 (see below)
 ## - Renext:
 ##   + also based on optim()
 ##   + fGEV.MAX() -> calls parIni.MAX(); detailed in "Renext Computing Details"
@@ -198,9 +198,11 @@ fit_GEV_MLE <- function(x, init = c("shape0", "PWM", "quantile"),
             ##       - As in 'QRM', 'evir', 'fExtremes', 'ismev'
             ##       - Note that shape = 0 can fail for method = "Nelder-Mead"
             ##         (seen for the Black Monday example)
-            ##         => .Machine$double.eps works
+            ##         => .Machine$double.eps works (but is still unstable, seen for
+            ##            GEV_shape_plot() of Black Monday example)
+            ##         => use .Machine$double.eps^0.25 as in uniroot()
             scale.hat <- sqrt(6 * var(x)) / pi # var for shape = 0 is (scale \pi)^2 / 6 => scale
-            init <- c(.Machine$double.eps, mean(x) - 0.5772157 * scale.hat, scale.hat) # mean for shape is loc + sig * gamma => loc; gamma = -digamma(1) = Euler--Mascheroni constant
+            init <- c(.Machine$double.eps^0.25, mean(x) - 0.5772157 * scale.hat, scale.hat) # mean for shape is loc + sig * gamma => loc; gamma = -digamma(1) = Euler--Mascheroni constant
         },
         "PWM" = {
             init <- fit_GEV_PWM(x)

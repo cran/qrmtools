@@ -1,6 +1,5 @@
-/* C functions for computing VaR bounds ***************************************/
-
 #include "VaR_bounds.h"
+
 
 /* The following is working but a) not faster and b) creates problems under
  * Windows if R < 3.3.0 */

@@ -6,38 +6,44 @@
   a function of the threshold.
 }
 \usage{
-GPD_shape_plot(x, thresholds = seq(quantile(x, 0.5), quantile(x, 0.99), length.out = 33),
-               conf.level = 0.95, lines.args = list(lty = 2),
-               xlab2 = "Excesses", xlab = "Threshold",
-               ylab = "Estimated GPD shape parameter with confidence intervals", ...)
+GPD_shape_plot(x, thresholds = seq(quantile(x, 0.5), quantile(x, 0.99),
+                                   length.out = 65),
+               estimate.cov = TRUE, conf.level = 0.95,
+               lines.args = list(lty = 2), xlab = "Threshold", ylab = NULL,
+               xlab2 = "Excesses", plot = TRUE, ...)
 }
 \arguments{
   \item{x}{\code{\link{numeric}} vector of data.}
   \item{thresholds}{\code{\link{numeric}} vector of thresholds for which
     to fit a GPD to the excesses.}
-  \item{conf.level}{confidence level of the confidence intervals.}
+  \item{estimate.cov}{\code{\link{logical}} indicating whether
+    confidence intervals are to be computed.}
+  \item{conf.level}{confidence level of the confidence intervals if
+    \code{estimate.cov}.}
   \item{lines.args}{\code{\link{list}} of arguments passed to
     the underlying \code{\link{lines}()} for drawing the confidence intervals.}
-  \item{xlab2}{label of the secondary x-axis.}
   \item{xlab}{x-axis label.}
-  \item{ylab}{y-axis label.}
+  \item{ylab}{y-axis label (if \code{NULL}, a default is used).}
+  \item{xlab2}{label of the secondary x-axis.}
+  \item{plot}{\code{\link{logical}} indicating whether a plot is produced.}
   \item{\dots}{additional arguments passed to the underlying
     \code{\link{plot}()}.}
 }
 \value{
-  \code{\link{invisible}()}
+  Invisibly returns a \code{\link{list}} containing the thresholds
+  considered, the corresponding excesses and the fitted GPD
+  objects as returned by the underlying \code{\link{fit_GPD_MLE}()}.
 }
 \details{
   Such plots can be used in the peaks-over-threshold method for
-  assessing possible threshold choices. Ideally, the plot should be
-  (roughly) flat after the chosen threshold (indicating stability of the
-  threshold choice).
+  determining the optimal threshold (as the smallest after which the plot
+  is (roughly) stable).
 }
 \author{Marius Hofert}
 \examples{
 data(fire)
 GPD_shape_plot(fire)
-abline(v = c(10, 20)) # possible threshold choices from mean_excess_plot()
+abline(v = c(10, 20), lty = 3) # possible threshold choices from mean_excess_plot()
 }
 \keyword{parametric}
 \keyword{hplot}

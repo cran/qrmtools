@@ -3,12 +3,12 @@
 \alias{VaR_t}
 \alias{VaR_GPD}
 \alias{VaR_Par}
-\alias{VaR_POT}
+\alias{VaR_GPDtail}
 \alias{ES_np}
 \alias{ES_t}
 \alias{ES_GPD}
 \alias{ES_Par}
-\alias{ES_POT}
+\alias{ES_GPDtail}
 \alias{gVaR}
 \alias{gEX}
 \title{Risk Measures}
@@ -21,14 +21,14 @@ VaR_np(x, level, names = FALSE, type = 1, ...)
 VaR_t(level, loc = 0, scale = 1, df = Inf)
 VaR_GPD(level, shape, scale)
 VaR_Par(level, shape, scale = 1)
-VaR_POT(level, threshold, p.exceed, shape, scale)
+VaR_GPDtail(level, threshold, p.exceed, shape, scale)
 
 ## Expected shortfall
 ES_np(x, level, method = c(">", ">="), verbose = FALSE, ...)
 ES_t(level, loc = 0, scale = 1, df = Inf)
 ES_GPD(level, shape, scale)
 ES_Par(level, shape, scale = 1)
-ES_POT(level, threshold, p.exceed, shape, scale)
+ES_GPDtail(level, threshold, p.exceed, shape, scale)
 
 ## Multivariate geometric value-at-risk and expectiles
 gVaR(x, level, start = colMeans(x),
@@ -123,7 +123,7 @@ gEX(x, level, start = colMeans(x),
 
   \code{gVaR()}, \code{gEX()} compute the multivariate geometric
   value-at-risk and expectiles suggested by Chaudhuri (1996) and
-  Herrmann et al. (2017), respectively.
+  Herrmann et al. (2018), respectively.
 }
 \details{
   The distribution function of the Pareto distribution is given by
@@ -141,8 +141,9 @@ gEX(x, level, start = colMeans(x),
    \emph{Journal of the American Statistical Assosiation} 91(434),
    862--872.
 
-   Herrmann, K., Hofert, M. and Mailhot, M. (2017).
+   Herrmann, K., Hofert, M. and Mailhot, M. (2018).
    Multivariate geometric expectiles.
+   \emph{Scandinavian Actuarial Journal}, 2018(7), 629--659.
 }
 \examples{
 ### 1 Univariate measures ######################################################

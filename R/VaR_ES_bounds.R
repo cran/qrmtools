@@ -410,7 +410,7 @@ indices_opp_ordered_to <- function(x) order(order(x, decreasing = TRUE))
 ##'       with list of columns of x)
 num_of_opp_ordered_cols <- function(x) {
     x.rs <- .rowSums(x, nrow(x), ncol(x)) # faster than rowSums()
-    x.lst <- .Call(C_col_split, x) # to avoid indexing the jth column, we work with a list!
+    x.lst <- .Call(col_split, x) # to avoid indexing the jth column, we work with a list!
     x.lst.sorted <- lapply(x.lst, sort.int) # sorting is only necessary once!
     sum(vapply(seq_len(ncol(x)),
                function(j) {
@@ -501,7 +501,7 @@ rearrange <- function(X, tol = 0, tol.type = c("relative", "absolute"),
     }
 
     ## Determine X as a list (X.lst), its row sums (X.rs) and sorted version (X.lst.sorted)
-    X.lst <- .Call(C_col_split, X)
+    X.lst <- .Call(col_split, X)
     X.lst.sorted <- if(is.sorted) {
         X.lst # split the given X (since it's already sorted) into columns
     } else {

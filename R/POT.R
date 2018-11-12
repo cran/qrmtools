@@ -37,7 +37,7 @@ mean_excess_np <- function(x, omit = 3)
     ## Note: This works (and thus shows the method) but is slow:
     ##       enu <- vapply(1:nuo, function(k) mean(xu[(k+1):nu]-xu[k]), NA_real_)
     ## => Idea: compute partial sums first and then do 'look-up'
-    csx <- rev(cumsum(xu[nu:2])) # sum(xu[2:nu]), ..., xu[nu-1] + xu[nu], xu[nu]
+    csx <- rev(cumsum(xu[nu:2])) # sum(xu[2:nu]), sum(xu[3:nu]), ..., xu[nu-1] + xu[nu], xu[nu]
     enu <- vapply(1:nuo, function(k) (csx[k]/(nu-k)) - xu[k], NA_real_) # note: nuo = nu - omit <= nu - 1 => nuo + 1 <= nu
     ## => Checked (coincides with the above computation of 'enu')
 
@@ -106,41 +106,60 @@ mean_excess_plot <- function(x, omit = 3,
 ##' @param x numeric vector of data
 ##' @param thresholds numeric vector of thresholds for which to fit a GPD to
 ##'        the excesses
+##' @param estimate.cov logical indicating whether confidence intervals are
+##'        computed
 ##' @param conf.level confidence level of the confidence intervals
 ##' @param lines.args list of arguments passed to underlying lines() for
 ##'        drawing the confidence intervals
 ##' @param xlab2 label of the secondary x-axis
 ##' @param xlab x-axis label
 ##' @param ylab y-axis label
+##' @param plot logical indicating whether a plot is done
 ##' @param ... additional arguments passed to the underlying plot()
-##' @return invisible()
+##' @return invisibly returns the thresholds, the list of corresponding threshold
+##'         excesses and the list of fitted GPDs.
 ##' @author Marius Hofert
-GPD_shape_plot <- function(x, thresholds = seq(quantile(x, 0.5), quantile(x, 0.99), length.out = 33),
-                           conf.level = 0.95, lines.args = list(lty = 2),
-                           xlab2 = "Excesses", xlab = "Threshold",
-                           ylab = "Estimated GPD shape parameter with confidence intervals", ...)
+GPD_shape_plot <- function(x, thresholds = seq(quantile(x, 0.5), quantile(x, 0.99), length.out = 65),
+                           estimate.cov = TRUE, conf.level = 0.95,
+                           lines.args = list(lty = 2), xlab = "Threshold", ylab = NULL,
+                           xlab2 = "Excesses", plot = TRUE, ...)
 {
     ## Checks
-    stopifnot(length(thresholds) >= 2, 0 <= conf.level, conf.level <= 1)
-    ## Fit GPD models to the given thresholds
+    stopifnot(length(thresholds) >= 2, is.logical(estimate.cov), 0 <= conf.level, conf.level <= 1,
+              is.logical(plot))
+    ## Compute threshold excesses
     x <- as.numeric(x)
-    fits <- lapply(thresholds, function(u) fit_GPD_MLE(x[x > u] - u))
+    excesses <- function(u) x[x > u] - u
+    ## Peaks-over-threshold for each considered threshold
+    exc <- lapply(thresholds, function(u) excesses(u))
+    ## Fit GPD models to the given thresholds
+    fits <- lapply(exc, fit_GPD_MLE, estimate.cov = estimate.cov)
     ## Extract the fitted shape parameters and compute CIs
     xi <- sapply(fits, function(f) f$par[["shape"]])
-    xi.SE <- sapply(fits, function(f) f$SE[["shape"]])
-    q <- qnorm(1 - (1 - conf.level)/2)
-    xi.CI.low <- xi - xi.SE * q
-    xi.CI.up  <- xi + xi.SE * q
+    if(estimate.cov) {
+        xi.SE <- sapply(fits, function(f) f$SE[["shape"]])
+        q <- qnorm(1 - (1 - conf.level)/2)
+        xi.CI.low <- xi - xi.SE * q
+        xi.CI.up  <- xi + xi.SE * q
+        ylim <- range(xi, xi.CI.low, xi.CI.up)
+    } else ylim <- range(xi)
     ## Plot
-    ylim <- range(xi, xi.CI.low, xi.CI.up)
-    plot(thresholds, xi, type = "l", ylim = ylim,
-         xlab = xlab, ylab = ylab, ...)
-    do.call(lines, args = c(list(x = thresholds, y = xi.CI.low), lines.args))
-    do.call(lines, args = c(list(x = thresholds, y = xi.CI.up),  lines.args))
-    pu <- pretty(thresholds)
-    axis(3, at = pu, labels = sapply(pu, function(u) sum(x > u)))
-    mtext(xlab2, side = 3, line = 3)
-    invisible()
+    if(plot) {
+        if(is.null(ylab)) ylab <- paste0("Estimated GPD shape parameter",
+                                         if(estimate.cov) paste0(" with ", 100*conf.level,
+                                                                 "% confidence intervals") else "")
+        plot(thresholds, xi, type = "l", ylim = ylim,
+             xlab = xlab, ylab = ylab, ...)
+        if(estimate.cov) {
+            do.call(lines, args = c(list(x = thresholds, y = xi.CI.low), lines.args))
+            do.call(lines, args = c(list(x = thresholds, y = xi.CI.up),  lines.args))
+        }
+        pu <- pretty(thresholds) # where actual x labels are (even if those thresholds are not considered)
+        axis(3, at = pu, labels = sapply(pu, function(u) sum(x > u))) # *corresponding* excesses
+        mtext(xlab2, side = 3, line = 3)
+    }
+    ## Return
+    invisible(list(thresholds = thresholds, excesses = exc, GPD.fits = fits))
 }
 
 
@@ -169,17 +188,21 @@ tail_estimator_GPD <- function(q, threshold, p.exceed, shape, scale)
     p.exceed * pGPD(q - threshold, shape = shape, scale = scale, lower.tail = FALSE)
 }
 
-##' @title Plot of the Empirical Tail Estimator (Possibly with Smith Tail Estimator)
+##' @title Plot of the Empirical Tail Estimator (Possibly Overlaid with Smith Tail Estimator)
 ##' @param x numeric vector of data points
 ##' @param threshold threshold u (above which tail exceedance df is computed)
 ##' @param shape NULL or GPD shape parameter xi (typically obtained from fit_GPD_MLE())
 ##' @param scale NULL or GPD scale parameter beta (typically obtained from fit_GPD_MLE())
 ##' @param q NULL or a sequence of quantiles >= threshold where to evaluate
-##'        the Smith estimator
+##'        the Smith estimator. Can also be of length 1 in which case the plot
+##'        is extended to the right of the largest exceedance until q if q is larger
+##'        than the largest exceedance.
 ##' @param length.out length of q
 ##' @param lines.args list providing additional arguments for the underlying
 ##'        lines()
 ##' @param log logical indicating whether logarithm scale is used
+##' @param xlim x-axis limits
+##' @param ylim y-axis limits
 ##' @param xlab x-axis label
 ##' @param ylab y-axis label
 ##' @param ... additional arguments passed to the underlying plot()
@@ -192,7 +215,8 @@ tail_estimator_GPD <- function(q, threshold, p.exceed, shape, scale)
 ##'         the data: QRM::plotTail(QRM::fit.GPD(fire, threshold = 50), ppoints.gpd = ppoints(4))
 tail_plot <- function(x, threshold, shape = NULL, scale = NULL,
                       q = NULL, length.out = 129, lines.args = list(),
-                      log = "xy", xlab = "Value", ylab = "Tail probability", ...)
+                      log = "xy", xlim = NULL, ylim = NULL,
+                      xlab = "x", ylab = "Tail probability at x", ...)
 {
     ## Compute empirical tail estimator
     ## Note: Unless evaluated at the excesses themselves, there is no point in using
@@ -207,31 +231,37 @@ tail_plot <- function(x, threshold, shape = NULL, scale = NULL,
     ## => bar{F}_n(x_{(i)}) = bar{F}_n(u + y_{(i)}) = bar{F}_n(u) bar{F}_{u,n}(y_{(i)}) (by 1))
     ##                      = Nu/n * rev(ppoints(Nu)) (by 2), 3))
     x <- as.numeric(x)
-    exceed <- sort(x[x > threshold]) # sorted exceedances (x-values later)
+    exceed <- sort(x[x > threshold]) # sorted exceedances; x-values later
     Nu <- length(exceed) # number of exceedances
     Fn.bar.u <- Nu/length(x) # tail estimate at threshold u (= bar{F}_n(u))
-    Fn.bar.exceed <- Fn.bar.u * rev(ppoints(Nu)) # bar{F}_n(x_{(i)}) (y-values later)
+    Fn.bar.exceed <- Fn.bar.u * rev(ppoints(Nu)) # bar{F}_n(x_{(i)}); see above; y-values later
 
     ## Compute GPD tail estimator
     doGPD <- !is.null(shape) && !is.null(scale)
     if(doGPD) {
         stopifnot(scale > 0)
         ## Determine q (of exceedances where to evaluate Smith estimator; range should match 'exceed')
-        if(is.null(q)) q <- seq2(exceed[1], exceed[Nu], length.out = length.out, log = grepl("x", log))
+        qlen <- length(q)
+        if(is.null(q) || qlen == 1) {
+            ## Could extend q[1] 'to the left' if qlen == 2, but that doesn't make
+            ## much sense since GPD(x-u) is 0 below the threshold.
+            up <- if(qlen == 1) max(exceed[Nu], q) else exceed[Nu]
+            q <- seq2(exceed[1], up, length.out = length.out, log = grepl("x", log))
+        }
         ## Compute Smith estimator (classical GPD-based tail estimator in the POT method)
         y.Smith <- tail_estimator_GPD(q, threshold = threshold, p.exceed = Fn.bar.u,
                                       shape = shape, scale = scale)
-        xlim <- range(exceed, q) # only equal to range(exceed) if q is not user-provided
-        ylim <- range(Fn.bar.exceed, y.Smith)
+        if(is.null(xlim)) xlim <- range(exceed, q) # only equal to range(exceed) if q is not user-provided
+        if(is.null(ylim)) ylim <- range(Fn.bar.exceed, y.Smith)
     } else {
-        xlim <- range(exceed)
-        ylim <- range(Fn.bar.exceed)
+        if(is.null(xlim)) xlim <- range(exceed)
+        if(is.null(ylim)) ylim <- range(Fn.bar.exceed)
     }
     ## Plot
     plot(exceed, Fn.bar.exceed, xlim = xlim, ylim = ylim, log = log, xlab = xlab, ylab = ylab, ...)
     if(doGPD) {
         do.call(lines, args = c(list(x = q, y = y.Smith), lines.args))
-        invisible(list(np = cbind(x = exceed, y = Fn.bar.exceed),
-                       Smith = cbind(x = q, y = y.Smith)))
-    } else invisible(cbind(x = exceed, y = Fn.bar.exceed))
+        invisible(list(np    = cbind(exceed = exceed, Fn.bar.exceed = Fn.bar.exceed),
+                       Smith = cbind(q = q, estimator = y.Smith)))
+    } else invisible(cbind(exceed = exceed, Fn.bar.exceed = Fn.bar.exceed))
 }

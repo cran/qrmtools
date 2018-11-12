@@ -6,9 +6,10 @@
   with the Smith estimator.
 }
 \usage{
-tail_plot(x, threshold, shape = NULL, scale = NULL, q = NULL,
-          length.out = 129, lines.args = list(),
-          log = "xy", xlab = "Value", ylab = "Tail probability", ...)
+tail_plot(x, threshold, shape = NULL, scale = NULL,
+          q = NULL, length.out = 129, lines.args = list(),
+          log = "xy", xlim = NULL, ylim = NULL,
+          xlab = "x", ylab = "Tail probability at x", ...)
 }
 \arguments{
   \item{x}{\code{\link{numeric}} vector of data.}
@@ -18,17 +19,23 @@ tail_plot(x, threshold, shape = NULL, scale = NULL, q = NULL,
     (typically obtained via \code{\link{fit_GPD_MLE}()}).}
   \item{scale}{\code{NULL} or the GPD shape parameter \eqn{\beta}{beta}
     (typically obtained via \code{\link{fit_GPD_MLE}()}).}
-  \item{q}{\code{\link{numeric}} vector of evaluationn points of the
-    Smith estimator (semi-parametric GPD-based tail estimator in the POT
-    method). If \code{is.null(q)}, it is determined internally as an
-    equidistant sequence of length \code{length.out} between the
-    smallest and largest exceedance (taken equidistant in log-scale if
-    \code{log} contains \code{"x"}).}
+  \item{q}{\code{NULL}, \code{numeric(1)} or \code{\link{numeric}} vector of
+    evaluationn points of the  Smith estimator (semi-parametric GPD-based tail
+    estimator in the POT method). If \code{NULL}, the evaluation points
+    are determined internally as an equidistant sequence of length
+    \code{length.out} between the smallest and largest exceedance
+    (taken equidistant in log-scale if \code{log} contains \code{"x"}).
+    If \code{numeric(1)}, then the behavior is similar to \code{NULL}
+    with the exception that the plot is extended to the right of the
+    largest exceedance if \code{q} is larger than the largest
+    exceedance.}
   \item{length.out}{length of \code{q}.}
   \item{lines.args}{\code{\link{list}} of arguments passed to the
     underlying \code{\link{lines}()}.}
   \item{log}{\code{\link{character}} indicating whether
     logarithmic axes are to be used.}
+  \item{xlim}{x-axis limits.}
+  \item{ylim}{y-axis limits.}
   \item{xlab}{x-axis label.}
   \item{ylab}{y-axis label.}
   \item{\dots}{additional arguments passed to the underlying

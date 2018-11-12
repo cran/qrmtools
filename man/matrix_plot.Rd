@@ -46,28 +46,25 @@ matrix_plot(x, ylim = rev(c(0.5, nrow(x) + 0.5)),
 d <- 50
 L <- diag(1:d)
 set.seed(271)
-L[lower.tri(L)] <- runif(choose(d,2))
-Sigma <- L %*% t(L) # ... real, symmetric, positive definite (covariance) matrix Sigma
+L[lower.tri(L)] <- runif(choose(d,2)) # random Cholesky factor
+Sigma <- L %*% t(L)
 P <- cor(Sigma)
 
 ## Default
 matrix_plot(P)
-
-## Default if nonnegative
-matrix_plot(abs(P))
-
-## Without diagonal
-P. <- abs(P)
-diag(P.) <- NA
-matrix_plot(P.)
+matrix_plot(abs(P)) # if nonnegative
+L. <- L
+diag(L.) <- NA
+matrix_plot(L.) # Cholesky factor without diagonal
 
 ## Default if nonpositive
 matrix_plot(-abs(P))
 
 ## Extending the color key to [-1,1] with darker color for |rho| >> 0
-## Note: When specifying 'at', one most likely also wants to provide 'col.regions'
+## Note: When specifying 'at', one most likely also wants 'col.regions'
 matrix_plot(P, at = seq(-1, 1, length.out = 200),
-            col.regions = grey(c(seq(0, 1, length.out = 100), seq(1, 0, length.out = 100))))
+            col.regions = grey(c(seq(0, 1, length.out = 100), seq(1, 0,
+                                     length.out = 100))))
 
 ## An example with overlaid lines
 library(lattice)

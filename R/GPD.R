@@ -23,8 +23,8 @@ dGPD <- function(x, shape, scale, log = FALSE)
     if(log) res else exp(res)
 }
 
-##' @title Distribution function of the GPD(shape, scale) distribution (vectorized in q)
-##' @param q quantile
+##' @title Distribution function of the GPD(shape, scale) distribution
+##' @param q quantile (vectorized)
 ##' @param shape parameter xi
 ##' @param scale parameter beta
 ##' @param lower.tail logical indicating whether lower/upper tail is used
@@ -68,8 +68,8 @@ pGPD <- function(q, shape, scale, lower.tail = TRUE, log.p = FALSE)
     }
 }
 
-##' @title Quantile function of the GPD(shape, scale) distribution (vectorized in p)
-##' @param p probability
+##' @title Quantile function of GPD(shape, scale)
+##' @param p probability (vectorized)
 ##' @param shape parameter xi
 ##' @param scale parameter beta
 ##' @param lower.tail logical indicating whether lower/upper tail is used

@@ -21,9 +21,10 @@ rGEV(n, shape, loc = 0, scale = 1)
   \item{shape}{GEV shape parameter \eqn{\xi}{xi}, a real.}
   \item{loc}{GEV location parameter \eqn{\mu}{mu}, a real.}
   \item{scale}{GEV scale parameter \eqn{\sigma}{sigma}, a positive real.}
-  \item{lower.tail}{\code{\link{logical}}; if TRUE (default)
+  \item{lower.tail}{\code{\link{logical}}; if \code{TRUE} (default)
     probabilities are \eqn{P(X \le x)}{P(X <= x)} otherwise, \eqn{P(X > x)}.}
-  \item{log, log.p}{logical; if TRUE, probabilities p are given as log(p).}
+  \item{log, log.p}{logical; if \code{TRUE}, probabilities \code{p} are
+    given as \code{log(p)}.}
 }
 \value{
   \code{dGEV()} computes the density, \code{pGEV()} the distribution

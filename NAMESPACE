@@ -1,4 +1,4 @@
-useDynLib(qrmtools, .registration = TRUE, .fixes = "C_")
+useDynLib(qrmtools, .registration = TRUE)
 
 
 ### Imports ####################################################################
@@ -19,7 +19,7 @@ importFrom("lattice", "levelplot")
 importFrom("rugarch", "ugarchspec", "ugarchfit")
 importFrom("stats", "quantile", "HoltWinters", "density", "ppoints", "optim")
 importFrom("methods", "is", "existsFunction")
-importFrom("utils", "setTxtProgressBar", "txtProgressBar", "head")
+importFrom("utils", "setTxtProgressBar", "txtProgressBar", "head", "tail")
 
 
 ### Exports ####################################################################
@@ -28,16 +28,13 @@ export(
     ## Distributions
     "dGEV", "pGEV", "qGEV", "rGEV",
     "dGPD", "pGPD", "qGPD", "rGPD",
+    "dGPDtail", "pGPDtail", "qGPDtail", "rGPDtail",
     "dPar", "pPar", "qPar", "rPar",
     ## EVT
     "fit_GEV_quantile", "fit_GEV_PWM", "logLik_GEV", "fit_GEV_MLE",
     "fit_GPD_MOM", "fit_GPD_PWM", "logLik_GPD", "fit_GPD_MLE",
     "mean_excess_np", "mean_excess_GPD", "mean_excess_plot",
-    "GPD_shape_plot", "tail_plot",
-    ## Risk measures
-    "VaR_np", "VaR_t", "VaR_GPD", "VaR_Par", "VaR_POT",
-    "ES_np", "ES_t", "ES_GPD", "ES_Par", "ES_POT",
-    "gVaR", "gEX",
+    "GEV_shape_plot", "GPD_shape_plot", "tail_plot",
     ## Worst/best VaR
     "crude_VaR_bounds", "dual_bound", "VaR_bounds_hom",
     "rearrange", "RA", "ARA",
@@ -55,5 +52,9 @@ export(
     "returns", "returns_qrmtools",
     ## Data related functions
     "get_data",
-    "hierarchical_matrix"
+    "hierarchical_matrix",
+    ## Risk measures
+    "VaR_np", "VaR_t", "VaR_GPD", "VaR_Par", "VaR_GPDtail",
+    "ES_np", "ES_t", "ES_GPD", "ES_Par", "ES_GPDtail",
+    "gVaR", "gEX"
 )

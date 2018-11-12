@@ -57,10 +57,12 @@ VaR_Par <- function(level, shape, scale = 1)
 ##' @param scale parameter beta
 ##' @return Value-at-Risk
 ##' @author Marius Hofert
-VaR_POT <- function(level, threshold, p.exceed, shape, scale)
+VaR_GPDtail <- function(level, threshold, p.exceed, shape, scale)
 {
     stopifnot(0 <= p.exceed, p.exceed <= level, level <= 1, scale > 0)
-    threshold + (scale/shape) * (((1-level)/p.exceed)^(-shape) - 1)
+    ## equals threshold + (scale/shape) * (((1-level)/p.exceed)^(-shape) - 1)
+    qGPDtail(level, threshold = threshold, p.exceed = p.exceed,
+             shape = shape, scale = scale)
 }
 
 
@@ -150,11 +152,11 @@ ES_Par <- function(level, shape, scale = 1)
 ##' @param scale parameter beta
 ##' @return Expected shortfall
 ##' @author Marius Hofert
-ES_POT <- function(level, threshold, p.exceed, shape, scale)
+ES_GPDtail <- function(level, threshold, p.exceed, shape, scale)
 {
     stopifnot(shape < 1, scale > 0) # rest checked in VaR_POT()
-    VaR <- VaR_POT(level, threshold = threshold, p.exceed = p.exceed,
-                   shape = shape, scale = scale)
+    VaR <- VaR_GPDtail(level, threshold = threshold, p.exceed = p.exceed,
+                       shape = shape, scale = scale)
     (VaR + scale - shape * threshold) / (1 - shape)
 }
 

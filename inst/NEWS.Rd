@@ -1,10 +1,26 @@
 % Check from R:
-% news(db = tools:::.build_news_db_from_package_NEWS_Rd("~/pro/copula/inst/NEWS.Rd"))
+% news(db = tools:::.build_news_db_from_package_NEWS_Rd("NEWS.Rd"))
 \name{NEWS}
 \title{News for \R Package \pkg{qrmtools}}
 \newcommand{\CRANpkg}{\href{https://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 
-\section{Changes in version 0.0-9 (2018-05-.., svn r1..)}{
+\section{Changes in version 0.0-10}{
+  \subsection{New Features}{
+    \itemize{
+      \item \code{dGPDtail()}, \code{pGPDtail()}, \code{qGPDtail()},
+      \code{rGPDtail()} (and renamed \code{VaR_POT()} to
+      \code{VaR_GPDtail()} and \code{ES_POT()} to \code{ES_GPDtail()}
+      correspondingly)
+    }
+  }
+  \subsection{Bug Fixes}{
+    \itemize{
+      \item \code{plot_matrix(): used to plot transposed matrix.}
+    }
+  }
+}
+
+\section{Changes in version 0.0-9}{
   \subsection{New Features}{
     \itemize{
       \item \code{VaR_POT()}, \code{ES_POT()}

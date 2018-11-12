@@ -1,13 +1,13 @@
 ## ---- message = FALSE----------------------------------------------------
 library(qrmtools)
 library(copula)
-library(combinat)
-library(sfsmisc)
+library(combinat) # for permn()
+library(sfsmisc) # for eaxis()
 doPDF <- FALSE
 
 ## ------------------------------------------------------------------------
-qF <- function(p, th = 2) qPar(p, shape = th) # Pareto quantile function
-pF <- function(q, th = 2) pPar(q, shape = th) # Pareto distribution function
+qF2 <- function(p, th = 2) qPar(p, shape = th) # Par(2) quantile function
+pF2 <- function(q, th = 2) pPar(q, shape = th) # Par(2) distribution function
 dim <- 8 # variable dimension (we use 8 or 100 here)
 
 ## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
@@ -20,8 +20,8 @@ t <- sapply(seq_along(s), function(i) {
 })
 f <- sapply(seq_along(s), function(i)
             sapply(t[,i], function(t.)
-                   qrmtools:::dual_bound_2(s[i], t = t., d = d, pF = pF) -
-                   qrmtools:::dual_bound_2_deriv_term(s[i], t = t., d = d, pF = pF)))
+                   qrmtools:::dual_bound_2(s[i], t = t., d = d, pF = pF2) -
+                   qrmtools:::dual_bound_2_deriv_term(s[i], t = t., d = d, pF = pF2)))
 palette <- colorRampPalette(c("maroon3", "darkorange2", "royalblue3"), space = "Lab")
 cols <- palette(6)
 if(doPDF)
@@ -65,13 +65,13 @@ if(doPDF) dev.off()
 d <- 8 # dimension
 alpha <- 0.99 # confidence level
 c <- seq(0, (1-alpha)/d, length.out = 129) # domain of h
-h.aux <- qrmtools:::Wang_h_aux(c, level = alpha, d = d, qF = qF)
+h.aux <- qrmtools:::Wang_h_aux(c, level = alpha, d = d, qF = qF2)
 par(mar = c(5, 4+1, 4, 2) + 0.1) # increase space (for y axis label)
 plot(c, h.aux, type = "l", xlab = "c (in initial interval)",
      ylab = expression(frac(d-1,d)~{F^{-1}}(a[c])+frac(1,d)~{F^{-1}}(b[c])))
 
 ## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
-h <- sapply(c, function(c.) qrmtools:::Wang_h(c., level = alpha, d = d, qF = qF))
+h <- sapply(c, function(c.) qrmtools:::Wang_h(c., level = alpha, d = d, qF = qF2))
 if(doPDF)
     pdf(file = (file <- paste0("fig_worst_VaR_",alpha,"_hom_Wang_h_Par=2_d=",d,"_num.pdf")),
         width = 6, height = 6)
@@ -83,7 +83,7 @@ if(doPDF) dev.off()
 
 ## ------------------------------------------------------------------------
 sapply(c(0, (1-alpha)/d), function(c.)
-       qrmtools:::Wang_h(c., level = alpha, d = d, qF = qF)) # -Inf, 0
+       qrmtools:::Wang_h(c., level = alpha, d = d, qF = qF2)) # -Inf, 0
 
 ## ------------------------------------------------------------------------
 method <- "Wang.Par" # this also holds for (the numerical) method = "Wang"
@@ -250,7 +250,7 @@ init_interval <- function(alpha, d, shape, trafo = FALSE, adjusted = FALSE)
     }
 }
 
-## Function to compute the best/worst Value-at-Risk in the homogeneous case with
+## Function to compute the best/worst value-at-risk in the homogeneous case with
 ## Par(theta) margins
 VaR_hom_Par <- function(alpha, d, shape, method = c("worst", "best"),
                         trafo = FALSE, interval = NULL, adjusted = FALSE,
@@ -331,7 +331,6 @@ res <- matrix(, nrow = n.th, ncol = 7)
 colnames(res) <- c("Wang", "straightforward", "transformed", "Wang.Par",
                    "dual", "RA.low", "RA.up")
 pb <- txtProgressBar(max = n.th, style = if(isatty(stdout())) 3 else 1) # setup progress bar
-on.exit(close(pb)) # on exit, close progress bar
 for(i in seq_len(n.th)) {
     ## "Wang" (numerical integration with smaller uniroot() tolerance; still
     ## numerically critical -- we catch "the integral is probably divergent"-errors here)
@@ -355,6 +354,7 @@ for(i in seq_len(n.th)) {
     ## Progress
     setTxtProgressBar(pb, i) # update progress bar
 }
+close(pb) # close progress bar
 
 ## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
 res. <- res/res[,"dual"] # standardize (by dual method)
@@ -451,16 +451,63 @@ legend("right", bty = "n",
            substitute(theta==th, list(th = theta[k]))) ))
 if(doPDF) dev.off()
 
+## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
+## Generate samples
+n <- 1000 # sample size
+set.seed(271) # set a seed (for reproducibility)
+X <- cbind(qPar(runif(n), shape = 2), # Par(2) sample
+           qPar(runif(n), shape = 2.5)) # Par(2.5) sample
+## Plot
+if(doPDF)
+    pdf(file = (file <- paste0("fig_RA_motivation_indep.pdf")),
+        width = 6, height = 6)
+plot(X, xlab = expression(X[1]), ylab = expression(X[2]))
+if(doPDF) dev.off()
+
+## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
+## Generate samples
+X. <- apply(X, 2, sort)
+## Plot
+if(doPDF)
+    pdf(file = (file <- paste0("fig_RA_motivation_comonotone.pdf")),
+        width = 6, height = 6)
+plot(X., xlab = expression(X[1]), ylab = expression(X[2]))
+if(doPDF) dev.off()
+
+## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
+## Samples of the sum of the components
+## Note: Their mean is the same (unaffected by the dependence)
+Xsum  <- rowSums(X)
+Xsum. <- rowSums(X.)
+## Quick plot
+boxplot(Xsum, Xsum., log = "y", names = c("Independence", "Comonotonicity"))
+## Kernel density estimates
+ran <- range(X, X.)
+dXsum  <- density(Xsum,  from = ran[1], to = ran[2])
+dXsum. <- density(Xsum., from = ran[1], to = ran[2])
+## Plot
+if(doPDF)
+    pdf(file = (file <- paste0("fig_RA_motivation_kernel_density_estimates.pdf")),
+        width = 6, height = 6)
+plot(dXsum, xlim = c(0, 5), ylim = c(0, max(dXsum$y, dXsum.$y)),
+     xlab = "x", ylab = "Kernel density estimate at x", main = "", type = "l")
+lines(dXsum., col = "royalblue3")
+legend("topright", bty = "n", lty = 1,
+       col = c("black", "royalblue3"), legend = c("Independence", "Comonotonicity"))
+if(doPDF) dev.off()
+
 ## ------------------------------------------------------------------------
 basic_rearrange_worst_VaR <- function(X, tol = 0)
 {
     N <- nrow(X)
     d <- ncol(X)
     m.rs.old <- min(rowSums(X))
-    while (TRUE) {
-        Y <- X
+    Y <- X
+    while (TRUE)
+    {
         for(j in 1:d)
-            Y[,j] <- sort(Y[,j], decreasing = TRUE)[rank(rowSums(Y[,-j, drop = FALSE]), ties.method = "first")]
+            Y[,j] <- sort(Y[,j], decreasing = TRUE)[rank(rowSums(Y[,-j, drop = FALSE]),
+                                                         ties.method = "first")]
         Y.rs <- rowSums(Y)
         m.rs.new <- min(Y.rs)
         tol. <- abs((m.rs.new - m.rs.old)/m.rs.old)
@@ -480,20 +527,19 @@ basic_rearrange_worst_VaR <- function(X, tol = 0)
 ## ------------------------------------------------------------------------
 ## Build the input matrix (for worst VaR)
 alpha <- 0.99 # confidence level
-N <- 2^9 # 512
-p <- alpha + (1-alpha)*0:(N-1)/N
+N <- 2^9 # number of discretization points; 512 here
+p <- alpha + (1-alpha)*0:(N-1)/N # probabilities for evaluating marginal quantile functions
 if(FALSE)
     d <- 2^(4:10) # 16, ..., 1024
-d <- 2^(4:8) # 16, ..., 256 (to save time here)
+d <- 2^(4:8) # dimensions 16, ..., 256 (to save time here)
 res <- matrix(, nrow = length(d), ncol = 2) # matrix containing run time results
 colnames(res) <- c("basic", "sophisticated")
-qF <- function(p, th = 2) qPar(p, shape = th) # Pareto quantile function
 
-## For each d, measure the run time
+## For each d, measure the run time (some randomness involved here...)
 for(i in seq_along(d)) {
-    ## cat("Working on d =",d[i],"\n")
-    X <- sapply(rep(list(qF), d[i]), function(qF.) qF.(p))
-    res[i,] <- c(system.time(basic_rearrange_worst_VaR(X))[["elapsed"]],
+    mar <- rep(list(qF2), d[i]) # marginal quantile functions
+    X <- sapply(mar, function(qF) qF(p)) # evaluate marginal quantile functions at p
+    res[i,] <- c(system.time(basic_rearrange_worst_VaR(X))[["elapsed"]], # basic version
                  system.time(rearrange(X, sample = FALSE, is.sorted = TRUE))[["elapsed"]])
 }
 
@@ -513,104 +559,125 @@ rearrange(A, tol = NULL, sample = FALSE, is.sorted = TRUE, trace = TRUE)
 B <- matrix(rep(1:3, 3), ncol = 3)
 rearrange(B, tol = NULL, sample = FALSE, is.sorted = TRUE, trace = TRUE)
 
-## ------------------------------------------------------------------------
-### Investigate the probability of certain rearranged matrices to appear #######
-
-##' @title Create a list of all possible input matrices for d = 3
-##' @param N The number of discretization points
-##' @param method The method how to create the list
-##' @return A N!^2-list (containing all possible (N,d) input matrices with 1:N in
-##'         the first column)
-##' @author Marius Hofert
-create_mat <- function(N)
-{
-    x_perm <- permn(N) # N!-long list containing all possible permutations of 1:N
-    N. <- factorial(N)
-    lst <- vector("list", length = N.^2)
-    cnt <- 0
-    for (i in 1:N.) { # double 'for' not time critical here
-        for (j in 1:N.){
-            cnt <- cnt+1
-            lst[[cnt]] <- cbind(1:N, x_perm[[i]], x_perm[[j]])
-        }
+## ---- results = "hide"---------------------------------------------------
+## Create a (N!)^{d-1}-list of all possible input matrices (with integer
+## elements) and 1:N as first column.
+N <- 5 # chosen N (<= 6 due to extensive run time)
+x_perm <- permn(N) # N!-long list containing all possible permutations of 1:N
+N. <- factorial(N)
+mat <- vector("list", length = N.^2)
+cnt <- 0
+for (i in 1:N.) { # double 'for' not time critical here
+    for (j in 1:N.){
+        cnt <- cnt+1
+        mat[[cnt]] <- cbind(1:N, x_perm[[i]], x_perm[[j]]) # matrix with 1:N in first column
     }
-    lst
 }
 
-
-## Main
-N <- 5 # chosen N (<= 6 due to extensive run time)
-system.time(mat  <- create_mat(N)) # create the list of matrices (N!^2-many)
-
-## Rearrange all of them
+## Rearrange all these (unique) matrices
 N. <- factorial(N)^2
-system.time(mat.ra <- lapply(1:N., function(i) {
+system.time(matRAlst <- lapply(1:N., function(i) {
                 ## if(i %% (N./20) == 0) cat(round(100*i/N.),"% done!\n", sep = "");
                 rearrange(mat[[i]], tol = NULL, sample = FALSE)$X.rearranged
             }))
 
-## Go through all of the rearranged matrices, 'uniquify' them and count
-lst <- list(mat.ra[[1]])
+## Go through all rearranged matrices, unique()ify them and count
+uniqueLst <- list(matRAlst[[1]])
 freq <- c(1)
-for(i in 2:length(mat.ra))
+pb <- txtProgressBar(max = length(matRAlst), style = if(isatty(stdout())) 3 else 1) # setup progress bar
+for(i in 2:length(matRAlst))
 {
-    bool <- sapply(1:length(lst),
-                   function(i) { identical(lst[[i]], mat.ra[[i]]) }) # is mat.ra in lst?
-    if(any(bool)) { # mat.ra has been observed before
-        freq[min(which(bool))] <- freq[min(which(bool))] + 1
-    } else { # mat.ra has not been observed before
-        lst <- c(lst, mat.ra[[i]]) # append it to lst()
+    bool <- sapply(1:length(uniqueLst),
+                   function(k) { identical(matRAlst[[i]], uniqueLst[[k]]) }) # is uniqueLst[[k]] in matRAlst?
+    if(any(bool)) { # matRAlst[[i]] has been observed before
+        ind <- min(which(bool))
+        freq[ind] <- freq[ind] + 1 # increase frequency
+    } else { # matRAlst[[i]] has not been observed before
+        uniqueLst <- c(uniqueLst, matRAlst[i]) # append it to uniqueLst
         freq <- c(freq, 1) # append its frequency
     }
+    ## Progress
+    setTxtProgressBar(pb, i) # update progress bar
 }
+close(pb) # close progress bar
 
-## Result
-lst # final rearranged matrices
-freq/N. # their corresponding probability
+## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
+## Distribution of (final) rearranged matrices
+(length(uniqueLst)/N.) * 100 # % of unique rearranged matrices
+p.mat <- freq/N. # their corresponding probabilities
+plot(p.mat, type = "l", xlab = "Index of unique matrices", ylab = "Probability")
+## => Matrices earlier on tend to appear more often (by construction!)
+
+## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
+## Distribution of the minimal row sums (= worst VaR estimates)
+VaR.est <- sapply(matRAlst, function(x) min(rowSums(x)))
+plot(VaR.est)
+table(VaR.est)/length(matRAlst) # probabilities
 
 ## ------------------------------------------------------------------------
 data(SMI.12)
-L <- -apply(log(SMI.12), 2, diff) # more sophisticated methods are available
+L <- -returns(SMI.12)
 n <- nrow(L)
 d <- ncol(L)
 
 ## ------------------------------------------------------------------------
 res <- vector("list", length = d)
 names(res) <- colnames(L)
-for(k in seq_len(d)) {
-    ## Determine the threshold for company k
+for(k in seq_len(d)) { # iterate over constituents
+    ## Determine the threshold for constituent k
     L. <- L[,k]
-    u <- quantile(L., probs = 0.8, names = FALSE) # threshold
+    thres <- quantile(L., probs = 0.8, names = FALSE) # threshold
 
-    ## Fit a GPD to the excesses
-    excess <- L.[L.>u]-u # excesses
-    fit <- fit_GPD_MLE(excess)
-    stopifnot(fit$converged == 0)
-    xi <- fit$par[["shape"]] # fitted xi
-    beta <- fit$par[["scale"]] # fitted beta
-    stopifnot(is.numeric(xi), is.numeric(beta))
-
-    ## Graphical goodness-of-fit check for the GPD fit
-    if(FALSE) {
-        excess. <- sort(excess) # sorted data
-        qF <- function(p) qGPD(p, shape = xi, scale = beta)
-        qF. <- qF(ppoints(length(excess.))) # theoretical quantiles
-        stock <- names(res)[k]
-        plot(qF., excess., xlab = "Theoretical quantiles",
-             ylab = "Sample quantiles", main = paste0("Q-Q plot for the fitted GPD(",
-             round(xi, 2),", ",round(beta, 2),") distribution for ", stock))
-        qqline(y = as.numeric(excess.), distribution = qF)
-    }
+    ## Fit a GPD to the excesses for constituent k
+    is.exceed <- L. > thres
+    p.exceed <- mean(is.exceed) # estimated threshold exceedance probability
+    excess <- L.[is.exceed] - thres # excesses
+    fit <- fit_GPD_MLE(excess) # fit a GPD to the excesses
+    stopifnot(fit$converged == 0) # convergence check
+    shape <- fit$par[["shape"]] # fitted shape xi
+    scale <- fit$par[["scale"]] # fitted scale beta
+    stopifnot(is.numeric(shape), is.numeric(scale), scale > 0) # sanity check
 
     ## Update res
-    res[[k]] <- list(loss = L., excess = excess, u = u, xi = xi, beta = beta)
+    res[[k]] <- list(loss = L., excess = excess, p.exceed = p.exceed,
+                     threshold = thres, shape = shape, scale = scale)
 }
 
+## ---- fig.align = "center", fig.width = 6, fig.height = 7, fig.show = "hold"----
+if(doPDF)
+    pdf(file = (file <- paste0("fig_worst_VaR_bounds_application_GPD_fit_check.pdf")),
+        width = 6, height = 7)
+## Graphical goodness-of-fit assessment
+opar <- par(omd = c(0.02, 1, 0.02, 1), mar = rep(1, 4))
+layout(matrix(1:d, ncol = 4, byrow = TRUE)) # (5, 4)-layout
+for(k in 1:d) {
+    x <- sort(res[[k]]$excess)
+    qq_plot(x, FUN = function(p)
+        qGPD(p, shape = res[[k]]$shape, scale = res[[k]]$scale),
+        axes = FALSE, frame.plot = TRUE)
+    mtext("Fitted quantiles", side = 1, line = 0.5, cex = 0.6)
+    mtext("Empirical quantiles", side = 2, line = 0.5, cex = 0.6)
+    op <- par(usr = c(0, 1, 0, 1))
+    text(1/10, 9/10, names(res)[k], cex = 0.7, adj = 0)
+    y <- qGPD(ppoints(length(x)), shape = res[[k]]$shape, scale = res[[k]]$scale)
+    R2 <- sprintf("%.4f", cor(x, y)^2) # coefficient of determination R^2
+    text(9/10, 1/10, substitute(R^2 == r2, list(r2 = R2)), cex = 0.7, adj = 1)
+    par(op)
+}
+layout(1) # restore layout
+par(opar) # restore plot parameters
+if(doPDF) dev.off()
+
 ## ------------------------------------------------------------------------
-xi. <- sapply(res, function(x) x$xi) # all fitted xi's
-beta. <- sapply(res, function(x) x$beta) # all fitted beta's
 alpha <- 0.99 # confidence level
-qF <- lapply(res, function(r) { function(p) qGPD(p, shape = r$xi, scale = r$beta) }) # list quantile functions
+stopifnot(sapply(res, function(r) r$p.exceed) >= 1 - alpha) # bar(F)(u) >= 1-alpha <=> F(u) <= alpha
+## => This was clear (as our threshold was chosen as a lower quantile than alpha
+##    but it is still good to check.
+qF <- lapply(res, function(r) {
+    function(p) qGPDtail(p, threshold = r$threshold,
+                         p.exceed = r$p.exceed,
+                         shape = r$shape, scale = r$scale)
+}) # list of quantile functions of the EVT based loss distributions
 set.seed(271) # set a seed (for reproducibility)
 res.ARA <- ARA(alpha, qF = qF) # apply ARA()
 stopifnot(res.ARA$converged) # check convergence
@@ -630,14 +697,14 @@ X.up[N,] <- sapply(1:d, function(j) if(is.infinite(X.up[N,j]))
                    qF[[j]](alpha+(1-alpha)*(1-1/(2*N))) else X.up[N,j])
 
 ## Apply rearrange() for various tolerances (incl. NULL)
-tol <- seq(0, 0.5, length.out = 21) # considered tolerances
+tol <- seq(0, 0.5, length.out = 21) # tolerances considered
 res.low  <- sapply(tol, function(t) rearrange(X.low,  tol = t, sample = FALSE, is.sorted = TRUE)$bound)
 res.low. <- rearrange(X.low, tol = NULL, sample = FALSE, is.sorted = TRUE)$bound # for tol = NULL
 res.up  <- sapply(tol, function(t) rearrange(X.up, tol = t, sample = FALSE, is.sorted = TRUE)$bound)
 res.up. <- rearrange(X.up, tol = NULL, sample = FALSE, is.sorted = TRUE)$bound # for tol = NULL
 
 ## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
-## Plot the lower and upper bound on worst VaR as a function in the chosen tol
+## Plot the lower and upper bound on worst VaR as a function of the chosen tol
 if(doPDF)
     pdf(file = (file <- paste0("fig_worst_VaR_bounds_application.pdf")),
         width = 6, height = 6)
@@ -650,5 +717,31 @@ lines(tol, res.up, type = "b")
 points(0, res.up., pch = 3) # draw tol = NULL result at 0, too (as '+')
 legend("topright", bty = "n", lty = rep(1,2),
        col = c("black", "royalblue3"), legend = c("Upper bound", "Lower bound"))
+if(doPDF) dev.off()
+
+## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
+## Define parameters of the three margins
+th <- 2.5 # Pareto parameter
+m <- 10 # mean of the lognormal
+v <- 20 # variance of the lognormal
+s <- 4 # shape of the gamma underlying the loggamma
+r <- 5 # rate of the gamma underlying the loggamma
+## Define list of marginal dfs
+qF <- list(qPar = function(p) (1 - p)^(-1/th) - 1,
+           qLN  = function(p) qlnorm(p, meanlog = log(m)-log(1+v/m^2)/2,
+                                          sdlog = sqrt(log(1+v/m^2))),
+           qLG  = function(p) exp(qgamma(p, shape = s, rate = r)))
+## Apply ARA()
+set.seed(271) # for reproducibility
+alpha <- 0.99 # confidence level
+wVaR <- ARA(alpha, qF = qF) # compute worst VaR (bounds)
+X <- wVaR[["X.rearranged"]]$up # extract rearranged matrix (upper bound)
+U <- pobs(X) # compute pseudo-observations
+colnames(U) <- c("U[1]", "U[2]", "U[3]")
+## Plot
+if(doPDF)
+    pdf(file = (file <- paste0("fig_worst_VaR_worst_copula_sample.pdf")),
+        width = 6, height = 6)
+cloud2(U, screen = list(z = 15, x = -60)) # default 'screen': z = 40, x = -60
 if(doPDF) dev.off()
 
