@@ -3,13 +3,17 @@ title: Geometric Risk Measures
 author: Marius Hofert, Klaus Herrmann and M&eacute;lina Mailhot
 date: '`r Sys.Date()`'
 output:
-  html_vignette:
-    css: style.css
-vignette: >
-  %\VignetteEngine{knitr::rmarkdown}
+  rmarkdown::html_vignette: # lighter than `rmarkdown::html_document` (`knitr:::html_vignette` just calls `rmarkdown::html_document` with a custom `.css`); see https://bookdown.org/yihui/rmarkdown/r-package-vignette.html
+    css: style.css # see 3.8 in https://bookdown.org/yihui/rmarkdown/r-package-vignette.html
+vignette: > # see also http://r-pkgs.had.co.nz/vignettes.html#vignette-metadata
   %\VignetteIndexEntry{Geometric Risk Measures}
+  %\VignetteEngine{knitr::rmarkdown} # vignetteEngine("knitr::rmarkdown") => knitr:::vweave_rmarkdown() => rmarkdown::render() but produces a much smaller vignette than rmarkdown::render()
   %\VignetteEncoding{UTF-8}
+# Note:
+# - Call via rmd2html bookdown.Rmd (calls rmarkdown::render())
+# - If used as a vignette of a package, use 'VignetteBuilder: knitr, rmarkdown' in DESCRIPTION.
 ---
+
 ```{r, message = FALSE}
 library(qrmtools)
 library(copula)

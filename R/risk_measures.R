@@ -15,7 +15,8 @@
 ##'       largest losses (to be continuous) and thus return a(n even) smaller
 ##'       VaR_alpha estimate.
 VaR_np <- function(x, level, names = FALSE, type = 1, ...)
-    quantile(x, probs = level, names = names, type = type, ...) # vectorized in x and level
+    quantile(if(is.matrix(x)) rowSums(x) else x, # compute VaR of the sum if a matrix is provided
+             probs = level, names = names, type = type, ...) # vectorized in x and level
 
 ##' @title Value-at-Risk for Normal and t Distributions
 ##' @param level confidence level alpha
@@ -85,6 +86,7 @@ VaR_GPDtail <- function(level, threshold, p.exceed, shape, scale)
 ##'               but might be computed just based on this one loss.
 ES_np <- function(x, level, method = c(">", ">="), verbose = FALSE, ...)
 {
+    if(is.matrix(x)) x <- rowSums(x) # compute ES of the sum if a matrix is provided
     stopifnot(0 < level, level < 1)
     VaR <- VaR_np(x, level = level, ...) # length(level)-vector
     method <- match.arg(method)

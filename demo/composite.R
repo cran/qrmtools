@@ -1,3 +1,5 @@
+## By Marius Hofert
+
 ### Composite distributions -- examples ########################################
 
 library(qrmtools)

@@ -16,8 +16,8 @@ qq_plot(x, FUN = qnorm, xlab = "Theoretical quantiles", ylab = "Sample quantiles
   \item{x}{data \code{\link{vector}}.}
   \item{FUN}{\code{\link{function}}. For
     \describe{
-      \item{\code{pp_plot()}:}{The distribution function.}
-      \item{\code{qq_plot()}:}{The quantile function.}
+      \item{\code{pp_plot()}:}{The distribution function (vectorized).}
+      \item{\code{qq_plot()}:}{The quantile function (vectorized).}
   }}
   \item{xlab}{x-axis label.}
   \item{ylab}{y-axis label.}
@@ -42,8 +42,8 @@ qq_plot(x, FUN = qnorm, xlab = "Theoretical quantiles", ylab = "Sample quantiles
   \code{\link{invisible}()}.
 }
 \details{
-  Note that Q-Q plots are more widely used (as they make deviations in
-  the tails more visible).
+  Note that Q-Q plots are more widely used than P-P plots
+  (as they highlight deviations in the tails more clearly).
 }
 \author{Marius Hofert}
 \examples{

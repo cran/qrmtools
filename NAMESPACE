@@ -10,8 +10,13 @@ importFrom("Quandl", "Quandl")
 importFrom("zoo", "index")
 importFrom("xts", "as.xts")
 importFrom("methods", "hasArg")
-importFrom("stats", "dnorm", "dt", "integrate", "pnorm", "qnorm", "qt",
-           "runif", "uniroot", "qqline", "var", "filter", "ecdf", "stepfun")
+importFrom("stats",
+           "uniroot", "integrate", "var", "cov", "filter", "ecdf", "stepfun",
+           "dnorm", "dt",
+           "pnorm", "pchisq", "pbeta",
+           "qnorm", "qt",
+           "runif",
+           "qqline", "mahalanobis", "ks.test")
 importFrom("grDevices", "colorRampPalette", "dev.off", "extendrange")
 importFrom("graphics", "image", "mtext", "plot", "rug", "abline", "lines",
            "axis")
@@ -20,6 +25,7 @@ importFrom("rugarch", "ugarchspec", "ugarchfit")
 importFrom("stats", "quantile", "HoltWinters", "density", "ppoints", "optim")
 importFrom("methods", "is", "existsFunction")
 importFrom("utils", "setTxtProgressBar", "txtProgressBar", "head", "tail")
+importFrom("ADGofTest", "ad.test")
 
 
 ### Exports ####################################################################
@@ -56,5 +62,7 @@ export(
     ## Risk measures
     "VaR_np", "VaR_t", "VaR_GPD", "VaR_Par", "VaR_GPDtail",
     "ES_np", "ES_t", "ES_GPD", "ES_Par", "ES_GPDtail",
-    "gVaR", "gEX"
+    "gVaR", "gEX",
+    ## Tests
+    "maha2_test", "mardia_test"
 )

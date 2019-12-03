@@ -41,6 +41,10 @@ gEX(x, level, start = colMeans(x),
     \describe{
       \item{\code{gVaR()}, \code{gEX()}}{\code{\link{matrix}} of
 	(rowwise) multivariate losses.}
+      \item{\code{VaR_np()}, \code{ES_np()}}{if \code{x} is a
+	\code{\link{matrix}} then \code{\link{rowSums}()} is applied
+	first (so value-at-risk and expected shortfall of the sum
+        is computed).}
       \item{otherwise}{\code{\link{vector}} of losses.}
     }
   }

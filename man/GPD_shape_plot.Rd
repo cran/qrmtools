@@ -41,9 +41,9 @@ GPD_shape_plot(x, thresholds = seq(quantile(x, 0.5), quantile(x, 0.99),
 }
 \author{Marius Hofert}
 \examples{
-data(fire)
-GPD_shape_plot(fire)
-abline(v = c(10, 20), lty = 3) # possible threshold choices from mean_excess_plot()
+set.seed(271)
+X <- rt(1000, df = 3.5)
+GPD_shape_plot(X)
 }
 \keyword{parametric}
 \keyword{hplot}

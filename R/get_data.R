@@ -71,10 +71,10 @@ get_data <- function(x, from = NULL, to = NULL,
         } else { # if src != "oanda" or "oanda" but only one block, we can get it directly
             if(!is.character(from)) from <- as.character(from)
             if(!is.character(to)) to <- as.character(to)
-            dat <- if(src == "quandl") {
+            dat <- if(src == "quandl") { # quandl
                 tryCatch(Quandl(x, type = "xts", start_date = from, end_date = to, ...),
                          error = function(e) e)
-            } else {
+            } else { # !quandl
                 tryCatch(getSymbols(x, from = from, to = to, src = src, auto.assign = FALSE, ...),
                          error = function(e) e)
             }

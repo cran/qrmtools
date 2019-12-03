@@ -88,9 +88,9 @@ mean_excess_GPD <- function(x, shape, scale)
 ##'       - We could (and did once) pass 'shape', 'scale', 'q', 'length.out',
 ##'         'lines.args', 'log' (see tail_plot()) and add a fitted GPD mean
 ##'         excess function this way.
-##'         => not worth it, also doesn't look too good (Danish fire) and at
+##'         => Not worth it, also doesn't look too good (Danish fire) and at
 ##'            that point one typically doesn't have a fitted GPD yet anyways.
-##'         Note that the mean excess function of the fitted GPD would be:
+##'       - The mean excess function of the fitted GPD would be:
 ##'         mean_excess_GPD(q-<chosen threshold>, shape = shape, scale = scale)
 mean_excess_plot <- function(x, omit = 3,
                              xlab = "Threshold", ylab = "Mean excess over threshold", ...)

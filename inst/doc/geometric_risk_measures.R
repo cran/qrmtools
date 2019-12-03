@@ -1,11 +1,11 @@
-## ---- message = FALSE----------------------------------------------------
+## ---- message = FALSE---------------------------------------------------------
 library(qrmtools)
 library(copula)
 library(sn) # for skew-normal distribution
 library(RColorBrewer) # for Dark2 color palette
 col <- brewer.pal(8, name = "Dark2")[c(7, 3, 5, 4, 6)] # some colors
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 ## Setup
 lphi <- 33 # number of angles
 phi <- seq(0, 2*pi, length.out = lphi) # equidistant angles
@@ -13,7 +13,7 @@ circle <- cbind(cos(phi), sin(phi)) # unit circle evaluated at angles
 a1 <- 0.98 * circle # first set of alphas
 a2 <- cbind(0.98 * circle[,1], 0.9 * circle[,2]) # other set of alphas
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6----------------
+## ---- fig.align = "center", fig.width = 6, fig.height = 6---------------------
 ## Plot
 par(pty = "s")
 plot(circle, type = "l", lty = 2, lwd = 2, col = gray(0.5),
@@ -30,7 +30,7 @@ points(p1[1], p1[2], pch = "1", cex = 1.2) # "1"
 points(p2[1], p2[2], pch = "2", cex = 1.2) # "2"
 points(0, 0, pch = 19, cex = 1.2) # filled dot
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 ## Generate a copula sample
 set.seed(42) # for reproducibility
 n <- 2e3 # sample size
@@ -42,7 +42,7 @@ nu <- 4 # parameter for t margin
 X <- cbind(qsn(U[,1], xi = xi, omega = om, alpha = al),
             qt(U[,2], df = nu)) # map to skew-normal and t_4 margins
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 ## Evaluate the joint density (according to Sklar's Theorem)
 x <- seq(-4, 4, length.out = 64)
 y <- seq(-4, 4, length.out = 64)
@@ -51,7 +51,7 @@ dH <- function(x, y)
             copula = cop) * dsn(x, xi = xi, omega = om, alpha = al) * dt(y, df = nu)
 h <- outer(x, y, FUN = dH)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 ## Compute geometric VaR and expectile for both sets of indices alpha
 gVaR.a1 <- matrix(vapply(gVaR(X, level = a1), `[[`, numeric(2), "par"),
                   ncol = 2, byrow = TRUE)
@@ -62,14 +62,14 @@ gVaR.a2 <- matrix(vapply(gVaR(X, level = a2), `[[`, numeric(2), "par"),
 gEX.a2  <- matrix(vapply(gEX (X, level = a2), `[[`, numeric(2), "par"),
                   ncol = 2, byrow = TRUE)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 ## Compute geometric VaR and expectile for the points p1 and p2
 gVaR.p1 <- gVaR(X, level = p1)$par
 gEX.p1  <-  gEX(X, level = p1)$par
 gVaR.p2 <- gVaR(X, level = p2)$par
 gEX.p2  <-  gEX(X, level = p2)$par
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6----------------
+## ---- fig.align = "center", fig.width = 6, fig.height = 6---------------------
 ## Plot
 par(pty = "s")
 ran <- range(gVaR.a1, gVaR.a2, gEX.a1, gEX.a2,
@@ -89,7 +89,7 @@ points(rbind(gEX.p1),  pch = "1", cex = 1.2) # geometric expectiles for alpha = 
 points(rbind(gEX.p2),  pch = "2", cex = 1.2) # geometric expectiles for alpha = p2
 points(rbind(colMeans(X)), pch = 19, cex = 1.2) # filled dot
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 ## Bootstrap
 B <- 32 # bootstrap replications
 n <- 250 # sample size
@@ -101,7 +101,7 @@ res <- lapply(1:B, function(b) { # iterate over 1:B
            byrow = TRUE)
 })
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6----------------
+## ---- fig.align = "center", fig.width = 6, fig.height = 6---------------------
 ## Plot
 par(pty = "s")
 ran <- range(gEX.a1, res) # determine plotting range
@@ -115,21 +115,21 @@ for(b in 1:B)
 lines(gEX.a1, col = col[1]) # "true" geometric expectiles
 points(rbind(colMeans(X)), pch = 19, cex = 1.2) # filled dot
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 ## Determine alphas
 u <- c(1, 1) / sqrt(2) # direction
 n. <- 64
 mag <- tail(head(seq(-1, 1, length.out = n.), n = -1), n = -1) # magnitude
 a <- matrix(mag * rep(u, each = n. - 2), ncol = 2) # alpha
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 ## Compute geometric VaRs and expectiles for the alphas
 gVaR.a <- matrix(vapply(gVaR(X, level = a), `[[`, numeric(2), "par"),
                  ncol = 2, byrow = TRUE)
 gEX.a  <- matrix(vapply(gEX (X, level = a), `[[`, numeric(2), "par"),
                  ncol = 2, byrow = TRUE)
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6----------------
+## ---- fig.align = "center", fig.width = 6, fig.height = 6---------------------
 ## Plot of margins of geometric VaRs and expectiles
 ## Note: bold() does not respect Greek letters
 yran <- range(gVaR.a, gEX.a) # determine plotting range

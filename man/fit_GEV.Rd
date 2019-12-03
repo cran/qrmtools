@@ -69,7 +69,7 @@ fit_GEV_MLE(x, init = c("shape0", "PWM", "quantile"),
   experiments (see the source code), one can safely say that finding
   initial values for fitting GEVs via MLE is non-trivial; see also the
   block maxima method script about the Black Monday event on
-  \url{qrmtutorial.org}.
+  \url{https://qrmtutorial.org}.
 
   Caution: See Coles (2001, p. 55) for how to interpret \eqn{\xi\le
     -0.5}{xi <= -0.5}; in particular, the standard asymptotic properties

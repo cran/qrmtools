@@ -1,11 +1,11 @@
-## ---- message = FALSE----------------------------------------------------
+## ---- message = FALSE---------------------------------------------------------
 library(qrmtools)
 library(copula)
 library(combinat) # for permn()
 library(sfsmisc) # for eaxis()
 doPDF <- FALSE
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 qF2 <- function(p, th = 2) qPar(p, shape = th) # Par(2) quantile function
 pF2 <- function(q, th = 2) pPar(q, shape = th) # Par(2) distribution function
 dim <- 8 # variable dimension (we use 8 or 100 here)
@@ -61,7 +61,7 @@ legend("topright", lty = rep(1,4),
            function(j) substitute(theta==j, list(j = theta[j])))))
 if(doPDF) dev.off()
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6----------------
+## ---- fig.align = "center", fig.width = 6, fig.height = 6---------------------
 d <- 8 # dimension
 alpha <- 0.99 # confidence level
 c <- seq(0, (1-alpha)/d, length.out = 129) # domain of h
@@ -81,18 +81,18 @@ plot(c, h, type = "l", xlab = "c (in initial interval)",
 abline(h = 0, lty = 2)
 if(doPDF) dev.off()
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 sapply(c(0, (1-alpha)/d), function(c.)
        qrmtools:::Wang_h(c., level = alpha, d = d, qF = qF2)) # -Inf, 0
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 method <- "Wang.Par" # this also holds for (the numerical) method = "Wang"
 th <- 0.99
 qrmtools:::Wang_h(0, level = alpha, d = d, method = method, shape = th) # NaN => uniroot() fails
 ## Note: Wang_h() is actually already NaN for c <= 1e-17
 qrmtools:::Wang_h_aux(0, level = alpha, d = d, method = method, shape = th) # Inf
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 d <- dim # dimension
 alpha <- 0.99 # confidence level
 theta <- c(0.1, 0.5, 1, 5, 10, 50) # theta values
@@ -124,7 +124,7 @@ legend("topleft", bty = "n", lty = rep(1,length(theta)), col = cols,
        function(k) substitute(theta==k, list(k = theta[k])))))
 if(doPDF) dev.off()
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 d <- dim # dimension
 alpha <- 1-2^seq(-0.001, -10, length.out = 128) # confidence levels; concentrated near 1
 theta <- c(0.1, 0.5, 1, 5, 10, 50) # theta values
@@ -153,7 +153,7 @@ legend("topright", bty = "n", lty = rep(1,length(theta)), col = cols,
        function(k) substitute(theta==k, list(k = theta[k])))))
 if(doPDF) dev.off()
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 d <- seq(2, 1002, by = 20) # dimensions
 alpha <- 0.99 # confidence level
 theta <- c(0.1, 0.5, 1, 5, 10, 50) # theta values
@@ -182,7 +182,7 @@ legend("topleft", bty = "n", lty = rep(1,length(theta)), col = cols,
        function(k) substitute(theta==k, list(k = theta[k])))))
 if(doPDF) dev.off()
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 d <- c(2, 10, 20, 100, 200, 1000) # dimensions
 theta <- 10^seq(-1, log(50, base = 10), length.out = 50) # theta values
 alpha <- 0.99 # confidence level
@@ -213,7 +213,7 @@ legend("topright", bty = "n", lty = rep(1,length(d)), col = cols,
        function(k) substitute(d==k, list(k = d[k])))))
 if(doPDF) dev.off()
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 ## Initial interval for the root finding in case of worst VaR
 init_interval <- function(alpha, d, shape, trafo = FALSE, adjusted = FALSE)
 {
@@ -317,7 +317,7 @@ VaR_hom_Par <- function(alpha, d, shape, method = c("worst", "best"),
     stop("Wrong 'method'"))
 }
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 alpha <- 0.99 # confidence level
 d <- dim # dimension
 n.th <- 32 # number of thetas
@@ -326,7 +326,7 @@ qFs <- lapply(th, function(th.) {th.; function(p) qPar(p, shape = th.)}) # n.th-
 pFs <- lapply(th, function(th.) {th.; function(q) pPar(q, shape = th.)}) # n.th-vector of Pareto dfs
 N <- 1e4 # number of discretization points for RA(); N = 1e5 does not improve the situation
 
-## ---- results = "hide", warning = FALSE----------------------------------
+## ---- results = "hide", warning = FALSE---------------------------------------
 res <- matrix(, nrow = n.th, ncol = 7)
 colnames(res) <- c("Wang", "straightforward", "transformed", "Wang.Par",
                    "dual", "RA.low", "RA.up")
@@ -380,14 +380,14 @@ legend("topright", bty = "n",
                   "Lower RA bound", "Upper RA bound"))
 if(doPDF) dev.off()
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6----------------
+## ---- fig.align = "center", fig.width = 6, fig.height = 6---------------------
 tol <- 2.2204e-16
 wVaR.tol <- sapply(th, function(th.)
     VaR_hom_Par(alpha = alpha, d = d, shape = th., tol = tol))
 plot(th, wVaR.tol/res[,"dual"], type = "l", ylim = ylim,
      xlab = expression(theta), ylab = "Wang's approach (straightforward) but with smaller tol")
 
-## ---- warning = FALSE----------------------------------------------------
+## ---- warning = FALSE---------------------------------------------------------
 alpha <- 0.99 # confidence level
 d <- seq(2, 1002, by = 20) # dimensions
 theta <- c(0.1, 0.5, 1, 5, 10, 50) # theta values
@@ -399,17 +399,17 @@ VaR <- simplify2array(sapply(d, function(d.)
         else res
     }), simplify = FALSE))
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 VaR <- simplify2array(sapply(d, function(d.)
     sapply(theta, function(th) VaR_hom_Par(alpha, d = d., shape = th, tol = tol, adjusted = TRUE)),
     simplify = FALSE))
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 d <- 500
 th <- 20
 VaR_hom_Par(alpha, d = d, shape = th, trafo = TRUE) # Inf
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 h <- function(x)
      (d/(1-th)-1)*x^(-1/th + 1) - (d-1)*x^(-1/th) + x - (d*th/(1-th) + 1)
 interval <- init_interval(alpha, d, th, trafo = TRUE)
@@ -420,10 +420,10 @@ b <- 1-c
 qPar(a, shape = th)*(d-1) + qPar(b, shape = th) # Inf
 stopifnot(b == 1) # => b is 1 => qPar(b, shape = th) = Inf
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 qPar(a, shape = th)*(d-1) + c^(-1/th)-1
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 d <- seq(2, 1002, by = 20) # dimensions
 theta <- c(0.1, 0.5, 1, 5, 10, 50) # theta values
 VaR. <- simplify2array(sapply(d, function(d.)
@@ -496,7 +496,7 @@ legend("topright", bty = "n", lty = 1,
        col = c("black", "royalblue3"), legend = c("Independence", "Comonotonicity"))
 if(doPDF) dev.off()
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 basic_rearrange_worst_VaR <- function(X, tol = 0)
 {
     N <- nrow(X)
@@ -524,7 +524,7 @@ basic_rearrange_worst_VaR <- function(X, tol = 0)
     min(rowSums(Y))
 }
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 ## Build the input matrix (for worst VaR)
 alpha <- 0.99 # confidence level
 N <- 2^9 # number of discretization points; 512 here
@@ -551,15 +551,15 @@ plot(d, (1-res[,2]/res[,1])*100, type = "b", log = "x", ylim = c(0,100),
      xlab = "d", ylab = "Relative speed-up (in %) of implemented ARA()")
 if(doPDF) dev.off()
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 A <- matrix(c(1:4, 2*(1:4)-1, 2^(0:3)), ncol = 3)
 rearrange(A, tol = NULL, sample = FALSE, is.sorted = TRUE, trace = TRUE)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 B <- matrix(rep(1:3, 3), ncol = 3)
 rearrange(B, tol = NULL, sample = FALSE, is.sorted = TRUE, trace = TRUE)
 
-## ---- results = "hide"---------------------------------------------------
+## ---- results = "hide"--------------------------------------------------------
 ## Create a (N!)^{d-1}-list of all possible input matrices (with integer
 ## elements) and 1:N as first column.
 N <- 5 # chosen N (<= 6 due to extensive run time)
@@ -614,13 +614,13 @@ VaR.est <- sapply(matRAlst, function(x) min(rowSums(x)))
 plot(VaR.est)
 table(VaR.est)/length(matRAlst) # probabilities
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 data(SMI.12)
 L <- -returns(SMI.12)
 n <- nrow(L)
 d <- ncol(L)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 res <- vector("list", length = d)
 names(res) <- colnames(L)
 for(k in seq_len(d)) { # iterate over constituents
@@ -668,7 +668,7 @@ layout(1) # restore layout
 par(opar) # restore plot parameters
 if(doPDF) dev.off()
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 alpha <- 0.99 # confidence level
 stopifnot(sapply(res, function(r) r$p.exceed) >= 1 - alpha) # bar(F)(u) >= 1-alpha <=> F(u) <= alpha
 ## => This was clear (as our threshold was chosen as a lower quantile than alpha
@@ -686,7 +686,7 @@ res.RA <- RA(alpha, qF = qF, N = res.ARA$N.used, abstol = 0) # apply RA() (with 
 stopifnot(res.RA$converged) # check convergence
 res.RA$bounds # RA bounds on worst VaR
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 ## Build the input matrices for rearrange()
 N <- res.ARA$N.used
 p.low <- alpha + (1-alpha)*(0:(N-1))/N # probability points for worst VaR (lower bound)

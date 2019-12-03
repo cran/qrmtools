@@ -49,34 +49,28 @@ mean_excess_GPD(x, shape, scale)
 }
 \author{Marius Hofert}
 \examples{
-## (Sample) mean excess function
-data(fire)
-ME <- mean_excess_np(fire)
-stopifnot(dim(ME) == c(2164, 2),
-          all.equal(ME[nrow(ME),], c(65.707491, 121.066231),
-                    check.attributes = FALSE))
+## Generate losses to work with
+set.seed(271)
+X <- rt(1000, df = 3.5) # in MDA(H_{1/df}); see MFE (2015, Section 16.1.1)
 
-## A 'manual' (sample) mean excess plot
+## (Sample) mean excess plot and threshold choice
+mean_excess_plot(X[X > 0]) # we only use positive values here to see 'more'
+## => Any value in [0.8, 2] seems reasonable as threshold at first sight
+##    but 0.8 to 1 turns out to be too small for the degrees of
+##    freedom implied by the GPD estimator to be close to the true value 3.5.
+## => We go with threshold 1.5 here.
+u <- 1.5 # thresholds
+
+## An alternative way
+ME <- mean_excess_np(X[X > 0])
 plot(ME, xlab = "Threshold", ylab = "Mean excess over threshold")
 
-## (Sample) mean excess plot
-mean_excess_plot(fire)
-## => Any value in [10, 20] seems reasonable here as threshold choice
-##    (one would probably go with 10 to benefit from a larger sample size).
-
-## With mean excess functions of two fitted GPDs overlaid
-u <- c(10, 20) # thresholds
-fit <- lapply(u, function(u.) fit_GPD_MLE(fire[fire > u.] - u.))
-q <- lapply(u, function(u.) seq(u., ME[nrow(ME),"x"], length.out = 129))
-MEF.GPD <- lapply(1:2, function(k)
-    mean_excess_GPD(q[[k]]-u[k], shape = fit[[k]]$par[["shape"]],
-                    scale = fit[[k]]$par[["scale"]]))
-mean_excess_plot(fire, ylim = range(ME, unlist(MEF.GPD)))
-col <- c("royalblue3", "maroon3")
-for(k in 1:2) lines(q[[k]], MEF.GPD[[k]], col = col[k])
-legend("bottomright", col = rev(col), lty = rep(1, length(u)), bty = "n",
-       legend = as.expression(sapply(rev(seq_along(u)),
-       function(k) substitute("Threshold choice"~~u==u., list(u. = u[k])))))
+## Mean excess plot with mean excess function of the fitted GPD
+fit <- fit_GPD_MLE(X[X > u] - u)
+q <- seq(u, ME[nrow(ME),"x"], length.out = 129)
+MEF.GPD <- mean_excess_GPD(q-u, shape = fit$par[["shape"]], scale = fit$par[["scale"]])
+mean_excess_plot(X[X > 0]) # mean excess plot for positive losses...
+lines(q, MEF.GPD, col = "royalblue", lwd = 1.4) # ... with mean excess function of the fitted GPD
 }
 \keyword{nonparametric}
 \keyword{hplot}

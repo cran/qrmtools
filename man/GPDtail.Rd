@@ -54,18 +54,19 @@ rGPDtail(n, threshold, p.exceed, shape, scale)
    Princeton University Press.
 }
 \examples{
-## Data we work with
-data(fire) # load the Danish fire insurance data
-X <- fire
+## Generate data to work with
+set.seed(271)
+X <- rt(1000, df = 3.5) # in MDA(H_{1/df}); see MFE (2015, Section 16.1.1)
 
 ## Determine thresholds for POT method
 mean_excess_plot(X[X > 0])
-abline(v = 10)
-u <- 10 # threshold
+abline(v = 1.5)
+u <- 1.5 # threshold
 
 ## Fit GPD to the excesses (per margin)
 fit <- fit_GPD_MLE(X[X > u] - u)
 fit$par
+1/fit$par["shape"] # => close to df
 
 ## Estimate threshold exceedance probabilities
 p.exceed <- mean(X > u)
@@ -79,20 +80,19 @@ rF <- function(n) rGPDtail(n, threshold = u, p.exceed = p.exceed,
                            shape = fit$par["shape"], scale = fit$par["scale"])
 
 ## Basic check of dF()
-curve(dF, from = 8, to = 20)
-abline(v = u, lty = 2) # threshold
+curve(dF, from = u - 1, to = u + 5)
 
 ## Basic check of pF()
-curve(pF, from = u, to = 20, ylim = 0:1) # quite flat here
+curve(pF, from = u, to = u + 5, ylim = 0:1) # quite flat here
 abline(v = u, h = 1-p.exceed, lty = 2) # mass at u is 1-p.exceed (see 'Details')
 
 ## Basic check of rF()
 set.seed(271)
 X. <- rF(1000)
-plot(X.)
-stopifnot(all.equal(mean(X. == u), 1-p.exceed, tol = 5e-3)) # confirms the above
+plot(X., ylab = "Losses generated from the fitted GPD-based tail distribution")
+stopifnot(all.equal(mean(X. == u), 1-p.exceed, tol = 7e-3)) # confirms the above
 ## Pick out 'continuous part'
 X.. <- X.[X. > u]
-plot(pF(X..)) # should be U[1-p.exceed, 1]
+plot(pF(X..), ylab = "Probability-transformed tail losses") # should be U[1-p.exceed, 1]
 }
 \keyword{distribution}

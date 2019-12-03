@@ -62,10 +62,9 @@ fit_ARMA_GARCH <- function(x, ugarchspec.list = ugarchspec(), solver = "hybrid",
 ## - Let \mu_{cor} = \alpha_1 + \beta_1, \mu_{ema} = \beta_1/\mu_{cor}
 ##   and \sigma^2 = \alpha_0/(1-\mu_{cor}).
 ## - Basic reparameterization (see (3), partly):
-##   \sigma_t^2 = \alpha_0 + \alpha_1 * X_{t-1}^2 + \beta_1 * \sigma_{t-1}^2
+##   \sigma_t^2 = \alpha_0 + \alpha_1 * X_{t-1}^2 + \beta_1 * \sigma_{t-1}^2; see McNeil et al. (2015, p. 124)
 ##              = \alpha_0/(1-\mu_{cor}) (1-\mu_{cor})
-##                + \mu_{cor} ((\beta_1/\mu_{cor})\sigma_{t-1}^2
-##                + (1-\mu_{ema}) X_{t-1}^2)
+##                + \mu_{cor} ((\beta_1/\mu_{cor})\sigma_{t-1}^2 + (1-\mu_{ema}) X_{t-1}^2)
 ##              = \sigma^2 * (1-\mu_{cor}) + \mu_{cor} * (1-\mu_{ema}) * X_{t-1}^2
 ##                + \mu_{cor} * \mu_{ema} * \sigma_{t-1}^2
 ##              = <nonrecursive part> + \mu_{cor} * \mu_{ema} * \sigma_{t-1}^2

@@ -4,6 +4,15 @@
 \title{News for \R Package \pkg{qrmtools}}
 \newcommand{\CRANpkg}{\href{https://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 
+\section{Changes in version 0.0-11}{
+  \subsection{New Features}{
+    \itemize{
+      \item \code{VaR_np()} and \code{ES_np()} compute value-at-risk and
+      expected shortfall for the sum if the input is a matrix.
+    }
+  }
+}
+
 \section{Changes in version 0.0-10}{
   \subsection{New Features}{
     \itemize{

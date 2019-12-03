@@ -10,6 +10,7 @@
 ##' @param ... ellipsis argument passed to qF()
 ##' @return 2-vector containing crude VaR_alpha bounds
 ##' @author Marius Hofert
+##' @note See Lemma 2.1 in "Improved Algorithms for Computing Worst VaR"
 crude_VaR_bounds <- function(level, qF, d = NULL, ...)
 {
     ## ... are passed to *all* qF()
@@ -25,7 +26,7 @@ crude_VaR_bounds <- function(level, qF, d = NULL, ...)
             stop("qF has to be a (quantile) function or list of such")
         if(is.null(d))
             stop("if qF is a single function, d has to be a positive integer")
-        qF.low <- qF(level, ...) # => lower bound d * VaR_alpha(F)
+        qF.low <- qF(level/d, ...)
         qF.up  <- qF((d-1+level)/d, ...)
         d * c(qF.low, qF.up)
     }

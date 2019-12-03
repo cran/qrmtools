@@ -5,7 +5,7 @@
   Plot of a matrix.
 }
 \usage{
-matrix_plot(x, ylim = rev(c(0.5, nrow(x) + 0.5)),
+matrix_plot(x, ran = range(x, na.rm = TRUE), ylim = rev(c(0.5, nrow(x) + 0.5)),
             xlab = "Column", ylab = "Row",
             scales = list(alternating = c(1,1), tck = c(1,0),
                           x = list(at = pretty(1:ncol(x)), rot = 90),
@@ -15,6 +15,7 @@ matrix_plot(x, ylim = rev(c(0.5, nrow(x) + 0.5)),
 }
 \arguments{
   \item{x}{\code{\link{matrix}}-like object.}
+  \item{ran}{range (can be used to enforce (-1,1), for example).}
   \item{ylim}{y-axis limits in reverse order (for the rows to appear 'top down').}
   \item{xlab}{x-axis label.}
   \item{ylab}{y-axis label.}
@@ -52,6 +53,7 @@ P <- cor(Sigma)
 
 ## Default
 matrix_plot(P)
+matrix_plot(P, ran = c(-1, 1)) # within (-1, 1)
 matrix_plot(abs(P)) # if nonnegative
 L. <- L
 diag(L.) <- NA
@@ -60,11 +62,10 @@ matrix_plot(L.) # Cholesky factor without diagonal
 ## Default if nonpositive
 matrix_plot(-abs(P))
 
-## Extending the color key to [-1,1] with darker color for |rho| >> 0
-## Note: When specifying 'at', one most likely also wants 'col.regions'
-matrix_plot(P, at = seq(-1, 1, length.out = 200),
-            col.regions = grey(c(seq(0, 1, length.out = 100), seq(1, 0,
-                                     length.out = 100))))
+## Changing colors
+matrix_plot(P, ran = c(-1, 1),
+            col.regions = grey(c(seq(0, 1, length.out = 100),
+                                 seq(1, 0, length.out = 100))))
 
 ## An example with overlaid lines
 library(lattice)

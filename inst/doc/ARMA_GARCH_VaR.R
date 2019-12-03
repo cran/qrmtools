@@ -1,8 +1,8 @@
-## ---- message = FALSE----------------------------------------------------
+## ---- message = FALSE---------------------------------------------------------
 library(rugarch)
 library(qrmtools)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 ## Model specification (for simulation)
 nu <- 3 # d.o.f. of the standardized distribution of Z_t
 fixed.p <- list(mu = 0, # our mu (intercept)
@@ -18,7 +18,7 @@ varModel <- list(model = "sGARCH", garchOrder = garchOrder)
 spec <- ugarchspec(varModel, mean.model = list(armaOrder = armaOrder),
                    fixed.pars = fixed.p, distribution.model = "std") # t standardized residuals
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 ## Simulate (X_t)
 n <- 1000 # sample size (= length of simulated paths)
 x <- ugarchpath(spec, n.sim = n, m.sim = 1, rseed = 271) # n.sim length of simulated path; m.sim = number of paths
@@ -31,18 +31,19 @@ X <- fitted(x) # simulated process X_t = mu_t + epsilon_t for epsilon_t = sigma_
 sig <- sigma(x) # volatilities sigma_t (conditional standard deviations)
 eps <- x@path$residSim # unstandardized residuals epsilon_t = sigma_t * Z_t
 ## Note: There are no extraction methods for the unstandardized residuals epsilon_t
+##       for uGARCHpath objects (only for uGARCHfit objects; see below).
 
 ## Sanity checks (=> fitted() and sigma() grab out the right quantities)
 stopifnot(all.equal(X,   x@path$seriesSim, check.attributes = FALSE),
           all.equal(sig, x@path$sigmaSim,  check.attributes = FALSE))
 
-## ---- fig.align = "center", fig.width = 7.5, fig.height = 6--------------
+## ---- fig.align = "center", fig.width = 7.5, fig.height = 6-------------------
 ## Plots
 plot(X,   type = "l", xlab = "t", ylab = expression(X[t]))
 plot(sig, type = "h", xlab = "t", ylab = expression(sigma[t]))
 plot(eps, type = "l", xlab = "t", ylab = expression(epsilon[t]))
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 ## Fit an ARMA(1,1)-GARCH(1,1) model
 spec <- ugarchspec(varModel, mean.model = list(armaOrder = armaOrder),
                    distribution.model = "std") # without fixed parameters here
@@ -56,7 +57,7 @@ sig. <- sigma(fit) # fitted hat{sigma}_t
 stopifnot(all.equal(as.numeric(mu.),  fit@fit$fitted.values),
           all.equal(as.numeric(sig.), fit@fit$sigma))
 
-## ---- fig.align = "center", fig.width = 7.5, fig.height = 6--------------
+## ---- fig.align = "center", fig.width = 7.5, fig.height = 6-------------------
 ## Plot data X_t and fitted hat{mu}_t
 plot(X, type = "l", xlab = "t",
      ylab = expression("Data"~X[t]~"and fitted values"~hat(mu)[t]))
@@ -72,12 +73,13 @@ plot(resi, type = "l", xlab = "t", ylab = expression(epsilon[t])) # check residu
 
 ## Q-Q plot of the standardized residuals Z_t against their specified t
 ## (t_nu with variance 1)
-Z <- fit@fit$z
-stopifnot(all.equal(Z, as.numeric(resi/sig.)))
+Z <- as.numeric(residuals(fit, standardize = TRUE))
+stopifnot(all.equal(Z, fit@fit$z, check.attributes = FALSE),
+          all.equal(Z, as.numeric(resi/sig.)))
 qq_plot(Z, FUN = function(p) sqrt((nu-2)/nu) * qt(p, df = nu),
         main = substitute("Q-Q plot of ("*Z[t]*") against a standardized"~t[nu.], list(nu. = nu)))
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 ## VaR confidence level we consider here
 alpha <- 0.99
 
@@ -85,12 +87,12 @@ alpha <- 0.99
 VaR. <- as.numeric(quantile(fit, probs = alpha))
 
 ## Build manually and compare the two
-nu. <- fit@fit$coef["shape"] # extract (fitted) d.o.f. nu
+nu. <- fit@fit$coef[["shape"]] # extract (fitted) d.o.f. nu
 VaR.. <- as.numeric(mu. + sig. * sqrt((nu.-2)/nu.) * qt(alpha, df = nu.)) # VaR_alpha computed manually
 stopifnot(all.equal(VaR.., VaR.))
 ## => quantile(<rugarch object>, probs = alpha) provides VaR_alpha = hat{mu}_t + hat{sigma}_t * q_Z(alpha)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 ## Note: VaRTest() is written for the lower tail (not sign-adjusted losses)
 ##       (hence the complicated call here, requiring to refit the process to -X)
 btest <- VaRTest(1-alpha, actual = -X,
@@ -104,7 +106,7 @@ btest$uc.Decision # test decision
 btest$cc.H0 # corresponding null hypothesis
 btest$cc.Decision # test decision
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 ## Predict from the fitted process
 fspec <- getspec(fit) # specification of the fitted process
 setfixed(fspec) <- as.list(coef(fit)) # set the parameters to the fitted ones
@@ -125,7 +127,7 @@ VaR.predict. <- as.numeric(mu.predict + sig.predict * sqrt((nu.-2)/nu.) *
                            qt(alpha, df = nu.)) # VaR_alpha computed manually
 stopifnot(all.equal(VaR.predict., VaR.predict))
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 ## Simulate B paths
 B <- 1000
 set.seed(271)
@@ -139,7 +141,7 @@ eps.sim <- X.sim.obj@path$residSim # extract epsilon_t
 VaR.sim <- (X.sim - eps.sim) + sig.sim * sqrt((nu.-2)/nu.) * qt(alpha, df = nu.) # (m, B) matrix
 VaR.CI <- apply(VaR.sim, 1, function(x) quantile(x, probs = c(0.025, 0.975)))
 
-## ---- fig.align = "center", fig.width = 7.5, fig.height = 6--------------
+## ---- fig.align = "center", fig.width = 7.5, fig.height = 6-------------------
 ## Setup
 yran <- range(X, # simulated path
               mu., VaR., # fitted conditional mean and VaR_alpha

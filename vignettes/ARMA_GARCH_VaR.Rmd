@@ -3,13 +3,17 @@ title: Fitting and Predicting VaR based on an ARMA-GARCH Process
 author: Marius Hofert
 date: '`r Sys.Date()`'
 output:
-  html_vignette:
-    css: style.css
-vignette: >
-  %\VignetteEngine{knitr::rmarkdown}
+  rmarkdown::html_vignette: # lighter than `rmarkdown::html_document` (`knitr:::html_vignette` just calls `rmarkdown::html_document` with a custom `.css`); see https://bookdown.org/yihui/rmarkdown/r-package-vignette.html
+    css: style.css # see 3.8 in https://bookdown.org/yihui/rmarkdown/r-package-vignette.html
+vignette: > # see also http://r-pkgs.had.co.nz/vignettes.html#vignette-metadata
   %\VignetteIndexEntry{Fitting and Predicting VaR based on an ARMA-GARCH Process}
+  %\VignetteEngine{knitr::rmarkdown} # vignetteEngine("knitr::rmarkdown") => knitr:::vweave_rmarkdown() => rmarkdown::render() but produces a much smaller vignette than rmarkdown::render()
   %\VignetteEncoding{UTF-8}
+# Note:
+# - Call via rmd2html bookdown.Rmd (calls rmarkdown::render())
+# - If used as a vignette of a package, use 'VignetteBuilder: knitr, rmarkdown' in DESCRIPTION.
 ---
+
 This vignette does not use *qrmtools*, but shows how Value-at-Risk (VaR) can be
 fitted and predicted based on an underlying ARMA-GARCH process (which of course
 also concerns QRM in the wider sense).
@@ -18,6 +22,7 @@ also concerns QRM in the wider sense).
 library(rugarch)
 library(qrmtools)
 ```
+
 
 ## 1 Simulate (-log-return) data $(X_t)$ from an ARMA-GARCH process
 
@@ -53,6 +58,7 @@ X <- fitted(x) # simulated process X_t = mu_t + epsilon_t for epsilon_t = sigma_
 sig <- sigma(x) # volatilities sigma_t (conditional standard deviations)
 eps <- x@path$residSim # unstandardized residuals epsilon_t = sigma_t * Z_t
 ## Note: There are no extraction methods for the unstandardized residuals epsilon_t
+##       for uGARCHpath objects (only for uGARCHfit objects; see below).
 
 ## Sanity checks (=> fitted() and sigma() grab out the right quantities)
 stopifnot(all.equal(X,   x@path$seriesSim, check.attributes = FALSE),
@@ -105,8 +111,9 @@ plot(resi, type = "l", xlab = "t", ylab = expression(epsilon[t])) # check residu
 
 ## Q-Q plot of the standardized residuals Z_t against their specified t
 ## (t_nu with variance 1)
-Z <- fit@fit$z
-stopifnot(all.equal(Z, as.numeric(resi/sig.)))
+Z <- as.numeric(residuals(fit, standardize = TRUE))
+stopifnot(all.equal(Z, fit@fit$z, check.attributes = FALSE),
+          all.equal(Z, as.numeric(resi/sig.)))
 qq_plot(Z, FUN = function(p) sqrt((nu-2)/nu) * qt(p, df = nu),
         main = substitute("Q-Q plot of ("*Z[t]*") against a standardized"~t[nu.], list(nu. = nu)))
 ```
@@ -124,7 +131,7 @@ alpha <- 0.99
 VaR. <- as.numeric(quantile(fit, probs = alpha))
 
 ## Build manually and compare the two
-nu. <- fit@fit$coef["shape"] # extract (fitted) d.o.f. nu
+nu. <- fit@fit$coef[["shape"]] # extract (fitted) d.o.f. nu
 VaR.. <- as.numeric(mu. + sig. * sqrt((nu.-2)/nu.) * qt(alpha, df = nu.)) # VaR_alpha computed manually
 stopifnot(all.equal(VaR.., VaR.))
 ## => quantile(<rugarch object>, probs = alpha) provides VaR_alpha = hat{mu}_t + hat{sigma}_t * q_Z(alpha)

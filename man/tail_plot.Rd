@@ -1,8 +1,8 @@
 \name{tail_plot}
 \alias{tail_plot}
-\title{Plot of a Non-Parametric Tail Estimator}
+\title{Plot of an Empirical Surival Function with Smith Estimator}
 \description{
-  Plot a non-parametric tail distribution, possibly overlaid
+  Plot an empirical tail survival function, possibly overlaid
   with the Smith estimator.
 }
 \usage{
@@ -43,25 +43,32 @@ tail_plot(x, threshold, shape = NULL, scale = NULL,
 }
 \value{
   If both \code{shape} and \code{scale} are provided, \code{tail_plot()}
-  overlays the non-parametric tail estimator (evaluated at the exceedances)
-  with the corresponding GPD. In this case, \code{tail_plot()} invisibly
-  returns a list with two two-column matrices, once containing the x-values
-  and y-values of the non-parametric tail estimator and once containing the
+  overlays the empirical tail survival function estimator (evaluated at
+  the exceedances) with the corresponding GPD. In this case,
+  \code{tail_plot()} invisibly returns a list with two two-column
+  matrices, one containing the x-values and y-values of the
+  empirical survival distribution estimator and one containing the
   x-values and y-values of the Smith estimator. If \code{shape} or
   \code{scale} are \code{NULL}, \code{tail_plot()} invisibly returns
-  a two-column matrix with the x-values and y-values of the non-parametric
-  tail estimator.
+  a two-column matrix with the x-values and y-values of the empirical
+  survival distribution estimator.
 }
 \author{Marius Hofert}
 \examples{
-data(fire)
-u <- 10 # threshold choice
-tail_plot(fire, threshold = u, log = "", type = "b") # => need log-scale
-tail_plot(fire, threshold = u, type = "s") # as a step function
-fit <- fit_GPD_MLE(fire[fire > u] - u) # fit GPD to excesses (POT method)
-tail_plot(fire, threshold = u, # without log-scale
+## Generate losses to work with
+set.seed(271)
+X <- rt(1000, df = 3.5) # in MDA(H_{1/df}); see MFE (2015, Section 16.1.1)
+
+## Threshold (see ?dGPDtail, for example)
+u <- 1.5 # threshold
+
+## Plots of empirical survival distribution functions (overlaid with Smith estimator)
+tail_plot(X, threshold = u, log = "", type = "b") # => need log-scale
+tail_plot(X, threshold = u, type = "s") # as a step function
+fit <- fit_GPD_MLE(X[X > u] - u) # fit GPD to excesses (POT method)
+tail_plot(X, threshold = u, # without log-scale
           shape = fit$par[["shape"]], scale = fit$par[["scale"]], log = "")
-tail_plot(fire, threshold = u, # highlights linearity
+tail_plot(X, threshold = u, # highlights linearity
           shape = fit$par[["shape"]], scale = fit$par[["scale"]])
 }
 \keyword{hplot}

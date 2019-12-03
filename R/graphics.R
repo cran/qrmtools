@@ -32,6 +32,8 @@ NA_plot <- function(x, col = c("black", "white"), xlab = "Time", ylab = "Compone
 
 ##' @title Plot of a Matrix
 ##' @param x matrix
+##' @param ran range over which to plot the colors (can be used to force (-1, 1),
+##'        for example)
 ##' @param ylim y-axis limits in reverse order (for the rows to appear 'top down')
 ##' @param xlab x-axis label
 ##' @param ylab y-axis label
@@ -47,7 +49,7 @@ NA_plot <- function(x, col = c("black", "white"), xlab = "Time", ylab = "Compone
 ##'         corrplot::corrplot(err, method = "color", col = grey(seq(0.4, 1, length.out = 200)),
 ##'                            tl.col = "black", is.corr = FALSE)
 ##'       - Check via examples on ?matrix_plot
-matrix_plot <- function(x, ylim = rev(c(0.5, nrow(x) + 0.5)),
+matrix_plot <- function(x, ran = range(x, na.rm = TRUE), ylim = rev(c(0.5, nrow(x) + 0.5)),
                         xlab = "Column", ylab = "Row",
                         scales = list(alternating = c(1,1), tck = c(1,0),
                                       x = list(at = pretty(1:ncol(x)), rot = 90),
@@ -59,7 +61,6 @@ matrix_plot <- function(x, ylim = rev(c(0.5, nrow(x) + 0.5)),
               is.null(scales) || is.list(scales), is.numeric(at) || is.null(at),
               is.list(colorkey) || is.null(colorkey))
     ## Determine colors for the color key
-    ran <- range(x, na.rm = TRUE)
     if(all(ran >= 0)) { # all non-NA entries >= 0
         if(is.null(at)) at <- seq(0, ran[2], length.out = 200)
         if(is.null(col.regions))
@@ -142,7 +143,7 @@ pp_plot <-  function(x, FUN = pnorm,
 
 ##' @title Q-Q Plot
 ##' @param x data (a vector or convertible to such)
-##' @param FUN hypothesized *quantile* function
+##' @param FUN hypothesized *quantile* function (vectorized)
 ##' @param xlab x-axis label
 ##' @param ylab y-axis label
 ##' @param do.qqline logical indicating whether a Q-Q line is plotted
@@ -225,16 +226,17 @@ qq_plot <-  function(x, FUN = qnorm, xlab = "Theoretical quantiles", ylab = "Sam
 ##'       plot(stepfun(x = x, y = c(0, ecdf(x)(x))), log = "x")
 ##'       plot(stepfun(x = x, y = c(0, ecdf(x)(x))), log = "x", xlim = range(x))
 ##'       plot.stepfun # => extends the range (below 0)
-##'       Note: Manually extending the range a little bit to the left
-##'             does not make sense (because of log-scale
-##'             => artificial extension to the left). Best to leave it like this.
+##'       Note: - Manually extending the range a little bit to the left
+##'               does not make sense (because of log-scale
+##'               => artificial extension to the left). Best to leave it like this.
+##'             - see ?plot.stepfun
 edf_plot <- function(x, do.points = length(x) <= 100, log = "",
                      xlim = range(x, na.rm = TRUE),
                      main = "", xlab = "x", ylab = "Distribution function at x", ...)
 {
     x <- sort(as.numeric(x)) # required by ecdf()
     y <- c(0, ecdf(x)(x)) # plot.stepfun() requires 'y' to be one longer than 'x' (y = values *between* x's)
-    ## => log = "y" does not make sense anymore at this point
+    ## => log = "y" does not make sense anymore at this point as y[1] = 0
     if(grepl("y", log)) stop('log = "y" not available.')
     sf <- stepfun(x = x, y = y) # ok, does not extend x-range
     plot(sf, do.points = do.points, log = log, xlim = xlim,
