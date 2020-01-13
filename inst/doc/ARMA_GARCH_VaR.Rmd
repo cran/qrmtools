@@ -115,7 +115,8 @@ Z <- as.numeric(residuals(fit, standardize = TRUE))
 stopifnot(all.equal(Z, fit@fit$z, check.attributes = FALSE),
           all.equal(Z, as.numeric(resi/sig.)))
 qq_plot(Z, FUN = function(p) sqrt((nu-2)/nu) * qt(p, df = nu),
-        main = substitute("Q-Q plot of ("*Z[t]*") against a standardized"~t[nu.], list(nu. = nu)))
+        main = substitute("Q-Q plot of ("*Z[t]*") against a standardized"~italic(t)[nu.],
+                          list(nu. = round(nu, 2))))
 ```
 
 

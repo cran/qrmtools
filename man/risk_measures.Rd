@@ -9,6 +9,7 @@
 \alias{ES_GPD}
 \alias{ES_Par}
 \alias{ES_GPDtail}
+\alias{RVaR_np}
 \alias{gVaR}
 \alias{gEX}
 \title{Risk Measures}
@@ -30,6 +31,9 @@ ES_GPD(level, shape, scale)
 ES_Par(level, shape, scale = 1)
 ES_GPDtail(level, threshold, p.exceed, shape, scale)
 
+## Range value-at-risk
+RVaR_np(x, level, ...)
+
 ## Multivariate geometric value-at-risk and expectiles
 gVaR(x, level, start = colMeans(x),
      method = if(length(level) == 1) "Brent" else "Nelder-Mead", ...)
@@ -41,7 +45,7 @@ gEX(x, level, start = colMeans(x),
     \describe{
       \item{\code{gVaR()}, \code{gEX()}}{\code{\link{matrix}} of
 	(rowwise) multivariate losses.}
-      \item{\code{VaR_np()}, \code{ES_np()}}{if \code{x} is a
+      \item{\code{VaR_np()}, \code{ES_np()}, \code{RVaR_np()}}{if \code{x} is a
 	\code{\link{matrix}} then \code{\link{rowSums}()} is applied
 	first (so value-at-risk and expected shortfall of the sum
         is computed).}
@@ -50,6 +54,10 @@ gEX(x, level, start = colMeans(x),
   }
   \item{level}{
     \describe{
+      \item{\code{RVaR_np()}}{\code{\link{vector}} of length 1 or 2
+        giving the lower and upper confidence level; if of length 1,
+        it is interpreted as the lower confidence level and the upper
+        one is taken to be 1.}
       \item{\code{gVaR()}, \code{gEX()}}{\code{\link{vector}} or
 	\code{\link{matrix}} of	(rowwise) confidence levels \eqn{\alpha}{alpha}
 	(all in \eqn{[0,1]}).}
@@ -102,19 +110,24 @@ gEX(x, level, start = colMeans(x),
     \describe{
       \item{\code{VaR_np()}}{additional arguments passed to the
 	underlying \code{\link{quantile}()}.}
-      \item{\code{ES_np()}}{additional arguments passed to
-	\code{VaR_np()}.}
+      \item{\code{ES_np()}, \code{RVaR_np()}}{additional arguments passed to
+	the underlying \code{VaR_np()}.}
       \item{\code{gVaR()}, \code{gEX()}}{additional arguments passed to
 	the underlying \code{\link{optim}()}.}
     }
   }
 }
 \value{
-  \code{VaR_np()}, \code{ES_np()} estimate value-at-risk and expected
-  shortfall non-parametrically. For the latter, the mean over all losses
-  (strictly) beyond value-at-risk is computed. If \code{method = ">="},
-  there is always at least one such loss, whereas if \code{method =
-    ">"}, there might be no such loss, in which case \code{NaN} is returned.
+  \code{VaR_np()}, \code{ES_np()}, \code{RVaR_np()} estimate
+  value-at-risk, expected shortfall and range value-at-risk
+  non-parametrically. For expected shortfall, if \code{method = ">="}
+  (\code{method = ">"}, the default), losses greater than or equal to
+  (strictly greater than) the nonparametric value-at-risk estimate are
+  averaged; in the former case, there might be no such loss, in which
+  case \code{NaN} is returned. For range value-at-risk, losses greater
+  than the nonparametric VaR estimate at level
+  \code{level[1]} and less than or equal to the nonparametric VaR
+  estimate at level \code{level[2]} are averaged.
 
   \code{VaR_t()}, \code{ES_t()} compute value-at-risk and expected
   shortfall for the \eqn{t} (or normal) distribution.

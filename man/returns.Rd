@@ -19,7 +19,8 @@ returns_qrmtools(x, method = c("logarithmic", "simple", "diff"),
       TRUE}).}
   \item{method}{\code{\link{character}} string indicating the method to
     be used (log-returns (logarithmic changes), simple returns (relative
-    changes), or basic differences).}
+    changes), or basic differences). Note that this can also be a vector
+    of such methods of length equal to the number of columns of \code{x}.}
   \item{inverse}{\code{\link{logical}} indicating whether the inverse
     transformation (data from given returns) shall be computed (if
     \code{TRUE}, this requires \code{start} to be specified).}
@@ -131,5 +132,13 @@ stopifnot(all.equal(Y, S., check.attributes = FALSE))
 X <- -returns(S, method = "diff")
 Y <- returns(-X, method = "diff", inverse = TRUE, start = S[1,])
 stopifnot(all.equal(Y, S))
+
+
+### Vector-case of 'method' ####################################################
+
+X <- returns(S., method = c("logarithmic", "diff"))
+Y <- returns(X, method = c("logarithmic", "diff"), inverse = TRUE, start = S.[1,],
+             start.date = sdate)
+stopifnot(all.equal(Y, S., check.attributes = FALSE))
 }
 \keyword{utilities}

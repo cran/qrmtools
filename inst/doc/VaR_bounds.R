@@ -559,60 +559,60 @@ rearrange(A, tol = NULL, sample = FALSE, is.sorted = TRUE, trace = TRUE)
 B <- matrix(rep(1:3, 3), ncol = 3)
 rearrange(B, tol = NULL, sample = FALSE, is.sorted = TRUE, trace = TRUE)
 
-## ---- results = "hide"--------------------------------------------------------
-## Create a (N!)^{d-1}-list of all possible input matrices (with integer
-## elements) and 1:N as first column.
-N <- 5 # chosen N (<= 6 due to extensive run time)
-x_perm <- permn(N) # N!-long list containing all possible permutations of 1:N
-N. <- factorial(N)
-mat <- vector("list", length = N.^2)
-cnt <- 0
-for (i in 1:N.) { # double 'for' not time critical here
-    for (j in 1:N.){
-        cnt <- cnt+1
-        mat[[cnt]] <- cbind(1:N, x_perm[[i]], x_perm[[j]]) # matrix with 1:N in first column
-    }
-}
+## ---- eval = FALSE, results = "hide"------------------------------------------
+#  ## Create a (N!)^{d-1}-list of all possible input matrices (with integer
+#  ## elements) and 1:N as first column.
+#  N <- 5 # chosen N (<= 6 due to extensive run time)
+#  x_perm <- permn(N) # N!-long list containing all possible permutations of 1:N
+#  N. <- factorial(N)
+#  mat <- vector("list", length = N.^2)
+#  cnt <- 0
+#  for (i in 1:N.) { # double 'for' not time critical here
+#      for (j in 1:N.){
+#          cnt <- cnt+1
+#          mat[[cnt]] <- cbind(1:N, x_perm[[i]], x_perm[[j]]) # matrix with 1:N in first column
+#      }
+#  }
+#  
+#  ## Rearrange all these (unique) matrices
+#  N. <- factorial(N)^2
+#  system.time(matRAlst <- lapply(1:N., function(i) {
+#                  ## if(i %% (N./20) == 0) cat(round(100*i/N.),"% done!\n", sep = "");
+#                  rearrange(mat[[i]], tol = NULL, sample = FALSE)$X.rearranged
+#              }))
+#  
+#  ## Go through all rearranged matrices, unique()ify them and count
+#  uniqueLst <- list(matRAlst[[1]])
+#  freq <- c(1)
+#  pb <- txtProgressBar(max = length(matRAlst), style = if(isatty(stdout())) 3 else 1) # setup progress bar
+#  for(i in 2:length(matRAlst))
+#  {
+#      bool <- sapply(1:length(uniqueLst),
+#                     function(k) { identical(matRAlst[[i]], uniqueLst[[k]]) }) # is uniqueLst[[k]] in matRAlst?
+#      if(any(bool)) { # matRAlst[[i]] has been observed before
+#          ind <- min(which(bool))
+#          freq[ind] <- freq[ind] + 1 # increase frequency
+#      } else { # matRAlst[[i]] has not been observed before
+#          uniqueLst <- c(uniqueLst, matRAlst[i]) # append it to uniqueLst
+#          freq <- c(freq, 1) # append its frequency
+#      }
+#      ## Progress
+#      setTxtProgressBar(pb, i) # update progress bar
+#  }
+#  close(pb) # close progress bar
 
-## Rearrange all these (unique) matrices
-N. <- factorial(N)^2
-system.time(matRAlst <- lapply(1:N., function(i) {
-                ## if(i %% (N./20) == 0) cat(round(100*i/N.),"% done!\n", sep = "");
-                rearrange(mat[[i]], tol = NULL, sample = FALSE)$X.rearranged
-            }))
+## ---- eval = FALSE, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
+#  ## Distribution of (final) rearranged matrices
+#  (length(uniqueLst)/N.) * 100 # % of unique rearranged matrices
+#  p.mat <- freq/N. # their corresponding probabilities
+#  plot(p.mat, type = "l", xlab = "Index of unique matrices", ylab = "Probability")
+#  ## => Matrices earlier on tend to appear more often (by construction!)
 
-## Go through all rearranged matrices, unique()ify them and count
-uniqueLst <- list(matRAlst[[1]])
-freq <- c(1)
-pb <- txtProgressBar(max = length(matRAlst), style = if(isatty(stdout())) 3 else 1) # setup progress bar
-for(i in 2:length(matRAlst))
-{
-    bool <- sapply(1:length(uniqueLst),
-                   function(k) { identical(matRAlst[[i]], uniqueLst[[k]]) }) # is uniqueLst[[k]] in matRAlst?
-    if(any(bool)) { # matRAlst[[i]] has been observed before
-        ind <- min(which(bool))
-        freq[ind] <- freq[ind] + 1 # increase frequency
-    } else { # matRAlst[[i]] has not been observed before
-        uniqueLst <- c(uniqueLst, matRAlst[i]) # append it to uniqueLst
-        freq <- c(freq, 1) # append its frequency
-    }
-    ## Progress
-    setTxtProgressBar(pb, i) # update progress bar
-}
-close(pb) # close progress bar
-
-## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
-## Distribution of (final) rearranged matrices
-(length(uniqueLst)/N.) * 100 # % of unique rearranged matrices
-p.mat <- freq/N. # their corresponding probabilities
-plot(p.mat, type = "l", xlab = "Index of unique matrices", ylab = "Probability")
-## => Matrices earlier on tend to appear more often (by construction!)
-
-## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
-## Distribution of the minimal row sums (= worst VaR estimates)
-VaR.est <- sapply(matRAlst, function(x) min(rowSums(x)))
-plot(VaR.est)
-table(VaR.est)/length(matRAlst) # probabilities
+## ---- eval = FALSE, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
+#  ## Distribution of the minimal row sums (= worst VaR estimates)
+#  VaR.est <- sapply(matRAlst, function(x) min(rowSums(x)))
+#  plot(VaR.est)
+#  table(VaR.est)/length(matRAlst) # probabilities
 
 ## -----------------------------------------------------------------------------
 data(SMI.12)

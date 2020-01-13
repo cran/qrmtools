@@ -758,9 +758,10 @@ The current implementation is still not based on a *stable* sorting algorithm
 b) terminates on all input matrices. To see the latter, consider the following
 example in which we investigate the possible output matrices of `rearrange()`
 on all input matrices (obviously only for $d = 3$ due to run time; larger $N$
-can be chosen but note that the effort is $(N!)^{d-1}$ here!).
+can be chosen but note that the effort is $(N!)^{d-1}$ here!). Also note
+that we do not actually run the code here (to save run time)
 
-```{r, results = "hide"}
+```{r, eval = FALSE, results = "hide"}
 ## Create a (N!)^{d-1}-list of all possible input matrices (with integer
 ## elements) and 1:N as first column.
 N <- 5 # chosen N (<= 6 due to extensive run time)
@@ -803,7 +804,7 @@ for(i in 2:length(matRAlst))
 close(pb) # close progress bar
 ```
 
-```{r, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"}
+```{r, eval = FALSE, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"}
 ## Distribution of (final) rearranged matrices
 (length(uniqueLst)/N.) * 100 # % of unique rearranged matrices
 p.mat <- freq/N. # their corresponding probabilities
@@ -811,7 +812,7 @@ plot(p.mat, type = "l", xlab = "Index of unique matrices", ylab = "Probability")
 ## => Matrices earlier on tend to appear more often (by construction!)
 ```
 
-```{r, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"}
+```{r, eval = FALSE, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"}
 ## Distribution of the minimal row sums (= worst VaR estimates)
 VaR.est <- sapply(matRAlst, function(x) min(rowSums(x)))
 plot(VaR.est)

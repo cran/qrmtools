@@ -1,5 +1,4 @@
-- Implement QRM::showRM() and use in qrmtutorial.org scripts
-- perhaps: capital allocation: implement elliptical approxi for t
+- Capital allocation: implement true ACs for elliptical distributions
 
 ### (A)RA
 - Maybe write do.call(cbind()) and .rowSums(do.call(cbind())) as C functions

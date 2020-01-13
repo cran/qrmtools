@@ -28,7 +28,7 @@ mardia_test(x, type = c("kurtosis", "skewness"), method = c("direct", "chol"))
   \item{dist}{distribution to check against.}
   \item{method}{method for computing the Mahalanobis angles.}
   \item{\dots}{additional arguments passed to the underlying
-    \code{\link{ad.test}()} or \code{\link{ks.test}()}.}xs
+    \code{\link{ad.test}()} or \code{\link{ks.test}()}.}
 }
 \value{
   An \code{htest} object (for \code{maha2_test} the one returned

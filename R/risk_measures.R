@@ -16,7 +16,7 @@
 ##'       VaR_alpha estimate.
 VaR_np <- function(x, level, names = FALSE, type = 1, ...)
     quantile(if(is.matrix(x)) rowSums(x) else x, # compute VaR of the sum if a matrix is provided
-             probs = level, names = names, type = type, ...) # vectorized in x and level
+             probs = level, names = names, type = type, ...) # vectorized in level
 
 ##' @title Value-at-Risk for Normal and t Distributions
 ##' @param level confidence level alpha
@@ -75,10 +75,10 @@ VaR_GPDtail <- function(level, threshold, p.exceed, shape, scale)
 ##' @param method method
 ##' @param verbose logical indicating whether verbose output is provided in
 ##'        case the mean is taken over (too) few losses
-##' @param ... additional arguments passed VaR_np()
-##' @return nonparametric ES_alpha estimate (derived under the assumption of continuity)
+##' @param ... additional arguments passed to the underlying VaR_np()
+##' @return nonparametric ES_{alpha} estimate (derived under the assumption of continuity)
 ##' @author Marius Hofert
-##' @note - Vectorized in x and level
+##' @note - Vectorized in level
 ##'       - ">" : Mathematically correct for continuous and discrete dfs, but
 ##'               produces NaN for level > (n-1)/n (=> F^-(level) = x_{(n)} but
 ##'               there is no loss strictly beyond x_{(n)})
@@ -163,7 +163,32 @@ ES_GPDtail <- function(level, threshold, p.exceed, shape, scale)
 }
 
 
-### 3 Geometric risk measures ##################################################
+### 3 Range value-at-risk ######################################################
+
+##' @title Nonparametric Range VaR Estimator
+##' @param x vector of losses
+##' @param level lower and upper confidence levels; if length(level) == 1, the
+##'        upper one is taken as 1
+##' @param ... additional arguments passed to the underlying VaR_np()
+##' @return nonparametric RVaR_{alpha, beta} estimate
+##' @author Marius Hofert
+RVaR_np <- function(x, level, ...)
+{
+    ## Basics
+    if(is.matrix(x)) x <- rowSums(x) # compute RVaR of the sum if a matrix is provided
+    len <- length(level)
+    stopifnot(len == 1 || len == 2, 0 < level, level <= 1, diff(level) > 0)
+    if(len == 1) level <- c(level , 1)
+
+    ## Compute nonparametric VaR estimates for both confidence levels
+    VaR <- VaR_np(x, level = level, ...)
+
+    ## Estimate RVaR
+    mean(x[VaR[1] < x & x <= VaR[2]])
+}
+
+
+### 4 Geometric risk measures ##################################################
 
 ##' @title Objective Function E(Lambda_alpha(X-c))
 ##' @param x running variable ("c")

@@ -11,7 +11,8 @@ importFrom("zoo", "index")
 importFrom("xts", "as.xts")
 importFrom("methods", "hasArg")
 importFrom("stats",
-           "uniroot", "integrate", "var", "cov", "filter", "ecdf", "stepfun",
+           "var", "cov", "sd",
+           "uniroot", "integrate", "filter", "ecdf", "stepfun",
            "dnorm", "dt",
            "pnorm", "pchisq", "pbeta",
            "qnorm", "qt",
@@ -62,7 +63,10 @@ export(
     ## Risk measures
     "VaR_np", "VaR_t", "VaR_GPD", "VaR_Par", "VaR_GPDtail",
     "ES_np", "ES_t", "ES_GPD", "ES_Par", "ES_GPDtail",
+    "RVaR_np",
     "gVaR", "gEX",
     ## Tests
-    "maha2_test", "mardia_test"
+    "maha2_test", "mardia_test",
+    ## Allocation
+    "alloc_ellip", "conditioning", "alloc_np"
 )

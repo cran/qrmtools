@@ -1,5 +1,5 @@
 Package: qrmtools
-Version: 0.0-11
+Version: 0.0-12
 Encoding: UTF-8
 Title: Tools for Quantitative Risk Management
 Description: Functions and data sets for reproducing selected results from
@@ -25,8 +25,8 @@ License: GPL (>= 3) | file LICENCE
 NeedsCompilation: yes
 VignetteBuilder: knitr
 Repository: CRAN
-Date/Publication: 2019-12-04 00:20:07 UTC
+Date/Publication: 2020-01-13 06:20:02 UTC
 Repository/R-Forge/Project: qrmtools
-Repository/R-Forge/Revision: 250
-Repository/R-Forge/DateTimeStamp: 2019-12-02 19:57:40
-Packaged: 2019-12-02 20:12:21 UTC; rforge
+Repository/R-Forge/Revision: 259
+Repository/R-Forge/DateTimeStamp: 2020-01-13 04:13:57
+Packaged: 2020-01-13 04:46:13 UTC; rforge

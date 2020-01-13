@@ -151,14 +151,14 @@ smaller sample size and also only a small number of bootstrap replications in
 order to keep run time comparably small in this vignette.
 ```{r}
 ## Bootstrap
-B <- 32 # bootstrap replications
+B <- 16 # bootstrap replications
 n <- 250 # sample size
+U <- rCopula(B * n, copula = cop) # sample copula B * n times
+X <- cbind(qsn(U[,1], xi = xi, omega = om, alpha = al),
+           qt(U[,2], df = nu)) # map to skew-normal and t_4 margins
 res <- lapply(1:B, function(b) { # iterate over 1:B
-    U <- rCopula(n, copula = cop) # sample copula
-    X <- cbind(qsn(U[,1], xi = xi, omega = om, alpha = al),
-               qt(U[,2], df = nu)) # map to skew-normal and t_4 margins
-    matrix(vapply(gEX(X, level = a1), `[[`, numeric(2), "par"), ncol = 2,
-           byrow = TRUE)
+    matrix(vapply(gEX(X[250 * (b-1) + (1:250),], level = a1), `[[`, numeric(2), "par"),
+           ncol = 2, byrow = TRUE) # (33, 2)-matrix
 })
 ```
 
