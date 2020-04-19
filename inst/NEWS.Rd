@@ -4,6 +4,14 @@
 \title{News for \R Package \pkg{qrmtools}}
 \newcommand{\CRANpkg}{\href{https://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 
+\section{Changes in version 0.0-13}{
+  \subsection{New Features}{
+    \itemize{
+      \item \code{X.rearranged.opt.row} of \code{rearrange()} and its wrappers.
+    }
+  }
+}
+
 \section{Changes in version 0.0-11}{
   \subsection{New Features}{
     \itemize{

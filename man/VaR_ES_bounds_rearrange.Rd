@@ -1,33 +1,23 @@
-\name{VaR_ES_bounds}
-\alias{crude_VaR_bounds}
-\alias{VaR_bounds_hom}
-\alias{dual_bound}
+\name{VaR_ES_bounds_rearrange}
 \alias{rearrange}
 \alias{block_rearrange}
 \alias{RA}
 \alias{ARA}
 \alias{ABRA}
 \title{Worst and Best Value-at-Risk and Best Expected Shortfall
-       for Given Marginals}
+       for Given Marginals via Rearrangements}
 \description{
   Compute the worst and best Value-at-Risk (VaR) and the best expected
-  shortfall (ES) for given marginal distributions.
+  shortfall (ES) for given marginal distributions via rearrangements.
 }
 \usage{
-## Homogeneous case
-crude_VaR_bounds(level, qF, d = NULL, ...)
-VaR_bounds_hom(level, d, method = c("Wang", "Wang.Par", "dual"),
-               interval = NULL, tol = NULL, ...)
-dual_bound(s, d, pF, tol = .Machine$double.eps^0.25, ...)
-
-
-## Inomogeneous case
-
 ## Workhorses
+## Column rearrangements
 rearrange(X, tol = 0, tol.type = c("relative", "absolute"),
           n.lookback = ncol(X), max.ra = Inf,
           method = c("worst.VaR", "best.VaR", "best.ES"),
 	  sample = TRUE, is.sorted = FALSE, trace = FALSE, ...)
+## Block rearrangements
 block_rearrange(X, tol = 0, tol.type = c("absolute", "relative"),
                 n.lookback = ncol(X), max.ra = Inf,
                 method = c("worst.VaR", "best.VaR", "best.ES"),
@@ -49,89 +39,46 @@ ABRA(level, qF, N.exp = seq(8, 19, by = 1), absreltol = c(0, 0.01),
      sample = TRUE)
 }
 \arguments{
-  \item{level}{confidence level \eqn{\alpha}{alpha} for VaR and ES (e.g., 0.99).}
-  \item{d}{dimension (number of risk factors; \eqn{\ge 2}{ >= 2}). For
-    \code{crude_VaR_bounds()}, \code{d} only needs to be given in
-    the homogeneous case in which \code{qF} is a \code{\link{function}}.}
-  \item{qF}{\code{d}-list containing the marginal quantile functions.
-    For \code{crude_VaR_bounds()}, \code{qF} can also be function
-    (homogeneous case, dimension \code{d}).}
-  \item{method}{\code{\link{character}} string. For
-    \describe{
-      \item{\code{VaR_bounds_hom()}:}{\code{method = "Wang"} and
-	\code{method = "Wang.Par"}
-         apply the approach of McNeil et al. (2015,
-	 Proposition 8.32) for computing best (i.e., smallest) and
-	 worst (i.e., largest) VaR. The
-         latter method assumes Pareto margins and thus does
-	 not require numerical integration.
-	\code{method = "dual"} applies the dual bound approach as
-	 in Embrechts et al. (2013, Proposition 4)
-         for computing worst VaR (no value for the best
-         VaR can be obtained with this approach and thus
-          \code{\link{NA}} is returned for the best VaR).}
-	\item{\code{rearrange()}, \code{block_rearrange()}, \code{RA()},
-	  \code{ARA()}:}{
-	  \code{method} indicates whether bounds for the worst/best VaR
-	  or the best ES should be computed.
-	  These bounds are termed \eqn{\underline{s}_N} and \eqn{\overline{s}_N}
-	  in the literature (and below) and are theoretically not guaranteed
-          bounds of worst/best VaR or best ES;
-	  however, they are treated as such in practice and are typically in
-	  line with results from \code{VaR_bounds_hom()} in the homogeneous
-	  case, for example.}
-  }}
-  \item{interval}{initial interval (a \code{\link{numeric}(2)}) for
-    computing worst VaR. If not provided, these are the defaults chosen:
-    \describe{
-      \item{\code{method = "Wang"}:}{initial
-	interval is \eqn{[0,(1-\alpha)/d]}{[0,(1-alpha)/d]}.}
-      \item{\code{method = "Wang.Par"}:}{initial
-	interval is \eqn{[c_l,c_u]}, where \eqn{c_l} and \eqn{c_u}
-	are chosen as in Hofert et al. (2015).}
-      \item{\code{method = "dual"}:}{in this case, no good defaults are known.
-	Note that the lower endpoint of the initial interval has to be
-	sufficiently large in order for the the inner root-finding algorithm
-	to find a root; see Details.}
-  }}
-  \item{tol}{
-    \describe{
-      \item{\code{VaR_bounds_hom()}:}{tolerance for
-        \code{\link{uniroot}()}
-	for computing worst VaR. This defaults (for \code{tol = NULL}) to
-	\eqn{2.2204*10^{-16}}{2.2204*10^{-16}}
-	for \code{method = "Wang"} or \code{method = "Wang.Par"} (where a
-	smaller tolerance is crucial) and to \code{\link{uniroot}()}'s
-	default \code{.Machine$double.eps^0.25} otherwise. Note that for
-	\code{method = "dual"}, \code{tol} is used for both the outer
-	and the inner root-finding procedure.}
-      \item{\code{rearrange()}, \code{block_rearrange()}:}{(absolute or
-	relative) tolerance to determine (the individual) convergence.
-	This should normally be a number greater than or equal to 0,
-	but \code{rearrange()} also allows for \code{tol = NULL}
-	which means that columns are rearranged until each column
-	is oppositely ordered to the sum of all other columns.}
-  }}
+  \item{X}{(\code{N}, \code{d})-matrix of quantiles (to be
+    rearranged). If \code{is.sorted} it is assumed that the columns of
+    \code{X} are sorted in \emph{increasing} order.}
+  \item{tol}{(absolute or relative) tolerance to determine (the
+	individual) convergence.  This should normally be a number
+	greater than or equal to 0, but \code{rearrange()} also allows
+	for \code{tol = NULL} which means that columns are rearranged
+	until each column is oppositely ordered to the sum of all other
+	columns.}
   \item{tol.type}{\code{\link{character}} string indicating the
     type of convergence tolerance function to be used (\code{"relative"}
     for relative tolerance and \code{"absolute"} for absolute tolerance).}
   \item{n.lookback}{number of rearrangements to look back for deciding
     about numerical convergence. Use this option with care.}
-  \item{s}{dual bound evaluation point.}
-  \item{pF}{marginal loss distribution function.}
-  \item{X}{(\code{N}, \code{d})-matrix of quantiles (to be
-    rearranged). If \code{is.sorted} it is assumed that the columns of
-    \code{X} are sorted in \emph{increasing} order.}
   \item{max.ra}{maximal number of (considered) column rearrangements
     of the underlying matrix of quantiles (can be set to \code{Inf}).}
+  \item{method}{\code{\link{character}} string indicating whether bounds
+    for the worst/best VaR or the best ES should be computed.
+    These bounds are termed \eqn{\underline{s}_N} and \eqn{\overline{s}_N}
+    in the literature (and below) and are theoretically not guaranteed
+    bounds of worst/best VaR or best ES;
+    however, they are treated as such in practice and are typically in
+    line with results from \code{\link{VaR_bounds_hom}()} in the homogeneous
+    case, for example.}
+  \item{sample}{\code{\link{logical}} indicating whether each column of
+    the two underlying matrices of quantiles (see Step 3 of the Rearrangement
+    Algorithm in Embrechts et al. (2013))
+    are randomly permuted before the rearrangements begin. This typically has
+    quite a positive effect on run time (as most of the time is spent
+    (oppositely) ordering columns (for \code{rearrange()}) or blocks
+    (for \code{block_rearrange()})).}
+  \item{is.sorted}{\code{\link{logical}} indicating whether the columns of
+    \code{X} are sorted in increasing order.}
+  \item{trace}{\code{\link{logical}} indicating whether the underlying
+    matrix is printed after each rearrangement step. See
+    \code{vignette("VaR_bounds", package = "qrmtools")} for how to interpret
+    the output.}
+  \item{level}{confidence level \eqn{\alpha}{alpha} for VaR and ES (e.g., 0.99).}
+  \item{qF}{\code{d}-list containing the marginal quantile functions.}
   \item{N}{number of discretization points.}
-  \item{N.exp}{exponents of the number of discretization points
-    (a \code{\link{vector}}) over which the algorithm iterates to find
-    the smallest number of discretization points for which the desired
-    accuracy (specified by \code{abstol} and \code{reltol}) is attained;
-    for each number of discretization points, at most \code{max.ra}-many
-    column rearrangements are of the underlying matrix of quantiles
-    are considered.}
   \item{abstol}{absolute convergence tolerance \eqn{\epsilon}{epsilon}
     to determine the individual convergence, i.e., the change in the computed
     minimal row sums (for \code{method = "worst.VaR"}) or maximal
@@ -140,6 +87,13 @@ ABRA(level, qF, N.exp = seq(8, 19, by = 1), absreltol = c(0, 0.01),
     and the upper bound \eqn{\overline{s}_N}. \code{abstol} is typically
     \eqn{\ge0}{>= 0}; it can also be \code{\link{NULL}}, see \code{tol}
     above.}
+  \item{N.exp}{exponents of the number of discretization points
+    (a \code{\link{vector}}) over which the algorithm iterates to find
+    the smallest number of discretization points for which the desired
+    accuracy (specified by \code{abstol} and \code{reltol}) is attained;
+    for each number of discretization points, at most \code{max.ra}-many
+    column rearrangements are of the underlying matrix of quantiles
+    are considered.}
   \item{reltol}{\code{\link{vector}} of length two containing the
     individual (first component; used to determine convergence of the
     minimal row sums (for \code{method = "worst.VaR"}) or maximal row
@@ -163,61 +117,12 @@ ABRA(level, qF, N.exp = seq(8, 19, by = 1), absreltol = c(0, 0.01),
     convergence tolerances. \code{absreltol} can also be of length one
     in which case it denotes the joint relative tolerance; the
     individual absolute tolerance is taken as 0 in this case.}
-  \item{sample}{\code{\link{logical}} indicating whether each column of
-    the two underlying matrices of quantiles (see Step 3 of the Rearrangement
-    Algorithm in Embrechts et al. (2013))
-    are randomly permuted before the rearrangements begin. This typically has
-    quite a positive effect on run time (as most of the time is spent
-    (oppositely) ordering columns (for \code{rearrange()}) or blocks
-    (for \code{block_rearrange()})).}
-  \item{is.sorted}{\code{\link{logical}} indicating whether the columns of
-    \code{X} are sorted in increasing order.}
-  \item{trace}{\code{\link{logical}} indicating whether the underlying
-    matrix is printed after each rearrangement step. See
-    \code{vignette("VaR_bounds", package = "qrmtools")} for how to interpret
-    the output.}
-  \item{\dots}{
-    \describe{
-      \item{\code{crude_VaR_bounds()}:}{ellipsis argument passed
-        to (all provided) quantile functions.}
-      \item{\code{VaR_bounds_hom()}:}{case \code{method = "Wang"}
-        requires the quantile function \code{qF()} to be provided
-        and additional arguments passed via the ellipsis argument are passed
-	on to
-	% the underlying objective function Wang_h() from which they
-	% are passed on to
-	the underlying \code{\link{integrate}()}. For
-        \code{method = "Wang.Par"}
-	the ellipsis argument must contain the parameter \code{shape}
-	(the shape parameter \eqn{\theta>0}{theta>0} of the Pareto distribution).
-	For \code{method = "dual"}, the ellipsis argument must contain the
-	distribution function \code{pF()} and the initial interval
-	\code{interval} for the outer root finding procedure (not for
-	\code{d = 2}); additional arguments are passed on to the underlying
-	\code{\link{integrate}()} for computing the dual bound
-	\eqn{D(s)}.}
-      \item{\code{dual_bound()}:}{ellipsis argument is passed to the
-	underlying \code{\link{integrate}()}.}
-      \item{\code{rearrange():}}{additional arguments passed to the underlying
-       optimization function. Currently, this is only used if
-       \code{method = "best.ES"} in which case the required confidence
-       level \eqn{\alpha}{alpha} must be provided as argument \code{level}.}
-    }}
+  \item{\dots}{additional arguments passed to the underlying
+    optimization function. Currently, this is only used if
+    \code{method = "best.ES"} in which case the required confidence
+    level \eqn{\alpha}{alpha} must be provided as argument \code{level}.}
 }
 \value{
-  \code{crude_VaR_bounds()} returns crude lower and upper bounds for
-  VaR at confidence level \eqn{\alpha}{alpha} for any
-  \eqn{d}-dimensional model with marginal quantile functions
-  specified by \code{qF}.
-
-  \code{VaR_bounds_hom()} returns the best and worst VaR at
-  confidence level \eqn{\alpha}{alpha} for \eqn{d} risks with equal
-  distribution function specified by the ellipsis \code{...}.
-
-  \code{dual_bound()} returns the value of the dual bound \eqn{D(s)} as
-  given in Embrechts, Puccetti, \enc{Rüschendorf}{Rueschendorf}
-  (2013, Eq. (12)).
-
   \code{rearrange()} and \code{block_rearrange()} return a
   \code{\link{list}} containing
   \describe{
@@ -238,6 +143,10 @@ ABRA(level, qF, N.exp = seq(8, 19, by = 1), absreltol = c(0, 0.01),
       rearrangement.}
     \item{\code{X.rearranged}:}{(\code{N}, \code{d})-\code{\link{matrix}}
       containing the rearranged \code{X}.}
+    \item{\code{X.rearranged.opt.row}:}{\code{\link{vector}} containing
+      the row of \code{X.rearranged} which leads to the final optimal
+      sum. If there is more than one such row, the columnwise averaged
+      row is returned.}
   }
 
   \code{RA()} returns a \code{\link{list}} containing
@@ -276,8 +185,11 @@ ABRA(level, qF, N.exp = seq(8, 19, by = 1), absreltol = c(0, 0.01),
     \item{\code{X}:}{initially constructed (\code{N}, \code{d})-matrices
       of quantiles for computing
       \eqn{\underline{s}_N} and \eqn{\overline{s}_N}.}
-    \item{\code{X.rearranged}:}{rearranged matrices \code{X} (for
-      \eqn{\underline{s}_N} and \eqn{\overline{s}_N}).}
+    \item{\code{X.rearranged}:}{rearranged matrices \code{X} for
+      \eqn{\underline{s}_N} and \eqn{\overline{s}_N}.}
+    \item{\code{X.rearranged.opt.row}:}{rows corresponding to optimal
+      row sum (see \code{X.rearranged.opt.row} as returned by
+      \code{rearrange()}) for \eqn{\underline{s}_N} and \eqn{\overline{s}_N}.}
   }
 
   \code{ARA()} and \code{ABRA()} return a \code{\link{list}} containing
@@ -299,54 +211,11 @@ ABRA(level, qF, N.exp = seq(8, 19, by = 1), absreltol = c(0, 0.01),
     \item{\code{opt.row.sums}:}{see \code{RA()}; computed for \code{N.used}.}
     \item{\code{X}:}{see \code{RA()}; computed for \code{N.used}.}
     \item{\code{X.rearranged}:}{see \code{RA()}; computed for \code{N.used}.}
+    \item{\code{X.rearranged.opt.row}:}{see \code{RA()}; computed for \code{N.used}.}
   }
 }
 \details{
-  For \code{d = 2}, \code{VaR_bounds_hom()} uses the method of
-  Embrechts et al. (2013,
-  Proposition 2). For \code{method = "Wang"} and \code{method = "Wang.Par"}
-  the method presented in McNeil et al. (2015, Prop. 8.32) is
-  implemented; this goes back to Embrechts et al. (2014, Prop. 3.1; note that
-  the published version of this paper contains typos for both bounds).
-  This requires
-  one \code{\link{uniroot}()} and, for the generic \code{method = "Wang"},
-  one \code{\link{integrate}()}. The critical part for the
-  generic \code{method = "Wang"} is the lower endpoint of the initial
-  interval for \code{\link{uniroot}()}. If the (marginal)
-  distribution function has finite first moment, this can be taken as
-  0. However, if it has infinite first moment, the lower endpoint has to
-  be positive (but must lie below the unknown root). Note that the upper
-  endpoint \eqn{(1-\alpha)/d}{(1-alpha)/d} also happens to be a
-  root and thus one needs a proper initional interval containing the
-  root and being stricticly contained in
-  \eqn{(0,(1-\alpha)/d}{(1-alpha)/d)}.
-  In the case of Pareto margins, Hofert et al. (2015) have
-  derived such an initial (which is used by
-  \code{method = "Wang.Par"}).
-  Also note that the chosen smaller default tolerances for
-  \code{\link{uniroot}()} in case of \code{method = "Wang"} and
-  \code{method = "Wang.Par"} are crucial for obtaining reliable
-  VaR values; see Hofert et al. (2015).
-
-  For \code{method = "dual"} for computing worst VaR, the method
-  presented of Embrechts et al. (2013, Proposition 4) is implemented.
-  This requires two (nested) \code{\link{uniroot}()}, and an
-  \code{\link{integrate}()}. For the inner root-finding procedure to
-  find a root, the lower endpoint of the provided initial
-  \code{interval} has to be \dQuote{sufficiently large}.
-
-  Note that these approaches for computing the
-  VaR bounds in the homogeneous case are numerically non-trivial;
-  see the source code and \code{vignette("VaR_bounds",
-    package = "qrmtools")}
-  for more details. As a
-  rule of thumb, use \code{method = "Wang"} if you have to (i.e., if the
-  margins are not Pareto) and \code{method = "Wang.Par"} if you can (i.e.,
-  if the margins are Pareto). It is not recommended to use
-  (the numerically even more challenging) \code{method = "dual"}.
-
-
-  Concerning the inhomogeneous case, \code{rearrange()} is an auxiliary
+  \code{rearrange()} is an auxiliary
   function (workhorse). It is called by \code{RA()} and \code{ARA()}.
   After a column rearrangement of \code{X}, the tolerance between the
   minimal row sum (for the worst VaR) or maximal row sum (for the best
@@ -413,8 +282,6 @@ ABRA(level, qF, N.exp = seq(8, 19, by = 1), absreltol = c(0, 0.01),
   theoretically not correct (unless proven) but \dQuote{practical}.
   The literature thus speaks of \eqn{(\underline{s}_N, \overline{s}_N)} as
   the rearrangement gap.
-
-  More details not provided here can be found in the references listed below.
 }
 \author{Marius Hofert}
 \references{
@@ -444,6 +311,9 @@ ABRA(level, qF, N.exp = seq(8, 19, by = 1), absreltol = c(0, 0.01),
   See \url{http://arxiv.org/abs/1502.02130v3}.
 }
 \seealso{
+  \code{\link{VaR_bounds_hom}()} for an ``analytical'' approach for
+  computing best and worst Value-at-Risk in the homogeneous casse.
+
   \code{vignette("VaR_bounds", package = "qrmtools")}
   for more example calls, numerical challenges
   encoutered and a comparison of the different methods for computing
@@ -498,7 +368,7 @@ pF <- function(q, theta = th) pPar(q, shape = theta) # Pareto distribution funct
 
 d <- 2 # dimension
 
-## Explicit
+## ``Analytical''
 VaRbounds <- VaR_bounds_hom(alpha, d = d, qF = qF) # (best VaR, worst VaR)
 
 ## Adaptive Rearrangement Algorithm (ARA)
@@ -523,7 +393,7 @@ stopifnot(all.equal(c(ARAworst$bounds[1], ARAworst$bounds[2],
 
 d <- 8 # dimension
 
-## Compute VaR bounds with various methods
+## ``Analytical''
 I <- crude_VaR_bounds(alpha, qF = qF, d = d) # crude bound
 VaR.W     <- VaR_bounds_hom(alpha, d = d, method = "Wang", qF = qF)
 VaR.W.Par <- VaR_bounds_hom(alpha, d = d, method = "Wang.Par", shape = th)
