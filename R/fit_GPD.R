@@ -169,7 +169,7 @@ fit_GPD_MLE <- function(x, init = c("PWM", "MOM", "shape0"), estimate.cov = TRUE
     ##       std.err <- sqrt(diag(Cov)) # see also ?fit_GPD_MLE
     if(estimate.cov) {
         negHessianInv <- catch(solve(-fit$hessian))
-        if(is(negHessianInv, "error")) {
+        if(is(negHessianInv$error, "error")) {
             warning("Hessian matrix not invertible: ", negHessianInv$error)
             Cov <- matrix(NA_real_, 0, 0)
             SE <- numeric(0)

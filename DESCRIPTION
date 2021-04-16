@@ -1,5 +1,5 @@
 Package: qrmtools
-Version: 0.0-13
+Version: 0.0-14
 Encoding: UTF-8
 Title: Tools for Quantitative Risk Management
 Description: Functions and data sets for reproducing selected results from
@@ -19,14 +19,15 @@ Maintainer: Marius Hofert <marius.hofert@uwaterloo.ca>
 Depends: R (>= 3.2.0)
 Imports: graphics, lattice, quantmod, Quandl, zoo, xts, methods,
         grDevices, stats, rugarch, utils, ADGofTest
-Suggests: combinat, copula, knitr, sfsmisc, RColorBrewer, sn
+Suggests: combinat, copula, qrng, sfsmisc, RColorBrewer, sn, knitr,
+        rmarkdown
 Enhances:
 License: GPL (>= 3) | file LICENCE
 NeedsCompilation: yes
 VignetteBuilder: knitr
 Repository: CRAN
-Date/Publication: 2020-04-19 04:40:02 UTC
+Date/Publication: 2021-04-16 19:30:02 UTC
 Repository/R-Forge/Project: qrmtools
-Repository/R-Forge/Revision: 266
-Repository/R-Forge/DateTimeStamp: 2020-04-19 00:34:40
-Packaged: 2020-04-19 00:51:10 UTC; rforge
+Repository/R-Forge/Revision: 277
+Repository/R-Forge/DateTimeStamp: 2021-04-16 17:31:12
+Packaged: 2021-04-16 17:47:40 UTC; rforge

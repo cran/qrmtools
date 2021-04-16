@@ -207,38 +207,119 @@ qq_plot <-  function(x, FUN = qnorm, xlab = "Theoretical quantiles", ylab = "Sam
     invisible()
 }
 
-##' @title Plot of an Empirical Distribution Function
-##' @param x data of which the empirical distribution function is to be plotted
+##' @title Plot of (a) Step Function(s)
+##' @param x 2-column matrix (with x and y values) or list of such (in which case)
+##'        each element corresponds to one discrete distribution function.
+##' @param yleft (vector of) limit(s) to the left of the plotted functions
 ##' @param do.points logical indicating whether points are to be plotted
 ##' @param log either "" or "x", indicating whether a logarithmic x-axis is used
-##' @param xlim x-axis limits; default avoids possible failure if log = "x"
-##'        and data points are all positive (plot.stepfun() extends the range,
-##'        possibly below 0)
+##' @param xlim x-axis limits
+##' @param ylim y-axis limits
+##' @param col color
 ##' @param main title
 ##' @param xlab x-axis label
 ##' @param ylab y-axis label
-##' @param ... additional arguments passed to the underlying plot method of stepfun();
-##'        see plot.stepfun()
+##' @param ... additional arguments passed to the underlying method plot.stepfun()
 ##' @return see plot.stepfun()
 ##' @author Marius Hofert
-##' @note MWE:
-##'       x <- 1:100/100
-##'       plot(stepfun(x = x, y = c(0, ecdf(x)(x))), log = "x")
-##'       plot(stepfun(x = x, y = c(0, ecdf(x)(x))), log = "x", xlim = range(x))
-##'       plot.stepfun # => extends the range (below 0)
-##'       Note: - Manually extending the range a little bit to the left
-##'               does not make sense (because of log-scale
-##'               => artificial extension to the left). Best to leave it like this.
-##'             - see ?plot.stepfun
-edf_plot <- function(x, do.points = length(x) <= 100, log = "",
-                     xlim = range(x, na.rm = TRUE),
-                     main = "", xlab = "x", ylab = "Distribution function at x", ...)
+stepfun_plot <- function(x, yleft, do.points = NA, log = "",
+                         xlim = NULL, ylim = NULL, col = NULL, main = "",
+                         xlab = "x", ylab = "Function value at x", ...)
 {
-    x <- sort(as.numeric(x)) # required by ecdf()
-    y <- c(0, ecdf(x)(x)) # plot.stepfun() requires 'y' to be one longer than 'x' (y = values *between* x's)
-    ## => log = "y" does not make sense anymore at this point as y[1] = 0
-    if(grepl("y", log)) stop('log = "y" not available.')
-    sf <- stepfun(x = x, y = y) # ok, does not extend x-range
-    plot(sf, do.points = do.points, log = log, xlim = xlim,
-         main = main, xlab = xlab, ylab = ylab, ...) # see plot.stepfun(), also for the return value!
+    ## Basics
+    if(!is.list(x)) x <- list(x)
+    len <- length(x)
+    stopifnot(len >= 1)
+    if(length(do.points) == 1) do.points <- rep(do.points, len)
+    if(length(yleft) == 1) yleft <- rep(yleft, len)
+    if(is.null(col)) col <- "black"
+    if(length(col) == 1) col <- rep(col, len)
+    stopifnot(length(yleft) == len, length(do.points) == len, is.logical(do.points),
+              length(col) == len)
+
+    ## x- and y-values
+    sf <- vector("list", len)
+    for(l in 1:len) {
+        x. <- x[[l]]
+        if(!is.matrix(x.))
+            stop(paste0("Element ",l," of 'x' is not a matrix"))
+        if(ncol(x.) != 2)
+            stop(paste0("Element ",l," of 'x' is not a 2-column matrix"))
+        ## x-values
+        ord <- order(as.numeric(x.[,1])) # get order of x
+        x.. <- x.[,1][ord] # ordered x (as required by stepfun())
+        ## y-values
+        y.. <- as.numeric(x.[,2])[ord] # order as x (to not change the function)
+        y.. <- c(yleft[l], y..) # y needs to be one element longer than x
+        ## Determine if points shall be used
+        if(is.na(do.points[l])) do.points[l] <- length(y..) <= 100
+        ## Keep result object
+        sf[[l]] <- list(FUN = stepfun(x = x.., y = y..), # stepfun() object
+                        xlim = range(x.., na.rm = TRUE), # x-axis limits
+                        ylim = range(y.., na.rm = TRUE), # y-axis limits
+                        do.points = do.points[l], # whether we shall show points for jumps
+                        col = col[l]) # color
+    }
+
+    ## Axis limits
+    if(is.null(xlim)) {
+        xlims <- t(sapply(1:len, function(l) sf[[l]]$xlim)) # (len, 2)-matrix
+        xlim <- c(min(xlims[,1]), max(xlims[,2]))
+    }
+    x0 <- xlim[1] - 0.04 * diff(xlim) # x-value at left endpoint for the line extension y = yleft
+    if(is.null(ylim)) {
+        ylims <- t(sapply(1:len, function(l) sf[[l]]$ylim))
+        ylim <- c(min(ylims[,1]), max(ylims[,2]))
+    }
+
+    ## Plot
+    for(l in 1:len) {
+        obj <- sf[[l]]
+        if(l == 1) {
+            plot(obj$FUN, log = log, xlim = xlim, ylim = ylim,
+                 do.points = obj$do.points, col = obj$col,
+                 main = main, xlab = xlab, ylab = ylab, ...) # ... can pass 'verticals = FALSE' (exists for plot.stepfun())
+        } else {
+            plot(obj$FUN, add = TRUE, # cannot have 'log' here then
+                 do.points = obj$do.points, col = obj$col, ...)
+        }
+        ## Extend the plot(s) to the left (line segment with y = yleft).
+        ## This is especially required if log == "x" and d >= 1 or log == "" and d > 1.
+        segments(x0 = x0, y0 = yleft,
+                 x1 = obj$xlim[1], y1 = yleft, col = obj$col) # doesn't pass '...' though (could remove those of plot.stepfun())
+        ## This overplots possibly existing line segments for y = yleft but that's okay
+        ## (and in fact the easiest solution because if log == "x" and d > 1, some line
+        ## segments are already plotted anyways)
+    }
+}
+
+##' @title Plotting (an) Empirical Distribution Function(s)
+##' @param x vector or list of such; if a list, each element corresponds
+##'        to one empirical distribution function
+##' @param do.points see discrete_df_plot()
+##' @param log see discrete_df_plot()
+##' @param xlim see discrete_df_plot()
+##' @param ylim see discrete_df_plot()
+##' @param col see discrete_df_plot()
+##' @param main see discrete_df_plot()
+##' @param xlab see discrete_df_plot()
+##' @param ylab see discrete_df_plot()
+##' @param ... see discrete_df_plot()
+##' @return see discrete_df_plot()
+##' @author Marius Hofert
+edf_plot <- function(x, yleft = 0, do.points = NA, log = "", xlim = NULL, ylim = NULL,
+                     col = NULL, main = "", xlab = "x", ylab = "Distribution function at x", ...)
+{
+    if(!is.list(x)) x <- list(x)
+    len <- length(x)
+    stopifnot(len >= 1)
+    ## Now add the y-values required for discrete_df_plot()
+    x <- lapply(1:len, function(l) {
+        x. <- sort(as.numeric(x[[l]]))
+        cbind(x = x., y = ecdf(x.)(x.))
+    })
+    ## Plot
+    stepfun_plot(x, yleft = yleft, do.points = do.points, log = log,
+                 xlim = xlim, ylim = ylim, col = col,
+                 main = main, xlab = xlab, ylab = ylab, ...)
 }

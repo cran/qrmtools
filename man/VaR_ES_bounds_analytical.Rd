@@ -157,7 +157,7 @@ dual_bound(s, d, pF, tol = .Machine$double.eps^0.25, ...)
   Hofert, M., Memartoluie, A., Saunders, D. and Wirjanto, T. (2017).
   Improved Algorithms for Computing Worst
   Value-at-Risk. \emph{Statistics \& Risk Modeling}
-  or, for an earlier version, \url{http://arxiv.org/abs/1505.02281}.
+  or, for an earlier version, \url{https://arxiv.org/abs/1505.02281}.
 }
 \seealso{
   \code{\link{RA}()}, \code{\link{ARA}()}, \code{\link{ABRA}()}

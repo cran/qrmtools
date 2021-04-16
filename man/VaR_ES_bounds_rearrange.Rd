@@ -300,15 +300,15 @@ ABRA(level, qF, N.exp = seq(8, 19, by = 1), absreltol = c(0, 0.01),
   Hofert, M., Memartoluie, A., Saunders, D. and Wirjanto, T. (2017).
   Improved Algorithms for Computing Worst
   Value-at-Risk. \emph{Statistics \& Risk Modeling}
-  or, for an earlier version, \url{http://arxiv.org/abs/1505.02281}.
+  or, for an earlier version, \url{https://arxiv.org/abs/1505.02281}.
 
   Bernard, C., \enc{Rüschendorf}{Rueschendorf}, L. and Vanduffel,
   S. (2013). Value-at-Risk bounds with variance constraints.
-  See \url{http://papers.ssrn.com/sol3/papers.cfm?abstract_id=2342068}.
+  See \url{https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2342068}.
 
   Bernard, C. and McLeish, D. (2014). Algorithms for Finding Copulas
   Minimizing Convex Functions of Sums.
-  See \url{http://arxiv.org/abs/1502.02130v3}.
+  See \url{https://arxiv.org/abs/1502.02130v3}.
 }
 \seealso{
   \code{\link{VaR_bounds_hom}()} for an ``analytical'' approach for

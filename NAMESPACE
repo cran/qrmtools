@@ -1,3 +1,5 @@
+### Special functions ##########################################################
+
 useDynLib(qrmtools, .registration = TRUE)
 
 
@@ -20,7 +22,7 @@ importFrom("stats",
            "qqline", "mahalanobis", "ks.test")
 importFrom("grDevices", "colorRampPalette", "dev.off", "extendrange")
 importFrom("graphics", "image", "mtext", "plot", "rug", "abline", "lines",
-           "axis")
+           "axis", "segments")
 importFrom("lattice", "levelplot")
 importFrom("rugarch", "ugarchspec", "ugarchfit")
 importFrom("stats", "quantile", "HoltWinters", "density", "ppoints", "optim")
@@ -46,11 +48,13 @@ export(
     "crude_VaR_bounds", "dual_bound", "VaR_bounds_hom",
     "rearrange", "RA", "ARA",
     "block_rearrange", "ABRA",
+    ## Brownian motion
+    "rBrownian", "deBrowning",
     ## Black--Scholes formula
     "Black_Scholes", "Black_Scholes_Greeks",
     ## General graphics
     "NA_plot", "matrix_plot", "matrix_density_plot",
-    "pp_plot", "qq_plot", "edf_plot",
+    "pp_plot", "qq_plot", "stepfun_plot", "edf_plot",
     ## Time Series
     "fit_ARMA_GARCH", "fit_GARCH_11",
     ## Result/warning/error catching
