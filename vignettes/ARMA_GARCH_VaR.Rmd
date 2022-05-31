@@ -166,7 +166,7 @@ Now predict VaR.
 fspec <- getspec(fit) # specification of the fitted process
 setfixed(fspec) <- as.list(coef(fit)) # set the parameters to the fitted ones
 m <- ceiling(n / 10) # number of steps to forecast (roll/iterate m-1 times forward with frequency 1)
-pred <- ugarchforecast(fspec, data = X, n.ahead = 1, n.roll = m-1, out.sample = m) # predict from the fitted process
+pred <- ugarchforecast(fspec, data = X, n.ahead = 1, n.roll = m-1, out.sample = m-1) # predict from the fitted process
 
 ## Extract the resulting series
 mu.predict <- fitted(pred) # extract predicted X_t (= conditional mean mu_t; note: E[Z] = 0)

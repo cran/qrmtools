@@ -109,11 +109,13 @@ mean_excess_plot <- function(x, omit = 3,
 ##' @param estimate.cov logical indicating whether confidence intervals are
 ##'        computed
 ##' @param conf.level confidence level of the confidence intervals
-##' @param lines.args list of arguments passed to underlying lines() for
-##'        drawing the confidence intervals
-##' @param xlab2 label of the secondary x-axis
+##' @param CI.col color of the confidence interval region; can be NA
+##' @param lines.args arguments passed to the underlying lines()
+##' @param xlim see ?plot
+##' @param ylim see ?plot
 ##' @param xlab x-axis label
 ##' @param ylab y-axis label
+##' @param xlab2 label of the secondary x-axis
 ##' @param plot logical indicating whether a plot is done
 ##' @param ... additional arguments passed to the underlying plot()
 ##' @return invisibly returns the thresholds, the list of corresponding threshold
@@ -121,43 +123,49 @@ mean_excess_plot <- function(x, omit = 3,
 ##' @author Marius Hofert
 GPD_shape_plot <- function(x, thresholds = seq(quantile(x, 0.5), quantile(x, 0.99), length.out = 65),
                            estimate.cov = TRUE, conf.level = 0.95,
-                           lines.args = list(lty = 2), xlab = "Threshold", ylab = NULL,
+                           CI.col = adjustcolor(1, alpha.f = 0.2),
+                           lines.args = list(), xlim = NULL, ylim = NULL,
+                           xlab = "Threshold", ylab = NULL,
                            xlab2 = "Excesses", plot = TRUE, ...)
 {
     ## Checks
     stopifnot(length(thresholds) >= 2, is.logical(estimate.cov), 0 <= conf.level, conf.level <= 1,
               is.logical(plot))
+
     ## Compute threshold excesses
     x <- as.numeric(x)
     excesses <- function(u) x[x > u] - u
+
     ## Peaks-over-threshold for each considered threshold
     exc <- lapply(thresholds, function(u) excesses(u))
-    ## Fit GPD models to the given thresholds
-    fits <- lapply(exc, fit_GPD_MLE, estimate.cov = estimate.cov)
+    fits <- lapply(exc, fit_GPD_MLE, estimate.cov = estimate.cov) # fit a GPD for each threshold
     ## Extract the fitted shape parameters and compute CIs
     xi <- sapply(fits, function(f) f$par[["shape"]])
     if(estimate.cov) {
         xi.SE <- sapply(fits, function(f) f$SE[["shape"]])
-        q <- qnorm(1 - (1 - conf.level)/2)
+        q <- qnorm(1-(1-conf.level)/2)
         xi.CI.low <- xi - xi.SE * q
         xi.CI.up  <- xi + xi.SE * q
-        ylim <- range(xi, xi.CI.low, xi.CI.up)
-    } else ylim <- range(xi)
+    }
+
     ## Plot
     if(plot) {
+        if(is.null(xlim)) xlim <- range(thresholds)
+        if(is.null(ylim))
+            ylim <- if(is.na(CI.col) || !estimate.cov) range(xi) else range(xi, xi.CI.low, xi.CI.up)
         if(is.null(ylab)) ylab <- paste0("Estimated GPD shape parameter",
                                          if(estimate.cov) paste0(" with ", 100*conf.level,
                                                                  "% confidence intervals") else "")
-        plot(thresholds, xi, type = "l", ylim = ylim,
-             xlab = xlab, ylab = ylab, ...)
-        if(estimate.cov) {
-            do.call(lines, args = c(list(x = thresholds, y = xi.CI.low), lines.args))
-            do.call(lines, args = c(list(x = thresholds, y = xi.CI.up),  lines.args))
-        }
-        pu <- pretty(thresholds) # where actual x labels are (even if those thresholds are not considered)
+        plot(NA, xlim = xlim, ylim = ylim, xlab = xlab, ylab = ylab, ...) # plot region
+        if(estimate.cov)
+            polygon(x = c(thresholds, rev(thresholds)), y = c(xi.CI.low, rev(xi.CI.up)),
+                    col = CI.col, border = NA) # CI
+        do.call(lines, args = c(list(x = thresholds, y = xi), lines.args)) # actual plot
+        pu <- axTicks(1) # used to be pretty(thresholds)
         axis(3, at = pu, labels = sapply(pu, function(u) sum(x > u))) # *corresponding* excesses
         mtext(xlab2, side = 3, line = 3)
     }
+
     ## Return
     invisible(list(thresholds = thresholds, excesses = exc, GPD.fits = fits))
 }

@@ -1,5 +1,6 @@
 \name{fit_GARCH_11}
 \alias{fit_GARCH_11}
+\alias{tail_index_GARCH_11}
 \title{Fast(er) and Numerically More Robust Fitting of GARCH(1,1) Processes}
 \description{
   Fast(er) and numerically more robust fitting of GARCH(1,1) processes
@@ -8,6 +9,8 @@
 \usage{
 fit_GARCH_11(x, init = NULL, sig2 = mean(x^2), delta = 1,
              distr = c("norm", "st"), control = list(), ...)
+tail_index_GARCH_11(innovations, alpha1, beta1,
+                    interval = c(1e-6, 1e2), ...)
 }
 \arguments{
   \item{x}{vector of length \eqn{n} containing the data (typically
@@ -24,31 +27,63 @@ fit_GARCH_11(x, init = NULL, sig2 = mean(x^2), delta = 1,
     (\code{"norm"} for N(0,1) or \code{"st"} for a standardized \eqn{t}
     distribution).}
   \item{control}{see \code{?\link{optim}()}.}
-  \item{\dots}{additional arguments passed to the underlying
-    \code{\link{optim}()}.}
-}
-\value{
-  A list with components
-  \describe{
-    \item{coef}{estimated coefficients \eqn{\alpha_0}{alpha[0]},
-      \eqn{\alpha_1}{alpha[1]}, \eqn{\beta_1}{beta[1]} and, if
-      \code{distr == "st"} the estimated degrees of freedom.}
-     \item{logLik}{maximized log-likelihood.}
-     \item{counts}{number of calls to the objective function; see
-       \code{?\link{optim}}.}
-     \item{convergence}{convergence code ('0' indicates successful
-       completion; see \code{?\link{optim}}.}
-     \item{message}{see \code{?\link{optim}}.}
-     \item{sig.t}{vector of length \eqn{n} giving the conditional
-       volatility.}
-     \item{Z.t}{vector of length \eqn{n} giving the standardized
-       residuals.}
+  \item{innovations}{random variates from the innovation distribution;
+    for example, obtained via \code{\link{rnorm}()} or
+    \code{\link{rt}(, df = nu) * sqrt((nu-2)/nu)} where \code{nu} are
+    the d.o.f. of the \eqn{t} distribution.}
+  \item{alpha1}{nonnegative GARCH(1,1) coefficient \eqn{alpha[1]}
+    satisfying \eqn{alpha[1] + beta[1] < 1}.}
+  \item{beta1}{nonnegative GARCH(1,1) coefficient \eqn{beta[1]}
+    satisfying \eqn{alpha[1] + beta[1] < 1}.}
+  \item{interval}{initial interval for computing the tail index;
+    passed to the underlying \code{\link{uniroot}()}.}
+  \item{\dots}{
+    \describe{
+      \item{\code{fit_GARCH_11()}}{additional arguments passed to the
+	underlying \code{\link{optim}()}.}
+      \item{\code{tail_index_GARCH_11()}}{additional arguments passed
+	to the underlying \code{\link{uniroot}()}.}
+    }
   }
 }
-\author{Marius Hofert (based on an early version by Marcel Braeutigam)}
+\value{
+  \describe{
+    \item{\code{fit_GARCH_11()}}{
+      \describe{
+	\item{coef}{estimated coefficients \eqn{\alpha_0}{alpha[0]},
+	  \eqn{\alpha_1}{alpha[1]}, \eqn{\beta_1}{beta[1]} and, if
+	  \code{distr == "st"} the estimated degrees of freedom.}
+	\item{logLik}{maximized log-likelihood.}
+	\item{counts}{number of calls to the objective function; see
+	  \code{?\link{optim}}.}
+	\item{convergence}{convergence code ('0' indicates successful
+	  completion); see \code{?\link{optim}}.}
+	\item{message}{see \code{?\link{optim}}.}
+	\item{sig.t}{vector of length \eqn{n} giving the conditional
+	  volatility.}
+	\item{Z.t}{vector of length \eqn{n} giving the standardized
+	  residuals.}
+    }}
+    \item{\code{tail_index_GARCH_11()}}{
+      The tail index \eqn{alpha} estimated by Monte Carlo via
+      McNeil et al. (2015, p. 576), so the \eqn{alpha} which solves
+      \deqn{E((\alpha_1 * Z^2 + \beta_1)^(\alpha/2)) = 1}{%
+	E((alpha[1] * Z^2 + \beta[1])^(\alpha/2)) = 1},
+      where \eqn{Z} are the \code{innovations}. If no solution
+      is found (e.g. if the objective function does not have
+      different sign at the endpoints of \code{interval}),
+      \code{\link{NA}} is returned.
+    }
+  }
+}
+\author{Marius Hofert}
 \references{
   Zumbach, G. (2000). The pitfalls in fitting GARCH (1,1) processes.
   \emph{Advances in Quantitative Asset Management} \bold{1}, 179--200.
+
+  McNeil, A. J., Frey, R. and Embrechts, P. (2015).
+  \emph{Quantitative Risk Management: Concepts, Techniques, Tools}.
+  Princeton University Press.
 }
 \seealso{
   \code{\link{fit_ARMA_GARCH}()} based on \pkg{rugarch}.

@@ -34,38 +34,51 @@ dGPD <- function(x, shape, scale, log = FALSE)
 pGPD <- function(q, shape, scale, lower.tail = TRUE, log.p = FALSE)
 {
     stopifnot(scale > 0)
-    q <- if(shape >= 0) pmax(q, 0) else pmin(pmax(q, 0), -scale/shape) # correctly extend (q >= 0; q <= -scale/shape if shape < 0)
-    ## Note: - This 'extension' works correctly here as R correctly deals with Inf
-    ##       - It avoids having to set res outside the compact support (=> two regions)
-    if(shape == 0) { # shape == 0
-        if(lower.tail) {
-            if(log.p) {
-                log1p(-exp(-q/scale))
-            } else {
-                1-exp(-q/scale)
-            }
-        } else {
-            if(log.p) {
-                -q/scale
-            } else {
-                exp(-q/scale)
-            }
-        }
-    } else { # shape != 0
-        if(lower.tail) {
-            if(log.p) {
-                log1p(-(1+shape*q/scale)^(-1/shape))
-            } else {
-                1-(1+shape*q/scale)^(-1/shape)
-            }
-        } else {
-            if(log.p) {
-                -log1p(shape*q/scale)/shape
-            } else {
-                (1+shape*q/scale)^(-1/shape)
-            }
-        }
+    ## Note: The following extension doesn't work as there can be cases (2022-02-26)
+    ##       when q = -scale/shape but 1 + q * shape/scale < 0 at which
+    ##       point the below code for shape != 0 fails.
+    ## q <- if(shape >= 0) pmax(q, 0) else pmin(pmax(q, 0), -scale/shape)
+    res <- numeric(length(q))
+    if(shape >= 0) {
+        ii <- q <= 0 # include boundary case here to not run into numerical problems
+        res[ii] <- 0
+    } else {
+        i <- q <= 0 # include boundary case here to not run into numerical problems
+        j <- q >= -scale/shape # include boundary case here to not run into numerical problems
+        res[i] <- 0
+        res[j] <- 1
+        ii <- i | j
     }
+    res[!ii] <- if(shape == 0) { # shape == 0
+                    if(lower.tail) {
+                        if(log.p) {
+                            log1p(-exp(-q[!ii]/scale))
+                        } else {
+                            1-exp(-q[!ii]/scale)
+                        }
+                    } else {
+                        if(log.p) {
+                            -q[!ii]/scale
+                        } else {
+                            exp(-q[!ii]/scale)
+                        }
+                    }
+                } else { # shape != 0
+                    if(lower.tail) {
+                        if(log.p) {
+                            log1p(-(1+shape*q[!ii]/scale)^(-1/shape))
+                        } else {
+                            1-(1+shape*q[!ii]/scale)^(-1/shape)
+                        }
+                    } else {
+                        if(log.p) {
+                            -log1p(shape*q[!ii]/scale)/shape
+                        } else {
+                            (1+shape*q[!ii]/scale)^(-1/shape)
+                        }
+                    }
+                }
+    res
 }
 
 ##' @title Quantile function of GPD(shape, scale)

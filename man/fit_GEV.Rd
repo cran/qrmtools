@@ -51,7 +51,8 @@ fit_GEV_MLE(x, init = c("shape0", "PWM", "quantile"),
   distribution (\code{-Inf} if not admissible).
 
   \code{fit_GEV_MLE()} returns the return object of \code{\link{optim}()}
-  and, appended, the estimated asymptotic covariance matrix and
+  (by default, the return value \code{value} is the log-likelihood) and,
+  appended, the estimated asymptotic covariance matrix and
   standard errors of the parameter estimators, if \code{estimate.cov}.
 }
 \details{

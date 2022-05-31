@@ -1,11 +1,13 @@
 \name{risk_measures}
 \alias{VaR_np}
 \alias{VaR_t}
+\alias{VaR_t01}
 \alias{VaR_GPD}
 \alias{VaR_Par}
 \alias{VaR_GPDtail}
 \alias{ES_np}
 \alias{ES_t}
+\alias{ES_t01}
 \alias{ES_GPD}
 \alias{ES_Par}
 \alias{ES_GPDtail}
@@ -20,6 +22,7 @@
 ## Value-at-risk
 VaR_np(x, level, names = FALSE, type = 1, ...)
 VaR_t(level, loc = 0, scale = 1, df = Inf)
+VaR_t01(level, df = Inf)
 VaR_GPD(level, shape, scale)
 VaR_Par(level, shape, scale = 1)
 VaR_GPDtail(level, threshold, p.exceed, shape, scale)
@@ -27,6 +30,7 @@ VaR_GPDtail(level, threshold, p.exceed, shape, scale)
 ## Expected shortfall
 ES_np(x, level, method = c(">", ">="), verbose = FALSE, ...)
 ES_t(level, loc = 0, scale = 1, df = Inf)
+ES_t01(level, df = Inf)
 ES_GPD(level, shape, scale)
 ES_Par(level, shape, scale = 1)
 ES_GPDtail(level, threshold, p.exceed, shape, scale)
@@ -87,7 +91,8 @@ gEX(x, level, start = colMeans(x),
     }
   }
   \item{df}{degrees of freedom, a positive number; choose \code{df = Inf}
-    for the normal distribution.}
+    for the normal distribution. For the standardized \eqn{t}
+    distributions, \code{df} has to be greater than 2.}
   \item{threshold}{threhold \eqn{u}{u} (used to estimate the exceedance
     probability based on the data \code{x}).}
   \item{p.exceed}{exceedance probability; typically \code{mean(x > threshold)}
@@ -130,7 +135,11 @@ gEX(x, level, start = colMeans(x),
   estimate at level \code{level[2]} are averaged.
 
   \code{VaR_t()}, \code{ES_t()} compute value-at-risk and expected
-  shortfall for the \eqn{t} (or normal) distribution.
+  shortfall for the \eqn{t} (or normal) distribution. \code{VaR_t01()},
+  \code{ES_t01()} compute value-at-risk and expected shortfall for the
+  standardized \eqn{t} (or normal) distribution, so scaled \eqn{t}
+  distributions to have mean 0 and variance 1; note that they require
+  a degrees of freedom parameter greater than 2.
 
   \code{VaR_GPD()}, \code{ES_GPD()} compute value-at-risk and expected
   shortfall for the generalized Pareto distribution (GPD).

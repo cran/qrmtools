@@ -124,19 +124,20 @@ matrix_density_plot <- function(x, xlab = "Entries in the lower triangular matri
 ##' @title P-P Plot
 ##' @param x data (a vector of convertible to such)
 ##' @param FUN hypothesized *distribution* function
+##' @param pch plot symbol
 ##' @param xlab x-axis label
 ##' @param ylab y-axis label
 ##' @param ... additional arguments passed to the underlying plot()
 ##' @return invisible()
 ##' @author Marius Hofert
 ##' @note as.vector() required since sort(x) == x for an 'xts' object!
-pp_plot <-  function(x, FUN = pnorm,
+pp_plot <-  function(x, FUN = pnorm, pch = 20,
                      xlab = "Theoretical probabilities", ylab = "Sample probabilities",
                      ...)
 {
     p <- ppoints(length(x)) # theoretical probabilities of sorted data
     y <- FUN(sort(as.vector(x))) # hypothesized quantiles of sorted data
-    plot(p, y, xlab = xlab, ylab = ylab, ...)
+    plot(p, y, pch = pch, xlab = xlab, ylab = ylab, ...)
     abline(a = 0, b = 1)
     invisible()
 }
@@ -144,9 +145,6 @@ pp_plot <-  function(x, FUN = pnorm,
 ##' @title Q-Q Plot
 ##' @param x data (a vector or convertible to such)
 ##' @param FUN hypothesized *quantile* function (vectorized)
-##' @param xlab x-axis label
-##' @param ylab y-axis label
-##' @param do.qqline logical indicating whether a Q-Q line is plotted
 ##' @param method method used to construct the Q-Q line:
 ##'        "theoretical": theoretically true line which helps
 ##'                       deciding whether x comes from exactly
@@ -165,8 +163,12 @@ pp_plot <-  function(x, FUN = pnorm,
 ##'        qq_plot(z., qnorm) # not fine
 ##'        qq_plot((z.-mean(z.))/sd(z.), qnorm) # fine again
 ##'        qq_plot(z., qnorm, method = "empirical") # fine again
+##' @param pch plot symbol
+##' @param do.qqline logical indicating whether a Q-Q line is plotted
 ##' @param qqline.args list containing additional arguments passed to the
 ##'        underlying abline() functions
+##' @param xlab x-axis label
+##' @param ylab y-axis label
 ##' @param ... additional arguments passed to the underlying plot()
 ##' @return invisible()
 ##' @author Marius Hofert
@@ -182,14 +184,15 @@ pp_plot <-  function(x, FUN = pnorm,
 ##'         slope <- diff(y) / diff(x)
 ##'         int <- y[1] - slope * x[1]
 ##'         abline(a = int, b = slope)
-qq_plot <-  function(x, FUN = qnorm, xlab = "Theoretical quantiles", ylab = "Sample quantiles",
-                     do.qqline = TRUE, method = c("theoretical", "empirical"),
-                     qqline.args = NULL, ...)
+qq_plot <-  function(x, FUN = qnorm, method = c("theoretical", "empirical"),
+                     pch = 20, do.qqline = TRUE, qqline.args = NULL,
+                     xlab = "Theoretical quantiles", ylab = "Sample quantiles",
+                     ...)
 {
     x. <- x[!is.na(x)] # grab out non-NA data
     q <- FUN(ppoints(length(x.))) # theoretical quantiles of sorted data
     y <- sort(as.vector(x.)) # compute order statistics (sample quantiles)
-    plot(q, y, xlab = xlab, ylab = ylab, ...)
+    plot(q, y, pch = pch, xlab = xlab, ylab = ylab, ...)
     if(do.qqline) {
         method <- match.arg(method)
         switch(method,
@@ -207,119 +210,171 @@ qq_plot <-  function(x, FUN = qnorm, xlab = "Theoretical quantiles", ylab = "Sam
     invisible()
 }
 
-##' @title Plot of (a) Step Function(s)
-##' @param x 2-column matrix (with x and y values) or list of such (in which case)
-##'        each element corresponds to one discrete distribution function.
-##' @param yleft (vector of) limit(s) to the left of the plotted functions
+##' @title Plot of a Step Function
+##' @param x numeric vector of x-values
+##' @param y numeric vector of corresponding y-values
+##' @param y0 y-value of the graph extending to the left of the first x-value
+##' @param x0 smallest x-value
+##' @param x1 largest x-value
+##' @param method character string indicating the method to be used
+##' @param log character indicating whether to plot in log-scale
+##' @param verticals logical indicating whether vertical lines are to be plotted
 ##' @param do.points logical indicating whether points are to be plotted
-##' @param log either "" or "x", indicating whether a logarithmic x-axis is used
-##' @param xlim x-axis limits
-##' @param ylim y-axis limits
+##' @param add logical indicating whether the current plot is added to the last one
 ##' @param col color
 ##' @param main title
 ##' @param xlab x-axis label
 ##' @param ylab y-axis label
-##' @param ... additional arguments passed to the underlying method plot.stepfun()
-##' @return see plot.stepfun()
+##' @param plot.args list with additional arguments passed to the underlying plot()
+##' @param segments.args list with additional arguments passed to the underlying segments()
+##' @param points.args list with additional arguments passed to the underlying points()
+##' @return nothing (plot by side-effect)
 ##' @author Marius Hofert
-stepfun_plot <- function(x, yleft, do.points = NA, log = "",
-                         xlim = NULL, ylim = NULL, col = NULL, main = "",
-                         xlab = "x", ylab = "Function value at x", ...)
+step_plot <- function(x, y, y0 = NA, x0 = NA, x1 = NA, method = c("edf", "eqf"), log = "",
+                      verticals = NA, do.points = NA, add = FALSE,
+                      col = par("col"), main = "", xlab = "x", ylab = "Function value at x",
+                      plot.args = NULL, segments.args = NULL, points.args = NULL)
 {
-    ## Basics
-    if(!is.list(x)) x <- list(x)
-    len <- length(x)
-    stopifnot(len >= 1)
-    if(length(do.points) == 1) do.points <- rep(do.points, len)
-    if(length(yleft) == 1) yleft <- rep(yleft, len)
-    if(is.null(col)) col <- "black"
-    if(length(col) == 1) col <- rep(col, len)
-    stopifnot(length(yleft) == len, length(do.points) == len, is.logical(do.points),
-              length(col) == len)
+    ## Check x and y and sort (as plot.stepfun())
+    nx <- length(x)
+    ny <- length(y)
+    if(nx != ny)
+        stop("'x' and 'y' need to be numeric vectors of the same length")
+    n <- nx
+    ord <- order(as.numeric(x))
+    x. <- x[ord]
+    y. <- y[ord] # order as x to not mess up function
+    if(!is.na(x0) && x0 > x.[1])
+        stop("'x0' must be less than or equal to the smallest x")
+    if(!is.na(x1) && x1 < x.[nx])
+        stop("'x1' must be greater than or equal to the largest x")
 
-    ## x- and y-values
-    sf <- vector("list", len)
-    for(l in 1:len) {
-        x. <- x[[l]]
-        if(!is.matrix(x.))
-            stop(paste0("Element ",l," of 'x' is not a matrix"))
-        if(ncol(x.) != 2)
-            stop(paste0("Element ",l," of 'x' is not a 2-column matrix"))
-        ## x-values
-        ord <- order(as.numeric(x.[,1])) # get order of x
-        x.. <- x.[,1][ord] # ordered x (as required by stepfun())
-        ## y-values
-        y.. <- as.numeric(x.[,2])[ord] # order as x (to not change the function)
-        y.. <- c(yleft[l], y..) # y needs to be one element longer than x
-        ## Determine if points shall be used
-        if(is.na(do.points[l])) do.points[l] <- length(y..) <= 100
-        ## Keep result object
-        sf[[l]] <- list(FUN = stepfun(x = x.., y = y..), # stepfun() object
-                        xlim = range(x.., na.rm = TRUE), # x-axis limits
-                        ylim = range(y.., na.rm = TRUE), # y-axis limits
-                        do.points = do.points[l], # whether we shall show points for jumps
-                        col = col[l]) # color
+    ## Verticals and points
+    stopifnot(is.logical(verticals), is.logical(do.points))
+    if(is.na(verticals)) verticals <- n >= 100
+    if(is.na(do.points)) do.points <- n <  100
+    method <- match.arg(method)
+    if(method == "edf") {
+        if((verticals && is.na(y0)) || (!is.na(x0) && is.na(y0)))
+            stop("'y0' needs to be provided") # ... as we otherwise cannot plot the first vertical line
     }
+    if(!is.na(y0) && y0 > min(y.))
+        stop("'y0' must be less than or equal to the smallest y")
 
-    ## Axis limits
-    if(is.null(xlim)) {
-        xlims <- t(sapply(1:len, function(l) sf[[l]]$xlim)) # (len, 2)-matrix
-        xlim <- c(min(xlims[,1]), max(xlims[,2]))
-    }
-    x0 <- xlim[1] - 0.04 * diff(xlim) # x-value at left endpoint for the line extension y = yleft
-    if(is.null(ylim)) {
-        ylims <- t(sapply(1:len, function(l) sf[[l]]$ylim))
-        ylim <- c(min(ylims[,1]), max(ylims[,2]))
-    }
+    ## Determine x values
+    x.. <- c(x0, x., x1) # extend (possibly by NA)
+    xlim <- range(x.., na.rm = TRUE)
+    n.. <- length(x..) # update
+
+    ## Determine y values
+    if(is.na(y0)) y0 <- y.[1] # default smallest y = smallest y provided
+    y0. <- min(y0, y.[1]) # the smaller of the two
+    y.. <- switch(method,
+                  "edf" = {
+                      c(y0., y., y.[n]) # extend (possibly by NA); note that 'y1' is always y.[n]
+                  },
+                  "eqf" = {
+                      c(y0., y.[-1], y.[n], y.[n]) # need to shift all horizontal and vertical segments upwards one 'step'
+                  },
+                  stop("Wrong 'method'"))
+    ylim <- range(y.., na.rm = TRUE)
 
     ## Plot
-    for(l in 1:len) {
-        obj <- sf[[l]]
-        if(l == 1) {
-            plot(obj$FUN, log = log, xlim = xlim, ylim = ylim,
-                 do.points = obj$do.points, col = obj$col,
-                 main = main, xlab = xlab, ylab = ylab, ...) # ... can pass 'verticals = FALSE' (exists for plot.stepfun())
-        } else {
-            plot(obj$FUN, add = TRUE, # cannot have 'log' here then
-                 do.points = obj$do.points, col = obj$col, ...)
-        }
-        ## Extend the plot(s) to the left (line segment with y = yleft).
-        ## This is especially required if log == "x" and d >= 1 or log == "" and d > 1.
-        segments(x0 = x0, y0 = yleft,
-                 x1 = obj$xlim[1], y1 = yleft, col = obj$col) # doesn't pass '...' though (could remove those of plot.stepfun())
-        ## This overplots possibly existing line segments for y = yleft but that's okay
-        ## (and in fact the easiest solution because if log == "x" and d > 1, some line
-        ## segments are already plotted anyways)
+    if(!add) {
+        nms <- if(is.null(plot.args)) "" else names(plot.args)
+        if(grepl("xlim", nms) || grepl("ylim", nms))
+            stop("'xlim' and 'ylim' are determined by step_plot()")
+        plt.args <- c(list(x = NA, log = log, xlim = xlim, ylim = ylim,
+                           col = col, main = main, xlab = xlab, ylab = ylab),
+                      plot.args)
+        do.call(plot, args = plt.args) # plot region
+    }
+    sgmts.args <- c(list(x0 = x..[-n..], y0 = y..[-n..], x1 = x..[-1], y1 = y..[-n..], col = col),
+                    segments.args)
+    do.call(segments, args = sgmts.args) # horizontal segments
+    if(verticals) {
+        sgmts.args. <- c(list(x0 = x..[-1], y0 = y..[-n..], x1 = x..[-1], y1 = y..[-1], col = col),
+                         segments.args)
+        do.call(segments, args = sgmts.args.) # vertical segments
+    }
+    if(do.points) {
+        nms <- if(is.null(points.args)) "" else names(points.args)
+        if(!grepl("pch", nms)) points.args <- c(list(pch = 20), points.args)
+        pnts.args <- c(list(x = x., y = y., col = col), points.args)
+        do.call(points, args = pnts.args) # only put points where original data was, not extended one
     }
 }
 
-##' @title Plotting (an) Empirical Distribution Function(s)
-##' @param x vector or list of such; if a list, each element corresponds
-##'        to one empirical distribution function
-##' @param do.points see discrete_df_plot()
-##' @param log see discrete_df_plot()
-##' @param xlim see discrete_df_plot()
-##' @param ylim see discrete_df_plot()
-##' @param col see discrete_df_plot()
-##' @param main see discrete_df_plot()
-##' @param xlab see discrete_df_plot()
-##' @param ylab see discrete_df_plot()
-##' @param ... see discrete_df_plot()
-##' @return see discrete_df_plot()
+##' @title Plot of (an) Empirical Distribution Function(s)
+##' @param x vector or list of vectors; if a list, each element corresponds
+##'        to the x-values of one empirical distribution function
+##' @param y0 see step_plot()
+##' @param x0 see step_plot()
+##' @param x1 see step_plot()
+##' @param log see step_plot()
+##' @param verticals see step_plot()
+##' @param do.points see step_plot()
+##' @param col color or vector of such
+##' @param main see step_plot()
+##' @param xlab see step_plot()
+##' @param ylab see step_plot()
+##' @param ... additional arguments passed to step_plot()
+##' @return nothing (plot by side-effect)
 ##' @author Marius Hofert
-edf_plot <- function(x, yleft = 0, do.points = NA, log = "", xlim = NULL, ylim = NULL,
-                     col = NULL, main = "", xlab = "x", ylab = "Distribution function at x", ...)
+edf_plot <- function(x, y0 = 0, x0 = NA, x1 = NA, log = "",
+                     verticals = NA, do.points = NA, col = par("col"),
+                     main = "", xlab = "x", ylab = "Distribution function at x", ...)
 {
     if(!is.list(x)) x <- list(x)
     len <- length(x)
     stopifnot(len >= 1)
-    ## Now add the y-values required for discrete_df_plot()
-    x <- lapply(1:len, function(l) {
+    xran <- range(unlist(x))
+    if(is.na(x0)) x0 <- xran[1]
+    if(is.na(x1)) x1 <- xran[2]
+    if(length(col) != len) col <- rep(col, length.out = len)
+
+    ## Loop over all plots
+    for(l in 1:len) {
         x. <- sort(as.numeric(x[[l]]))
-        cbind(x = x., y = ecdf(x.)(x.))
-    })
-    ## Plot
-    stepfun_plot(x, yleft = yleft, do.points = do.points, log = log,
-                 xlim = xlim, ylim = ylim, col = col,
-                 main = main, xlab = xlab, ylab = ylab, ...)
+        y. <- ecdf(x.)(x.)
+        step_plot(x., y., y0 = y0, x0 = x0, x1 = x1, log = log,
+                  verticals = verticals, do.points = do.points,
+                  add = l >= 2, col = col[l], main = main, xlab = xlab, ylab = ylab, ...)
+    }
+}
+
+##' @title Plot of (an) Empirical Quantile Function(s)
+##' @param x vector or list of vectors; if a list, each element corresponds
+##'        to the x-values of one empirical quantile function
+##' @param y0 see step_plot()
+##' @param x0 see step_plot()
+##' @param x1 see step_plot()
+##' @param log see step_plot()
+##' @param verticals see step_plot()
+##' @param do.points see step_plot()
+##' @param col color or vector of such
+##' @param main see step_plot()
+##' @param xlab see step_plot()
+##' @param ylab see step_plot()
+##' @param ... additional arguments passed to step_plot()
+##' @return nothing (plot by side-effect)
+##' @author Marius Hofert
+eqf_plot <- function(x, y0 = NA, x0 = 0, x1 = 1, log = "",
+                     verticals = NA, do.points = NA, col = par("col"),
+                     main = "", xlab = "x", ylab = "Quantile function at x", ...)
+{
+    if(!is.list(x)) x <- list(x)
+    len <- length(x)
+    stopifnot(len >= 1)
+    if(length(col) != len) col <- rep(col, length.out = len)
+
+    ## Loop over all plots
+    for(l in 1:len) {
+        y. <- sort(as.numeric(x[[l]]))
+        x. <- ecdf(y.)(y.)
+        step_plot(x., y., y0 = y0, # default: NA (=> quantile function is the smallest y on (0, 1/n])
+                  x0 = x0, x1 = x1, method = "eqf", log = log,
+                  verticals = verticals, do.points = do.points,
+                  add = l >= 2, col = col[l], main = main, xlab = xlab, ylab = ylab, ...)
+    }
 }

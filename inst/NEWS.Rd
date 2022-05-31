@@ -4,6 +4,15 @@
 \title{News for \R Package \pkg{qrmtools}}
 \newcommand{\CRANpkg}{\href{https://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 
+\section{Changes in version 0.0-15}{
+  \subsection{New Features}{
+    \itemize{
+      \item \code{Hill_estimator()} Hill estimator.
+      \item \code{Hill_plot()} Hill plot.
+    }
+  }
+}
+
 \section{Changes in version 0.0-14}{
   \subsection{New Features}{
     \itemize{

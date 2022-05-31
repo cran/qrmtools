@@ -6,11 +6,12 @@
   Probability-probability plots and quantile-quantile plots.
 }
 \usage{
-pp_plot(x, FUN, xlab = "Theoretical probabilities",
+pp_plot(x, FUN, pch = 20, xlab = "Theoretical probabilities",
         ylab = "Sample probabilities", ...)
-qq_plot(x, FUN = qnorm, xlab = "Theoretical quantiles", ylab = "Sample quantiles",
-        do.qqline = TRUE, method = c("theoretical", "empirical"),
-        qqline.args = NULL, ...)
+qq_plot(x, FUN = qnorm, method = c("theoretical", "empirical"),
+        pch = 20, do.qqline = TRUE, qqline.args = NULL,
+        xlab = "Theoretical quantiles", ylab = "Sample quantiles",
+        ...)
 }
 \arguments{
   \item{x}{data \code{\link{vector}}.}
@@ -19,6 +20,7 @@ qq_plot(x, FUN = qnorm, xlab = "Theoretical quantiles", ylab = "Sample quantiles
       \item{\code{pp_plot()}:}{The distribution function (vectorized).}
       \item{\code{qq_plot()}:}{The quantile function (vectorized).}
   }}
+  \item{pch}{plot symbol.}
   \item{xlab}{x-axis label.}
   \item{ylab}{y-axis label.}
   \item{do.qqline}{\code{\link{logical}} indicating whether a Q-Q line

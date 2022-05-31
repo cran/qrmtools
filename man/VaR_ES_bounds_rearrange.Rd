@@ -290,7 +290,7 @@ ABRA(level, qF, N.exp = seq(8, 19, by = 1), absreltol = c(0, 0.01),
   3.5. \emph{Risks} \bold{2}(1), 25--48.
 
   Embrechts, P., Puccetti, G. and \enc{Rüschendorf}{Rueschendorf}, L. (2013).
-  Model uncertainty and VaR aggregation. \emph{Journal of Banking \&
+  Model uncertainty and VaR aggregation. \emph{Journal of Banking &
     Finance} \bold{37}, 2750--2764.
 
   McNeil, A. J., Frey, R. and Embrechts, P. (2015).
@@ -299,7 +299,7 @@ ABRA(level, qF, N.exp = seq(8, 19, by = 1), absreltol = c(0, 0.01),
 
   Hofert, M., Memartoluie, A., Saunders, D. and Wirjanto, T. (2017).
   Improved Algorithms for Computing Worst
-  Value-at-Risk. \emph{Statistics \& Risk Modeling}
+  Value-at-Risk. \emph{Statistics & Risk Modeling}
   or, for an earlier version, \url{https://arxiv.org/abs/1505.02281}.
 
   Bernard, C., \enc{Rüschendorf}{Rueschendorf}, L. and Vanduffel,

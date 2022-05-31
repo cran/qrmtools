@@ -8,21 +8,25 @@
 \usage{
 GEV_shape_plot(x, blocksize = tail(pretty(seq_len(length(x)/20), n = 64), -1),
                estimate.cov = TRUE, conf.level = 0.95,
-               lines.args = list(lty = 2), xlab = "Block size",  ylab = NULL,
+               CI.col = adjustcolor(1, alpha.f = 0.2),
+               lines.args = list(), xlim = NULL, ylim = NULL,
+               xlab = "Block size",  ylab = NULL,
                xlab2 = "Number of blocks", plot = TRUE, ...)
 }
 \arguments{
-  \item{x}{\code{\link{numeric}} vector of data.}
+  \item{x}{\code{\link{vector}} of \code{\link{numeric}} data.}
   \item{blocksize}{\code{\link{numeric}} vector of block sizes for which
     to fit a GEV to the block maxima.}
   \item{estimate.cov}{\code{\link{logical}} indicating whether
     confidence intervals are to be computed.}
   \item{conf.level}{confidence level of the confidence intervals if
     \code{estimate.cov}.}
+  \item{CI.col}{color of the pointwise asymptotic confidence intervals
+    (CIs); if \code{NA}, no CIs are shown.}
   \item{lines.args}{\code{\link{list}} of arguments passed to
-    the underlying \code{\link{lines}()} for drawing the confidence intervals.}
-  \item{xlab}{x-axis label.}
-  \item{ylab}{y-axis label (if \code{NULL}, a default is used).}
+    the underlying \code{\link{lines}()} for drawing the shape
+    parameter as a function of the block size.}
+  \item{xlim, ylim, xlab, ylab}{see \code{\link{plot}()}.}
   \item{xlab2}{label of the secondary x-axis.}
   \item{plot}{\code{\link{logical}} indicating whether a plot is produced.}
   \item{\dots}{additional arguments passed to the underlying
@@ -46,5 +50,5 @@ X <- rPar(5e4, shape = 4)
 GEV_shape_plot(X)
 abline(h = 1/4, lty = 3) # theoretical xi = 1/shape for Pareto
 }
-\keyword{parametric}
+\keyword{distribution}
 \keyword{hplot}
