@@ -39,35 +39,35 @@ tail_index_GARCH_11(innovations, alpha1, beta1,
     passed to the underlying \code{\link{uniroot}()}.}
   \item{\dots}{
     \describe{
-      \item{\code{fit_GARCH_11()}}{additional arguments passed to the
+      \item{\code{fit_GARCH_11()}:}{additional arguments passed to the
 	underlying \code{\link{optim}()}.}
-      \item{\code{tail_index_GARCH_11()}}{additional arguments passed
+      \item{\code{tail_index_GARCH_11()}:}{additional arguments passed
 	to the underlying \code{\link{uniroot}()}.}
     }
   }
 }
 \value{
   \describe{
-    \item{\code{fit_GARCH_11()}}{
+    \item{\code{fit_GARCH_11()}:\cr}{
       \describe{
-	\item{coef}{estimated coefficients \eqn{\alpha_0}{alpha[0]},
+	\item{coef:}{estimated coefficients \eqn{\alpha_0}{alpha[0]},
 	  \eqn{\alpha_1}{alpha[1]}, \eqn{\beta_1}{beta[1]} and, if
-	  \code{distr == "st"} the estimated degrees of freedom.}
-	\item{logLik}{maximized log-likelihood.}
-	\item{counts}{number of calls to the objective function; see
+	  \code{distr = "st"} the estimated degrees of freedom.}
+	\item{logLik:}{maximized log-likelihood.}
+	\item{counts:}{number of calls to the objective function; see
 	  \code{?\link{optim}}.}
-	\item{convergence}{convergence code ('0' indicates successful
+	\item{convergence:}{convergence code ('0' indicates successful
 	  completion); see \code{?\link{optim}}.}
-	\item{message}{see \code{?\link{optim}}.}
-	\item{sig.t}{vector of length \eqn{n} giving the conditional
+	\item{message:}{see \code{?\link{optim}}.}
+	\item{sig.t:}{vector of length \eqn{n} giving the conditional
 	  volatility.}
-	\item{Z.t}{vector of length \eqn{n} giving the standardized
+	\item{Z.t:}{vector of length \eqn{n} giving the standardized
 	  residuals.}
     }}
-    \item{\code{tail_index_GARCH_11()}}{
+    \item{\code{tail_index_GARCH_11()}:}{
       The tail index \eqn{alpha} estimated by Monte Carlo via
       McNeil et al. (2015, p. 576), so the \eqn{alpha} which solves
-      \deqn{E((\alpha_1 * Z^2 + \beta_1)^(\alpha/2)) = 1}{%
+      \deqn{E({(\alpha_1Z^2 + \beta_1)}^{\alpha/2}) = 1}{%
 	E((alpha[1] * Z^2 + \beta[1])^(\alpha/2)) = 1},
       where \eqn{Z} are the \code{innovations}. If no solution
       is found (e.g. if the objective function does not have

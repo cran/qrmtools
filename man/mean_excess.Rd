@@ -16,9 +16,9 @@ mean_excess_GPD(x, shape, scale)
 \arguments{
   \item{x}{
     \describe{
-      \item{\code{mean_excess_GPD()}}{\code{\link{numeric}} vector of
+      \item{\code{mean_excess_GPD()}:}{\code{\link{numeric}} vector of
 	evaluation points of the mean excess function of the GPD.}
-      \item{otherwise}{\code{\link{numeric}} vector of data.}
+      \item{otherwise:}{\code{\link{numeric}} vector of data.}
     }
   }
   \item{omit}{number \eqn{\ge 1}{>= 1} of unique % differs from QRM::MEplot()!

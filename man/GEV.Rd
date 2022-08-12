@@ -34,9 +34,10 @@ rGEV(n, shape, loc = 0, scale = 1)
 \details{
   The distribution function of the generalized extreme value
   distribution is given by
-  \deqn{F(x) = \cases{
-    \exp(-(1-\xi(x-\mu)/\sigma)^{-1/\xi}),&if $\xi\neq 0,\ 1+\xi(x-\mu)/\sigma>0$,\cr
-    \exp(-e^{-(x-\mu)/\sigma}),&if $\xi = 0$,\cr}}{%
+  \deqn{F(x) = \left\{ \begin{array}{ll}
+    \exp(-(1-\xi(x-\mu)/\sigma)^{-1/\xi}), & \xi\neq 0,\ 1+\xi(x-\mu)/\sigma>0,\\
+    \exp(-e^{-(x-\mu)/\sigma}), & \xi = 0,
+  \end{array}\right.}{%
     F(x) = exp(-(1-xi(x-mu)/sigma)^{-1/xi}) if xi != 0, 1+xi*(x-mu)/sigma>0 and
     exp(-e^{-(x-mu)/sigma}) if xi = 0,}
   where \eqn{\sigma>0}{sigma>0}.

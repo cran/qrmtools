@@ -15,13 +15,13 @@ mardia_test(x, type = c("kurtosis", "skewness"), method = c("direct", "chol"))
   \item{x}{(n, d)-matrix of data.}
   \item{type}{\code{\link{character}} string indicating the type of test:
     \describe{
-      \item{"ad.test"}{Anderson-Darling test as computed by the
+      \item{\code{"ad.test"}:}{Anderson-Darling test as computed by the
 	underlying \code{\link{ad.test}()}.}
-      \item{"ks.test"}{Kolmogorov-Smirnov test as computed by the
+      \item{\code{"ks.test"}:}{Kolmogorov-Smirnov test as computed by the
 	underlying \code{\link{ks.test}()}.}
-      \item{"kurtosis"}{Mardia's kurtosis test (based on Mahalanobis
+      \item{\code{"kurtosis"}:}{Mardia's kurtosis test (based on Mahalanobis
 	distances).}
-      \item{"skewness"}{Mardia's skewness test (based on Mahalanobis
+      \item{\code{"skewness"}:}{Mardia's skewness test (based on Mahalanobis
 	angles).}
     }
   }

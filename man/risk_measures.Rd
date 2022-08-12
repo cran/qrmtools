@@ -47,25 +47,25 @@ gEX(x, level, start = colMeans(x),
 \arguments{
   \item{x}{
     \describe{
-      \item{\code{gVaR()}, \code{gEX()}}{\code{\link{matrix}} of
+      \item{\code{gVaR()}, \code{gEX()}:}{\code{\link{matrix}} of
 	(rowwise) multivariate losses.}
-      \item{\code{VaR_np()}, \code{ES_np()}, \code{RVaR_np()}}{if \code{x} is a
+      \item{\code{VaR_np()}, \code{ES_np()}, \code{RVaR_np()}:}{if \code{x} is a
 	\code{\link{matrix}} then \code{\link{rowSums}()} is applied
 	first (so value-at-risk and expected shortfall of the sum
         is computed).}
-      \item{otherwise}{\code{\link{vector}} of losses.}
+      \item{otherwise:}{\code{\link{vector}} of losses.}
     }
   }
   \item{level}{
     \describe{
-      \item{\code{RVaR_np()}}{\code{\link{vector}} of length 1 or 2
+      \item{\code{RVaR_np()}:}{\code{\link{vector}} of length 1 or 2
         giving the lower and upper confidence level; if of length 1,
         it is interpreted as the lower confidence level and the upper
         one is taken to be 1.}
-      \item{\code{gVaR()}, \code{gEX()}}{\code{\link{vector}} or
+      \item{\code{gVaR()}, \code{gEX()}:}{\code{\link{vector}} or
 	\code{\link{matrix}} of	(rowwise) confidence levels \eqn{\alpha}{alpha}
 	(all in \eqn{[0,1]}).}
-      \item{otherwise}{confidence level \eqn{\alpha\in[0,1]}{alpha in
+      \item{otherwise:}{confidence level \eqn{\alpha\in[0,1]}{alpha in
 	  [0,1]}.}
     }
   }
@@ -74,19 +74,19 @@ gEX(x, level, start = colMeans(x),
   \item{loc}{location parameter \eqn{\mu}{mu}.}
   \item{shape}{
     \describe{
-      \item{\code{VaR_GPD()}, \code{ES_GPD()}}{GPD shape parameter
+      \item{\code{VaR_GPD()}, \code{ES_GPD()}:}{GPD shape parameter
 	\eqn{\xi}{xi}, a real number.}
-      \item{\code{VaR_Par()}, \code{ES_Par()}}{Pareto shape parameter
+      \item{\code{VaR_Par()}, \code{ES_Par()}:}{Pareto shape parameter
 	\eqn{\theta}{theta}, a positive number.}
     }
   }
   \item{scale}{
     \describe{
-      \item{\code{VaR_t()}, \code{ES_t()}}{\eqn{$t$}{t} scale parameter
+      \item{\code{VaR_t()}, \code{ES_t()}:}{\eqn{t} scale parameter
 	\eqn{\sigma}{sigma}, a positive number.}
-      \item{\code{VaR_GPD()}, \code{ES_GPD()}}{GPD scale parameter
+      \item{\code{VaR_GPD()}, \code{ES_GPD()}:}{GPD scale parameter
 	\eqn{\beta}{beta}, a positive number.}
-      \item{\code{VaR_Par()}, \code{ES_Par()}}{Pareto scale parameter
+      \item{\code{VaR_Par()}, \code{ES_Par()}:}{Pareto scale parameter
 	\eqn{\kappa}{kappa}, a positive number.}
     }
   }
@@ -102,9 +102,9 @@ gEX(x, level, start = colMeans(x),
     \code{\link{optim}()}.}
   \item{method}{
     \describe{
-      \item{\code{ES_np()}}{\code{\link{character}} string indicating the method
+      \item{\code{ES_np()}:}{\code{\link{character}} string indicating the method
 	for computing expected shortfall.}
-      \item{\code{gVaR()}, \code{gEX()}}{the optimization method passed to the
+      \item{\code{gVaR()}, \code{gEX()}:}{the optimization method passed to the
 	underlying \code{\link{optim}()}.}
     }
   }
@@ -113,11 +113,11 @@ gEX(x, level, start = colMeans(x),
     observations).}
   \item{\dots}{
     \describe{
-      \item{\code{VaR_np()}}{additional arguments passed to the
+      \item{\code{VaR_np()}:}{additional arguments passed to the
 	underlying \code{\link{quantile}()}.}
-      \item{\code{ES_np()}, \code{RVaR_np()}}{additional arguments passed to
+      \item{\code{ES_np()}, \code{RVaR_np()}:}{additional arguments passed to
 	the underlying \code{VaR_np()}.}
-      \item{\code{gVaR()}, \code{gEX()}}{additional arguments passed to
+      \item{\code{gVaR()}, \code{gEX()}:}{additional arguments passed to
 	the underlying \code{\link{optim}()}.}
     }
   }

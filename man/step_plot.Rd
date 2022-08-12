@@ -22,12 +22,12 @@ eqf_plot(x, y0 = NA, x0 = 0, x1 = 1, log = "",
 \arguments{
   \item{x}{
     \describe{
-      \item{\code{step_plot()}}{\code{\link{numeric}} vector of
+      \item{\code{step_plot()}:}{\code{\link{numeric}} vector of
 	x-values.}
-      \item{\code{edf_plot()}}{\code{\link{numeric}} vector or a
+      \item{\code{edf_plot()}:}{\code{\link{numeric}} vector or a
 	\code{\link{list}} of \code{\link{numeric}} vectors; if a list, each
 	element corresponds to the x-values of an empirical distribution function.}
-      \item{\code{eqf_plot()}}{similar to \code{edf_plot()}.}
+      \item{\code{eqf_plot()}:}{similar to \code{edf_plot()}.}
     }
   }
   \item{y}{y-values corresponding to \code{x}.}

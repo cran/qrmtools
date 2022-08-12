@@ -45,10 +45,12 @@ rPar(n, shape, scale = 1)
   \code{rPar()} for the Pareto distribution.
 }
 \details{
-  The distribution function of the generalized Pareto distribution is given by
-  \deqn{F(x) = \cases{
-    1-(1+\xi x/\beta)^{-1/\xi},&if $\xi\neq 0$,\cr
-    1-\exp(-x/\beta),&if $\xi = 0$,\cr}}{%
+  The distribution function of the generalized Pareto distribution is
+  given by
+  \deqn{F(x) = \left\{ \begin{array}{ll}
+    1-(1+\xi x/\beta)^{-1/\xi}, & \xi \neq 0,\\
+    1-\exp(-x/\beta), & \xi = 0,
+    \end{array}\right.}{%
     F(x) = 1-(1+xi x/beta)^{-1/xi} if xi != 0 and
     1-exp(-x/beta) if xi = 0,}
   where \eqn{\beta>0}{beta>0} and \eqn{x\ge0}{x >= 0} if \eqn{\xi\ge

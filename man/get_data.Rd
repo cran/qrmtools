@@ -24,10 +24,10 @@ get_data(x, from = NULL, to = NULL,
   \item{FUN}{\code{\link{function}} to be applied to the data before
     being returned. This can be
     \describe{
-      \item{the identity}{if the data could not be retrieved (and is
+      \item{the identity:}{if the data could not be retrieved (and is
 	thus replaced by \code{\link{NA}});}
-      \item{the given \code{FUN}}{if \code{FUN} has been provided;}
-      \item{a useful default}{if \code{FUN = NULL}; the default uses
+      \item{the given \code{FUN}:}{if \code{FUN} has been provided;}
+      \item{a useful default:}{if \code{FUN = NULL}; the default uses
 	the adjusted close price \code{\link{Ad}()} if
 	\code{src = "yahoo"},
 	the close price \code{\link{Cl}()} if
@@ -57,12 +57,12 @@ get_data(x, from = NULL, to = NULL,
 \author{Marius Hofert}
 \examples{
 \dontrun{
-    ## Note: This needs a working internet connection
-    ## Get stock and volatility data (for all available trading days)
-    dat <- get_data(c("^GSPC", "^VIX")) # note: this needs a working internet connection
-    ## Plot them (Alternative: plot.xts() from xtsExtra)
-    library(zoo)
-    plot.zoo(dat, screens = 1, main = "", xlab = "Trading day", ylab = "Value")
+## Note: This needs a working internet connection
+## Get stock and volatility data (for all available trading days)
+dat <- get_data(c("^GSPC", "^VIX")) # note: this needs a working internet connection
+## Plot them (Alternative: plot.xts() from xtsExtra)
+library(zoo)
+plot.zoo(dat, screens = 1, main = "", xlab = "Trading day", ylab = "Value")
 }
 }
 \keyword{manip}

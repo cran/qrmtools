@@ -37,11 +37,11 @@ Hill_plot(x, k = c(10, length(x)), conf.level = 0.95, Hill.estimator = NULL,
 }
 \value{
   \describe{
-    \item{\code{Hill_estimator()}}{A five-column matrix containing the
+    \item{\code{Hill_estimator()}:}{A five-column matrix containing the
       indices \code{k}, their corresponding empirical probabilities
       \code{k.prob}, the estimated tail indices \code{tail.index},
       and the lower and upper CI endpoints \code{CI.low} and \code{CI.up}.}
-    \item{\code{Hill_plot()}}{Hill plot by side-effect.}
+    \item{\code{Hill_plot()}:}{Hill plot by side-effect.}
   }
 }
 \details{
