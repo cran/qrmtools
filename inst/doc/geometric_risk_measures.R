@@ -1,4 +1,4 @@
-## ---- message = FALSE---------------------------------------------------------
+## ----message = FALSE----------------------------------------------------------
 library(qrmtools)
 library(copula)
 library(sn) # for skew-normal distribution
@@ -13,7 +13,7 @@ circle <- cbind(cos(phi), sin(phi)) # unit circle evaluated at angles
 a1 <- 0.98 * circle # first set of alphas
 a2 <- cbind(0.98 * circle[,1], 0.9 * circle[,2]) # other set of alphas
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6---------------------
+## ----fig.align = "center", fig.width = 6, fig.height = 6----------------------
 ## Plot
 par(pty = "s")
 plot(circle, type = "l", lty = 2, lwd = 2, col = gray(0.5),
@@ -69,7 +69,7 @@ gEX.p1  <-  gEX(X, level = p1)$par
 gVaR.p2 <- gVaR(X, level = p2)$par
 gEX.p2  <-  gEX(X, level = p2)$par
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6---------------------
+## ----fig.align = "center", fig.width = 6, fig.height = 6----------------------
 ## Plot
 par(pty = "s")
 ran <- range(gVaR.a1, gVaR.a2, gEX.a1, gEX.a2,
@@ -101,7 +101,7 @@ res <- lapply(1:B, function(b) { # iterate over 1:B
            ncol = 2, byrow = TRUE) # (33, 2)-matrix
 })
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6---------------------
+## ----fig.align = "center", fig.width = 6, fig.height = 6----------------------
 ## Plot
 par(pty = "s")
 ran <- range(gEX.a1, res) # determine plotting range
@@ -129,7 +129,7 @@ gVaR.a <- matrix(vapply(gVaR(X, level = a), `[[`, numeric(2), "par"),
 gEX.a  <- matrix(vapply(gEX (X, level = a), `[[`, numeric(2), "par"),
                  ncol = 2, byrow = TRUE)
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6---------------------
+## ----fig.align = "center", fig.width = 6, fig.height = 6----------------------
 ## Plot of margins of geometric VaRs and expectiles
 ## Note: bold() does not respect Greek letters
 yran <- range(gVaR.a, gEX.a) # determine plotting range

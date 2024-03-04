@@ -57,8 +57,7 @@ uspec <- c(rep(list(ugarchspec(distribution.model = "std")), d-2), # ARMA(1,1)-G
                            distribution.model = "std")))
 system.time(fitAG <- fit_ARMA_GARCH(X, ugarchspec.list = uspec))
 str(fitAG, max.level = 1) # list with components fit, warning, error
-stopifnot(sapply(fitAG$error, is.null)) # NULL = no error
-stopifnot(sapply(fitAG$warning, is.null)) # NULL = no warning
+## Now access the list to check
 
 \dontrun{
 ## Pick out the standardized residuals, plot them and fit a t copula to them

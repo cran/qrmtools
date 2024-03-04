@@ -1,5 +1,5 @@
 Package: qrmtools
-Version: 0.0-16
+Version: 0.0-17
 Encoding: UTF-8
 Title: Tools for Quantitative Risk Management
 Description: Functions and data sets for reproducing selected results from
@@ -7,7 +7,7 @@ Description: Functions and data sets for reproducing selected results from
   Furthermore, new developments and auxiliary functions for Quantitative
   Risk Management practice.
 Authors@R: c(person(given = "Marius", family = "Hofert", role = c("aut", "cre"),
-                    email = "marius.hofert@uwaterloo.ca"),
+                    email = "mhofert@hku.hk"),
              person(given = "Kurt", family = "Hornik", role = "aut",
                     email = "Kurt.Hornik@R-project.org"),
              person(given = "Alexander J.", family = "McNeil", role = "aut",
@@ -15,7 +15,7 @@ Authors@R: c(person(given = "Marius", family = "Hofert", role = c("aut", "cre"),
 Author: Marius Hofert [aut, cre],
   Kurt Hornik [aut],
   Alexander J. McNeil [aut]
-Maintainer: Marius Hofert <marius.hofert@uwaterloo.ca>
+Maintainer: Marius Hofert <mhofert@hku.hk>
 Depends: R (>= 3.2.0)
 Imports: graphics, lattice, quantmod, Quandl, zoo, xts, methods,
         grDevices, stats, rugarch, utils, ADGofTest
@@ -26,8 +26,5 @@ License: GPL (>= 3) | file LICENCE
 NeedsCompilation: yes
 VignetteBuilder: knitr
 Repository: CRAN
-Date/Publication: 2022-08-12 12:20:02 UTC
-Repository/R-Forge/Project: qrmtools
-Repository/R-Forge/Revision: 292
-Repository/R-Forge/DateTimeStamp: 2022-08-12 11:01:23
-Packaged: 2022-08-12 11:11:51 UTC; rforge
+Date/Publication: 2024-03-04 16:20:06 UTC
+Packaged: 2024-03-04 10:22:44 UTC; mhofert

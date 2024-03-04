@@ -1,4 +1,4 @@
-## ---- message = FALSE---------------------------------------------------------
+## ----message = FALSE----------------------------------------------------------
 library(rugarch)
 library(qrmtools)
 
@@ -37,7 +37,7 @@ eps <- x@path$residSim # unstandardized residuals epsilon_t = sigma_t * Z_t
 stopifnot(all.equal(X,   x@path$seriesSim, check.attributes = FALSE),
           all.equal(sig, x@path$sigmaSim,  check.attributes = FALSE))
 
-## ---- fig.align = "center", fig.width = 7.5, fig.height = 6-------------------
+## ----fig.align = "center", fig.width = 7.5, fig.height = 6--------------------
 ## Plots
 plot(X,   type = "l", xlab = "t", ylab = expression(X[t]))
 plot(sig, type = "h", xlab = "t", ylab = expression(sigma[t]))
@@ -57,7 +57,7 @@ sig. <- sigma(fit) # fitted hat{sigma}_t
 stopifnot(all.equal(as.numeric(mu.),  fit@fit$fitted.values),
           all.equal(as.numeric(sig.), fit@fit$sigma))
 
-## ---- fig.align = "center", fig.width = 7.5, fig.height = 6-------------------
+## ----fig.align = "center", fig.width = 7.5, fig.height = 6--------------------
 ## Plot data X_t and fitted hat{mu}_t
 plot(X, type = "l", xlab = "t",
      ylab = expression("Data"~X[t]~"and fitted values"~hat(mu)[t]))
@@ -142,7 +142,7 @@ eps.sim <- X.sim.obj@path$residSim # extract epsilon_t
 VaR.sim <- (X.sim - eps.sim) + sig.sim * sqrt((nu.-2)/nu.) * qt(alpha, df = nu.) # (m, B) matrix
 VaR.CI <- apply(VaR.sim, 1, function(x) quantile(x, probs = c(0.025, 0.975)))
 
-## ---- fig.align = "center", fig.width = 7.5, fig.height = 6-------------------
+## ----fig.align = "center", fig.width = 7.5, fig.height = 6--------------------
 ## Setup
 yran <- range(X, # simulated path
               mu., VaR., # fitted conditional mean and VaR_alpha

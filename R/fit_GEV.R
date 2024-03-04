@@ -202,7 +202,7 @@ fit_GEV_MLE <- function(x, init = c("shape0", "PWM", "quantile"),
             ##            GEV_shape_plot() of Black Monday example)
             ##         => use .Machine$double.eps^0.25 as in uniroot()
             scale.hat <- sqrt(6 * var(x)) / pi # var for shape = 0 is (scale \pi)^2 / 6 => scale
-            init <- c(.Machine$double.eps^0.25, mean(x) - 0.5772157 * scale.hat, scale.hat) # mean for shape is loc + sig * gamma => loc; gamma = -digamma(1) = Euler--Mascheroni constant
+            init <- c(.Machine$double.eps^0.25, mean(x) - 0.5772157 * scale.hat, scale.hat) # mean for shape = 0 is loc + sig * gamma => loc; gamma = -digamma(1) = Euler--Mascheroni constant
         },
         "PWM" = {
             init <- fit_GEV_PWM(x)

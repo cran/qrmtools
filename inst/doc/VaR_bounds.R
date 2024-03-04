@@ -1,4 +1,4 @@
-## ---- message = FALSE---------------------------------------------------------
+## ----message = FALSE----------------------------------------------------------
 library(qrmtools)
 library(copula)
 library(combinat) # for permn()
@@ -10,7 +10,7 @@ qF2 <- function(p, th = 2) qPar(p, shape = th) # Par(2) quantile function
 pF2 <- function(q, th = 2) pPar(q, shape = th) # Par(2) distribution function
 dim <- 8 # variable dimension (we use 8 or 100 here)
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
+## ----fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
 d <- 8 # dimension
 s <- c(1, 5, 10, 100, 500, 1000)
 t <- sapply(seq_along(s), function(i) {
@@ -40,7 +40,7 @@ legend("topright", lty = rep(1,6), col = cols,
            function(i) substitute(s==s., list(s. = s[i])))))
 if(doPDF) dev.off()
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
+## ----fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
 theta <- c(0.5, 1, 2, 4) # theta values
 s <- seq(48, 2000, length.out = 257) # s values
 D <- sapply(theta, function(th)
@@ -61,7 +61,7 @@ legend("topright", lty = rep(1,4),
            function(j) substitute(theta==j, list(j = theta[j])))))
 if(doPDF) dev.off()
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6---------------------
+## ----fig.align = "center", fig.width = 6, fig.height = 6----------------------
 d <- 8 # dimension
 alpha <- 0.99 # confidence level
 c <- seq(0, (1-alpha)/d, length.out = 129) # domain of h
@@ -70,7 +70,7 @@ par(mar = c(5, 4+1, 4, 2) + 0.1) # increase space (for y axis label)
 plot(c, h.aux, type = "l", xlab = "c (in initial interval)",
      ylab = expression(frac(d-1,d)~{F^{-1}}(a[c])+frac(1,d)~{F^{-1}}(b[c])))
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
+## ----fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
 h <- sapply(c, function(c.) qrmtools:::Wang_h(c., level = alpha, d = d, qF = qF2))
 if(doPDF)
     pdf(file = (file <- paste0("fig_worst_VaR_",alpha,"_hom_Wang_h_Par=2_d=",d,"_num.pdf")),
@@ -109,7 +109,7 @@ for(j in 1:length(theta))
 z <- h
 z[z <= 0] <- NA # > 0 => makes log-scale possible
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
+## ----fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
 if(doPDF)
     pdf(file = (file <- paste0("fig_worst_VaR_",alpha,"_hom_Wang_h_Par_d=",d,".pdf")),
         width = 6, height = 6)
@@ -133,7 +133,7 @@ VaR <- simplify2array(sapply(alpha, function(a)
                                               shape = th)), simplify = FALSE))
 ## => (best/worst VaR, theta, alpha)-matrix
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
+## ----fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
 if(doPDF)
     pdf(file = (file <- paste0("fig_worst_VaR_hom_Wang_Par_d=",d,".pdf")),
         width = 7, height = 7)
@@ -162,7 +162,7 @@ VaR <- simplify2array(sapply(d, function(d.)
                                               shape = th)), simplify = FALSE))
 ## => (best/worst VaR, theta, d)-matrix
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
+## ----fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
 if(doPDF)
     pdf(file = (file <- paste0("fig_worst_VaR_hom_Wang_Par_alpha=",alpha,"_in_d.pdf")),
         width = 7, height = 7)
@@ -191,7 +191,7 @@ VaR <- simplify2array(sapply(d, function(d.)
                                               shape = th)), simplify = FALSE))
 ## => (best/worst VaR, theta, d)-matrix
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
+## ----fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
 if(doPDF)
     pdf(file = (file <- paste0("fig_worst_VaR_hom_Wang_Par_alpha=",alpha,"_in_theta.pdf")),
         width = 6, height = 6)
@@ -326,7 +326,7 @@ qFs <- lapply(th, function(th.) {th.; function(p) qPar(p, shape = th.)}) # n.th-
 pFs <- lapply(th, function(th.) {th.; function(q) pPar(q, shape = th.)}) # n.th-vector of Pareto dfs
 N <- 1e4 # number of discretization points for RA(); N = 1e5 does not improve the situation
 
-## ---- results = "hide", warning = FALSE---------------------------------------
+## ----results = "hide", warning = FALSE----------------------------------------
 res <- matrix(, nrow = n.th, ncol = 7)
 colnames(res) <- c("Wang", "straightforward", "transformed", "Wang.Par",
                    "dual", "RA.low", "RA.up")
@@ -356,7 +356,7 @@ for(i in seq_len(n.th)) {
 }
 close(pb) # close progress bar
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
+## ----fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
 res. <- res/res[,"dual"] # standardize (by dual method)
 ylim <- range(res., na.rm = TRUE)
 if(doPDF)
@@ -380,14 +380,14 @@ legend("topright", bty = "n",
                   "Lower RA bound", "Upper RA bound"))
 if(doPDF) dev.off()
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6---------------------
+## ----fig.align = "center", fig.width = 6, fig.height = 6----------------------
 tol <- 2.2204e-16
 wVaR.tol <- sapply(th, function(th.)
     VaR_hom_Par(alpha = alpha, d = d, shape = th., tol = tol))
 plot(th, wVaR.tol/res[,"dual"], type = "l", ylim = ylim,
      xlab = expression(theta), ylab = "Wang's approach (straightforward) but with smaller tol")
 
-## ---- warning = FALSE---------------------------------------------------------
+## ----warning = FALSE----------------------------------------------------------
 alpha <- 0.99 # confidence level
 d <- seq(2, 1002, by = 20) # dimensions
 theta <- c(0.1, 0.5, 1, 5, 10, 50) # theta values
@@ -432,7 +432,7 @@ VaR. <- simplify2array(sapply(d, function(d.)
                                            avoid.cancellation = TRUE)),
     simplify = FALSE))
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
+## ----fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
 ylim <- range(VaR, VaR.)
 if(doPDF)
     pdf(file = (file <- paste0("fig_worst_VaR_",alpha,"_hom_comparison_num_problems.pdf")),
@@ -451,7 +451,7 @@ legend("right", bty = "n",
            substitute(theta==th, list(th = theta[k]))) ))
 if(doPDF) dev.off()
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
+## ----fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
 ## Generate samples
 n <- 1000 # sample size
 set.seed(271) # set a seed (for reproducibility)
@@ -464,7 +464,7 @@ if(doPDF)
 plot(X, xlab = expression(X[1]), ylab = expression(X[2]))
 if(doPDF) dev.off()
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
+## ----fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
 ## Generate samples
 X. <- apply(X, 2, sort)
 ## Plot
@@ -474,7 +474,7 @@ if(doPDF)
 plot(X., xlab = expression(X[1]), ylab = expression(X[2]))
 if(doPDF) dev.off()
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
+## ----fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
 ## Samples of the sum of the components
 ## Note: Their mean is the same (unaffected by the dependence)
 Xsum  <- rowSums(X)
@@ -543,7 +543,7 @@ for(i in seq_along(d)) {
                  system.time(rearrange(X, sample = FALSE, is.sorted = TRUE))[["elapsed"]])
 }
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
+## ----fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
 if(doPDF)
     pdf(file = (file <- paste0("fig_ARA_speed-up.pdf")),
         width = 6, height = 6)
@@ -559,7 +559,7 @@ rearrange(A, tol = NULL, sample = FALSE, is.sorted = TRUE, trace = TRUE)
 B <- matrix(rep(1:3, 3), ncol = 3)
 rearrange(B, tol = NULL, sample = FALSE, is.sorted = TRUE, trace = TRUE)
 
-## ---- eval = FALSE, results = "hide"------------------------------------------
+## ----eval = FALSE, results = "hide"-------------------------------------------
 #  ## Create a (N!)^{d-1}-list of all possible input matrices (with integer
 #  ## elements) and 1:N as first column.
 #  N <- 5 # chosen N (<= 6 due to extensive run time)
@@ -601,14 +601,14 @@ rearrange(B, tol = NULL, sample = FALSE, is.sorted = TRUE, trace = TRUE)
 #  }
 #  close(pb) # close progress bar
 
-## ---- eval = FALSE, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
+## ----eval = FALSE, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
 #  ## Distribution of (final) rearranged matrices
 #  (length(uniqueLst)/N.) * 100 # % of unique rearranged matrices
 #  p.mat <- freq/N. # their corresponding probabilities
 #  plot(p.mat, type = "l", xlab = "Index of unique matrices", ylab = "Probability")
 #  ## => Matrices earlier on tend to appear more often (by construction!)
 
-## ---- eval = FALSE, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
+## ----eval = FALSE, fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
 #  ## Distribution of the minimal row sums (= worst VaR estimates)
 #  VaR.est <- sapply(matRAlst, function(x) min(rowSums(x)))
 #  plot(VaR.est)
@@ -643,7 +643,7 @@ for(k in seq_len(d)) { # iterate over constituents
                      threshold = thres, shape = shape, scale = scale)
 }
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 7, fig.show = "hold"----
+## ----fig.align = "center", fig.width = 6, fig.height = 7, fig.show = "hold"----
 if(doPDF)
     pdf(file = (file <- paste0("fig_worst_VaR_bounds_application_GPD_fit_check.pdf")),
         width = 6, height = 7)
@@ -703,7 +703,7 @@ res.low. <- rearrange(X.low, tol = NULL, sample = FALSE, is.sorted = TRUE)$bound
 res.up  <- sapply(tol, function(t) rearrange(X.up, tol = t, sample = FALSE, is.sorted = TRUE)$bound)
 res.up. <- rearrange(X.up, tol = NULL, sample = FALSE, is.sorted = TRUE)$bound # for tol = NULL
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
+## ----fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
 ## Plot the lower and upper bound on worst VaR as a function of the chosen tol
 if(doPDF)
     pdf(file = (file <- paste0("fig_worst_VaR_bounds_application.pdf")),
@@ -719,7 +719,7 @@ legend("topright", bty = "n", lty = rep(1,2),
        col = c("black", "royalblue3"), legend = c("Upper bound", "Lower bound"))
 if(doPDF) dev.off()
 
-## ---- fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
+## ----fig.align = "center", fig.width = 6, fig.height = 6, fig.show = "hold"----
 ## Define parameters of the three margins
 th <- 2.5 # Pareto parameter
 m <- 10 # mean of the lognormal
